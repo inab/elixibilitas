@@ -1,0 +1,32 @@
+[
+{
+  "@id" : "http://elixir.bsc.es/tool",
+  "@type" : "http://www.w3.org/2002/07/owl#Ontology",
+
+  "http://www.w3.org/2002/07/owl#imports" : [ {
+    "@id" : "https://elixir.bsc.es/tools/biotools.owl"
+  } ]
+},
+{
+  "@context": {
+    "@vocab": "https://elixir.bsc.es/tools#",
+    "@base": "https://elixir.bsc.es/tools#",
+    "homepage": { "@type": "http://www.w3.org/2001/XMLSchema#anyURI"},
+    "repositories": { "@type": "http://www.w3.org/2001/XMLSchema#anyURI"},
+    "helpdesk": { "@type": "http://www.w3.org/2001/XMLSchema#anyURI"},
+    "issue_tracker": { "@type": "http://www.w3.org/2001/XMLSchema#anyURI"},
+    "mailing_list": { "@type": "http://www.w3.org/2001/XMLSchema#anyURI"},
+    "doc_link": { "@type": "http://www.w3.org/2001/XMLSchema#anyURI"},
+    "url": { "@type": "http://www.w3.org/2001/XMLSchema#anyURI"},
+    "social_media": { "@type": "http://www.w3.org/2001/XMLSchema#anyURI"},
+    "binaries": { "@type": "http://www.w3.org/2001/XMLSchema#anyURI"},
+    "binary_packages": { "@type": "http://www.w3.org/2001/XMLSchema#anyURI"},
+    "sourcecode": { "@type": "http://www.w3.org/2001/XMLSchema#anyURI"},
+    "source_packages": { "@type": "http://www.w3.org/2001/XMLSchema#anyURI"},
+    "topics": { "@type": "http://www.w3.org/2001/XMLSchema#anyURI"},
+    "operations": { "@type": "http://www.w3.org/2001/XMLSchema#anyURI"},
+    "formats": { "@type": "http://www.w3.org/2001/XMLSchema#anyURI"},
+    "datatype": { "@type": "http://www.w3.org/2001/XMLSchema#anyURI"}
+  },
+
+  "tools" : 

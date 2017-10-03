@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" 
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+
+    <modelVersion>4.0.0</modelVersion>
+    <groupId>es.elixir.bsc.elixibilitas</groupId>
+    <artifactId>elixibilitas</artifactId>
+    <version>0.1-SNAPSHOT</version>
+    <packaging>pom</packaging>
+
+    <properties>
+<!--
+        <revision>0.1-SNAPSHOT</revision>
+-->
+        <maven.version>3.5.0</maven.version>
+        <maven.compiler.source>1.8</maven.compiler.source>
+        <maven.compiler.target>1.8</maven.compiler.target>
+
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    </properties>
+
+    <modules>
+        <module>openebench-tools-model</module>
+        <module>openebench-tools-rest</module>
+        <module>openebench-edam-rest</module>
+        <module>elixibilitas-tools-dao</module>
+        <module>elixibilitas-tools-importer</module>
+        <module>elixibilitas-tools-ontology</module>
+        <module>elixibilitas-metrics-model</module>
+        <module>elixibilitas-metrics-dao</module>
+        <module>elixibilitas-metrics-checker</module>
+        <module>elixibilitas-metrics-rest</module>
+    </modules>
+
+    <developers>
+        <developer>
+          <id>redmitry</id>
+          <name>Dmitry Repchevsky</name>
+          <email>redmitry@list.ru</email>
+        </developer>
+    </developers>
+
+</project>

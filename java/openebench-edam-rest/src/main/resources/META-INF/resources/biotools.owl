@@ -1,0 +1,230 @@
+<?xml version="1.0"?>
+
+<!DOCTYPE rdf:RDF [
+    <!ENTITY owl "http://www.w3.org/2002/07/owl#" >
+    <!ENTITY xsd "http://www.w3.org/2001/XMLSchema#" >
+    <!ENTITY rdfs "http://www.w3.org/2000/01/rdf-schema#" >
+    <!ENTITY rdf "http://www.w3.org/1999/02/22-rdf-syntax-ns#" >
+    <!ENTITY t "http://elixir.bsc.es/biotools#" >
+]>
+
+<rdf:RDF xml:base="https://elixir.bsc.es/tools"
+     xmlns="https://elixir.bsc.es/tools#"
+     xmlns:t="https://elixir.bsc.es/tools#"
+     xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+     xmlns:owl="http://www.w3.org/2002/07/owl#"
+     xmlns:xml="http://www.w3.org/XML/1998/namespace"
+     xmlns:xsd="http://www.w3.org/2001/XMLSchema#"
+     xmlns:rdfs="http://www.w3.org/2000/01/rdf-schema#">
+
+    <owl:Ontology rdf:about="https://elixir.bsc.es/tools">
+        <rdf:langRange xml:lang="en">en</rdf:langRange>
+    </owl:Ontology>
+
+    <owl:ObjectProperty rdf:about="#tools">
+        <rdfs:range rdf:resource="#Tool"/>
+    </owl:ObjectProperty>
+
+    <owl:Class rdf:about="#Tool">
+        <owl:equivalentClass>
+            <owl:Class>
+                <owl:intersectionOf rdf:parseType="Collection">
+                    <owl:Restriction>
+                        <owl:onProperty rdf:resource="#homepage"/>
+                        <owl:allValuesFrom rdf:resource="&xsd;anyURI"/>
+                    </owl:Restriction>
+                    <owl:Restriction>
+                        <owl:onProperty rdf:resource="#homepage"/>
+                        <owl:qualifiedCardinality rdf:datatype="&xsd;nonNegativeInteger">1</owl:qualifiedCardinality>
+                        <owl:onDataRange rdf:resource="&xsd;anyURI"/>
+                    </owl:Restriction>
+                    <owl:Restriction>
+                        <owl:onProperty rdf:resource="#description"/>
+                        <owl:allValuesFrom rdf:resource="&xsd;string"/>
+                    </owl:Restriction>
+                    <owl:Restriction>
+                        <owl:onProperty rdf:resource="#description"/>
+                        <owl:qualifiedCardinality rdf:datatype="&xsd;nonNegativeInteger">1</owl:qualifiedCardinality>
+                        <owl:onDataRange rdf:resource="&xsd;string"/>
+                    </owl:Restriction>
+                    <owl:Restriction>
+                        <owl:onProperty rdf:resource="#community"/>
+                        <owl:allValuesFrom rdf:resource="#Community"/>
+                    </owl:Restriction>
+                    <owl:Restriction>
+                        <owl:onProperty rdf:resource="#community"/>
+                        <owl:maxQualifiedCardinality rdf:datatype="http://www.w3.org/2001/XMLSchema#nonNegativeInteger">1</owl:maxQualifiedCardinality>
+                        <owl:onClass rdf:resource="#Community"/>
+                    </owl:Restriction>
+                    <owl:Restriction>
+                        <owl:onProperty rdf:resource="#documentation"/>
+                        <owl:allValuesFrom rdf:resource="#Documentation"/>
+                    </owl:Restriction>
+                    <owl:Restriction>
+                        <owl:onProperty rdf:resource="#documentation"/>
+                        <owl:maxQualifiedCardinality rdf:datatype="http://www.w3.org/2001/XMLSchema#nonNegativeInteger">1</owl:maxQualifiedCardinality>
+                        <owl:onClass rdf:resource="#Documentation"/>
+                    </owl:Restriction>
+                    <owl:Restriction>
+                        <owl:onProperty rdf:resource="#publication"/>
+                        <owl:allValuesFrom rdf:resource="#Publication"/>
+                    </owl:Restriction>
+                </owl:intersectionOf>
+            </owl:Class>
+        </owl:equivalentClass>
+    </owl:Class>
+    
+    <owl:Class rdf:about="#cmd">
+        <rdfs:label rdf:datatype="&xsd;string">Command-line tool</rdfs:label>
+        <rdfs:subClassOf rdf:resource="#Tool"/>
+        <rdfs:comment>A tool with a text-based (command-line) interface.</rdfs:comment>
+    </owl:Class>
+
+    <owl:Class rdf:about="#web">
+        <rdfs:label rdf:datatype="&xsd;string">Command-line tool</rdfs:label>
+        <rdfs:subClassOf rdf:resource="#Tool"/>
+        <rdfs:comment>A tool with a text-based (command-line) interface.</rdfs:comment>
+    </owl:Class>
+
+    <owl:Class rdf:about="#lib">
+        <rdfs:label rdf:datatype="&xsd;string">Command-line tool</rdfs:label>
+        <rdfs:subClassOf rdf:resource="#Tool"/>
+        <rdfs:comment>A tool with a text-based (command-line) interface.</rdfs:comment>
+    </owl:Class>
+
+    <owl:Class rdf:about="#db">
+        <rdfs:label rdf:datatype="&xsd;string">Command-line tool</rdfs:label>
+        <rdfs:subClassOf rdf:resource="#Tool"/>
+        <rdfs:comment>A tool with a text-based (command-line) interface.</rdfs:comment>
+    </owl:Class>
+
+    <owl:DatatypeProperty rdf:about="#homepage">
+        <rdfs:domain rdf:resource="#Tool"/>
+        <rdfs:range rdf:resource="&xsd;anyURI"/>
+    </owl:DatatypeProperty>
+
+    <owl:DatatypeProperty rdf:about="#description">
+        <rdfs:domain rdf:resource="#Tool"/>
+        <rdfs:range rdf:resource="&xsd;string"/>
+    </owl:DatatypeProperty>
+
+    <owl:ObjectProperty rdf:about="#community">
+        <rdfs:domain rdf:resource="#Tool"/>
+        <rdfs:range rdf:resource="#Community"/>
+    </owl:ObjectProperty>
+
+    <owl:ObjectProperty rdf:about="#documentation">
+        <rdfs:domain rdf:resource="#Tool"/>
+        <rdfs:range rdf:resource="#Documentation"/>
+    </owl:ObjectProperty>
+
+    <owl:DatatypeProperty rdf:about="#doc_link">
+        <rdfs:domain rdf:resource="#Documentation"/>
+        <rdfs:range rdf:resource="&xsd;anyURI"/>
+    </owl:DatatypeProperty>
+
+    <owl:DatatypeProperty rdf:about="#general">
+       <rdfs:subPropertyOf rdf:resource="#doc_link"/>
+    </owl:DatatypeProperty>
+
+    <owl:DatatypeProperty rdf:about="#manual">
+       <rdfs:subPropertyOf rdf:resource="#doc_link"/>
+    </owl:DatatypeProperty>
+
+    <owl:DatatypeProperty rdf:about="#api">
+       <rdfs:subPropertyOf rdf:resource="#doc_link"/>
+    </owl:DatatypeProperty>
+
+    <owl:DatatypeProperty rdf:about="#citation_info">
+       <rdfs:subPropertyOf rdf:resource="#doc_link"/>
+    </owl:DatatypeProperty>
+
+    <owl:DatatypeProperty rdf:about="#terms_of_use">
+       <rdfs:subPropertyOf rdf:resource="#doc_link"/>
+    </owl:DatatypeProperty>
+
+    <owl:DatatypeProperty rdf:about="#training_materials">
+       <rdfs:subPropertyOf rdf:resource="#doc_link"/>
+    </owl:DatatypeProperty>
+
+    <owl:Class rdf:about="#Documentation">
+        <owl:equivalentClass>
+            <owl:Class>
+                <owl:intersectionOf rdf:parseType="Collection">
+                    <owl:Restriction>
+                        <owl:onProperty rdf:resource="#doc_link"/>
+                        <owl:allValuesFrom rdf:resource="&xsd;anyURI"/>
+                    </owl:Restriction>
+                </owl:intersectionOf>
+            </owl:Class>
+        </owl:equivalentClass>
+    </owl:Class>
+
+    <owl:Class rdf:about="#Community">
+        <owl:equivalentClass>
+            <owl:Class>
+                <owl:intersectionOf rdf:parseType="Collection">
+                    <owl:Restriction>
+                        <owl:onProperty rdf:resource="#helpdesk"/>
+                        <owl:allValuesFrom rdf:resource="&xsd;anyURI"/>
+                    </owl:Restriction>
+                    <owl:Restriction>
+                        <owl:onProperty rdf:resource="#issue_tracker"/>
+                        <owl:allValuesFrom rdf:resource="&xsd;anyURI"/>
+                    </owl:Restriction>
+                    <owl:Restriction>
+                        <owl:onProperty rdf:resource="#mailing_list"/>
+                        <owl:allValuesFrom rdf:resource="&xsd;anyURI"/>
+                    </owl:Restriction>
+                </owl:intersectionOf>
+            </owl:Class>
+        </owl:equivalentClass>
+    </owl:Class>
+
+    <owl:Class rdf:about="#Publication">
+        <owl:equivalentClass>
+            <owl:Class>
+                <owl:intersectionOf rdf:parseType="Collection">
+                    <owl:Restriction>
+                        <owl:onProperty rdf:resource="#doi"/>
+                        <owl:allValuesFrom rdf:resource="&xsd;string"/>
+                    </owl:Restriction>
+                    <owl:Restriction>
+                        <owl:onProperty rdf:resource="#pmcid"/>
+                        <owl:allValuesFrom rdf:resource="&xsd;string"/>
+                    </owl:Restriction>
+                    <owl:Restriction>
+                        <owl:onProperty rdf:resource="#pmid"/>
+                        <owl:allValuesFrom rdf:resource="&xsd;string"/>
+                    </owl:Restriction>
+                </owl:intersectionOf>
+            </owl:Class>
+        </owl:equivalentClass>
+    </owl:Class>
+
+    <owl:Class rdf:about="#Semantics">
+        <owl:equivalentClass>
+            <owl:Class>
+                <owl:intersectionOf rdf:parseType="Collection">
+                    <owl:Restriction>
+                        <owl:onProperty rdf:resource="#topics"/>
+                        <owl:allValuesFrom rdf:resource="&xsd;anyURI"/>
+                    </owl:Restriction>
+                    <owl:Restriction>
+                        <owl:onProperty rdf:resource="#operation"/>
+                        <owl:allValuesFrom rdf:resource="&xsd;anyURI"/>
+                    </owl:Restriction>
+                    <owl:Restriction>
+                        <owl:onProperty rdf:resource="#input"/>
+                        <owl:allValuesFrom rdf:resource="&xsd;anyURI"/>
+                    </owl:Restriction>
+                    <owl:Restriction>
+                        <owl:onProperty rdf:resource="#output"/>
+                        <owl:allValuesFrom rdf:resource="&xsd;anyURI"/>
+                    </owl:Restriction>
+                </owl:intersectionOf>
+            </owl:Class>
+        </owl:equivalentClass>
+    </owl:Class>
+
+</rdf:RDF>

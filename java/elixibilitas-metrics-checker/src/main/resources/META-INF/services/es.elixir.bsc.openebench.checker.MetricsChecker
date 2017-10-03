@@ -1,0 +1,10 @@
+es.elixir.bsc.openebench.checker.biotools.APIDocumentationChecker
+es.elixir.bsc.openebench.checker.biotools.BinaryDistributionChecker
+es.elixir.bsc.openebench.checker.biotools.DescriptionChecker
+es.elixir.bsc.openebench.checker.biotools.EmailChecker
+es.elixir.bsc.openebench.checker.biotools.HomepageChecker
+es.elixir.bsc.openebench.checker.biotools.IssueTrackerChecker
+es.elixir.bsc.openebench.checker.biotools.LicenseChecker
+es.elixir.bsc.openebench.checker.biotools.PublicationChecker
+es.elixir.bsc.openebench.checker.biotools.RepositoryChecker
+es.elixir.bsc.openebench.checker.biotools.SourcecodeChecker
