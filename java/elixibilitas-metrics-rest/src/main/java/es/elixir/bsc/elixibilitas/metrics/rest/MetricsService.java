@@ -40,13 +40,12 @@ import javax.json.JsonWriter;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
+import javax.ws.rs.Produces;
 import javax.ws.rs.container.AsyncResponse;
 import javax.ws.rs.container.Suspended;
-import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.StreamingOutput;
-import javax.ws.rs.ext.Providers;
 
 /**
  * REST Service to operate over Metrics objects.
@@ -65,6 +64,7 @@ public class MetricsService {
     
     @GET
     @Path("/{id}/{type}/{host}{path:.*}")
+    @Produces(MediaType.APPLICATION_JSON)
     public void getMetrics(@PathParam("id") String id,
                            @PathParam("type") String type,
                            @PathParam("host") String host,
@@ -99,9 +99,9 @@ public class MetricsService {
                     writer.write(value);
                 }
             };
-            Response.ok(stream, MediaType.APPLICATION_JSON_TYPE);
+            return Response.ok(stream);
         }
         
-        return Response.ok(json, MediaType.APPLICATION_JSON_TYPE);
+        return Response.ok(json);
     } 
 }
