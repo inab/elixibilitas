@@ -30,18 +30,22 @@ The API provides an access to biological tools descriptions:
 https://elixir.bsc.es/tool/{id}
 https://elixir.bsc.es/tool/{id}/{type}
 https://elixir.bsc.es/tool/{id}/{type}/{host}
+https://elixir.bsc.es/tool/{id}/{type}/{host}/{path}
 ```
 where:
 - {id} is the prefixed tool id (i.e. "bio.tools:pmut")
 - {type} is a type of the tool ("web", "app", "cmd", "db", "rest", "soap")
 - {host} is the tool provider which is usually provider's host
+- {path} is a JSON pointer to locate sub-property to return
 
 > Note that {id}/{type}/{host} uniquely identify the tool, while omitting the {type} or {host} returns an array of descriptions.
-> example: [https://elixir.bsc.es/tool/bio.tools:pmut/web/mmb.irbbarcelona.org](https://elixir.bsc.es/tool/bio.tools:pmut/web/mmb.irbbarcelona.org).
+> example 1: [https://elixir.bsc.es/tool/bio.tools:pmut/web/mmb.irbbarcelona.org](https://elixir.bsc.es/tool/bio.tools:pmut/web/mmb.irbbarcelona.org).
+
+> example 2: [https://elixir.bsc.es/tool/bio.tools:pmut/web/mmb.irbbarcelona.org/credits](https://elixir.bsc.es/tool/bio.tools:pmut/web/mmb.irbbarcelona.org/credits).
 
 Quality Metrics accessed via:
 ```
-https://elixir.bsc.es/metrics/{id}/{type}/{host}
+https://elixir.bsc.es/metrics/{id}/{type}/{host}/{path}
 ```
 > example: [https://elixir.bsc.es/metrics/bio.tools:pmut/web/mmb.irbbarcelona.org](https://elixir.bsc.es/metrics/bio.tools:pmut/web/mmb.irbbarcelona.org).
 
