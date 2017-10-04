@@ -25,6 +25,9 @@
 
 package es.elixir.bsc.openebench.tools.rest;
 
+import io.swagger.jaxrs2.integration.resources.OpenApiResource;
+import java.util.HashSet;
+import java.util.Set;
 import javax.ws.rs.ApplicationPath;
 import javax.ws.rs.core.Application;
 
@@ -36,4 +39,13 @@ import javax.ws.rs.core.Application;
 
 @ApplicationPath("/")
 public class BiotoolzApplication extends Application {
+    @Override
+    public Set<Class<?>> getClasses() {
+        Set<Class<?>> resources = new HashSet();
+
+        resources.add(OpenApiResource.class);
+        resources.add(BiotoolzServices.class);
+        
+        return resources;
+    }
 }
