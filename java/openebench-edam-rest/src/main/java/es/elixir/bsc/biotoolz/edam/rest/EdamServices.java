@@ -31,9 +31,12 @@ import es.elixir.bsc.openebench.model.tools.Datatype;
 import es.elixir.bsc.openebench.model.tools.Semantics;
 import es.elixir.bsc.openebench.model.tools.Tool;
 import java.io.BufferedWriter;
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
+import java.io.PipedReader;
+import java.io.PipedWriter;
 import java.io.Writer;
 import java.net.MalformedURLException;
 import java.net.URI;
@@ -41,11 +44,14 @@ import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.AbstractMap;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.stream.Stream;
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
 import javax.annotation.Resource;
@@ -53,7 +59,14 @@ import javax.enterprise.concurrent.ManagedExecutorService;
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 import javax.json.Json;
+import javax.json.JsonValue;
+import javax.json.bind.Jsonb;
+import javax.json.bind.JsonbBuilder;
+import javax.json.bind.JsonbConfig;
+import javax.json.bind.config.PropertyNamingStrategy;
 import javax.json.stream.JsonGenerator;
+import javax.json.stream.JsonParser;
+import javax.json.stream.JsonParserFactory;
 import javax.servlet.ServletContext;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
@@ -276,6 +289,52 @@ public class EdamServices {
     }
 
     @GET
+    @Path("/tool")
+    @Produces(MediaType.APPLICATION_JSON)
+    public void getToolsSemantics(@Suspended final AsyncResponse asyncResponse) {
+        executor.submit(() -> {
+            asyncResponse.resume(getToolsSemanticsAsync().build());
+        });
+    }
+ 
+    private Response.ResponseBuilder getToolsSemanticsAsync() {
+        
+        final StreamingOutput stream = (OutputStream out) -> {
+            //ByteArrayOutputStream buf = new ByteArrayOutputStream();
+
+            try (PipedWriter writer = new PipedWriter();
+                 PipedReader reader = new PipedReader(writer)) {
+
+                executor.submit(() -> {
+                    ToolDAO.write(mc, writer, Arrays.asList("semantics"));
+                });
+
+                final Jsonb jsonb = JsonbBuilder.create(new JsonbConfig()
+                    .withPropertyNamingStrategy(PropertyNamingStrategy.UPPER_CAMEL_CASE));
+
+                JsonParserFactory factory = Json.createParserFactory(Collections.EMPTY_MAP);
+                JsonParser parser = factory.createParser(reader);
+               
+                parser.next();
+                Stream<JsonValue> values = parser.getArrayStream();
+                
+                try (JsonGenerator gen = Json.createGenerator(out)) {
+                    gen.writeStartArray();
+                    values.forEach(value->{
+                        Tool tool = jsonb.fromJson(value.toString(), Tool.class);
+                        writeSemantics(gen, tool);
+                    });
+                    gen.writeEnd();
+                }
+            } catch(IOException ex) {
+                Logger.getLogger(EdamServices.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        };
+                
+        return Response.ok(stream);
+    }
+    
+    @GET
     @Path("/tool/{id: .*}")
     @Produces(MediaType.APPLICATION_JSON)
     public void getToolSemantics(@PathParam("id") final String id,
@@ -300,17 +359,20 @@ public class EdamServices {
         }
         
         final StreamingOutput stream = (OutputStream out) -> {
-            writeSemantics(out, tool);
+            try (JsonGenerator gen = Json.createGenerator(out)) {
+                writeSemantics(gen, tool);
+            }
         };
                 
         return Response.ok(stream);
     }
     
-    private void writeSemantics(OutputStream out, Tool tool) {
-        try (JsonGenerator gen = Json.createGenerator(out);
-             RepositoryConnection con = repository.getConnection()) {
+    private void writeSemantics(JsonGenerator gen, Tool tool) {
+        try (RepositoryConnection con = repository.getConnection()) {
 
             gen.writeStartObject();
+            
+            gen.write("@id", tool.id.toString());
             
             Semantics semantics = tool.getSemantics();
             if (semantics != null) {
@@ -385,7 +447,7 @@ public class EdamServices {
                 gen.write(literal.stringValue());
             }
         }
-        gen.writeEnd();
+        gen.writeEnd(); // labels
 
         statements = con.getStatements(iri, RDFS.COMMENT, null, true);
         gen.writeStartArray("comments");
@@ -397,7 +459,19 @@ public class EdamServices {
                 gen.write(literal.stringValue());
             }
         }
+        gen.writeEnd(); // comments
+        
+        statements = con.getStatements(iri, vf.createIRI("http://www.geneontology.org/formats/oboInOwl#hasDefinition"), null, true);
+        gen.writeStartArray("definitions");
+        while (statements.hasNext()) {
+            final Statement statement = statements.next();
+            final Value value = statement.getObject();
+            if (value instanceof Literal) {
+                Literal literal = (Literal)value;
+                gen.write(literal.stringValue());
+            }
+        }
 
-        gen.writeEnd();
+        gen.writeEnd(); // definitions
     }
 }
