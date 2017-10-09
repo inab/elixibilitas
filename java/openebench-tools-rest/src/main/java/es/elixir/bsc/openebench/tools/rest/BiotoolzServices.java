@@ -27,13 +27,13 @@ package es.elixir.bsc.openebench.tools.rest;
 
 import com.mongodb.MongoClient;
 import es.elixir.bsc.elixibilitas.tools.dao.ToolDAO;
-import es.elixir.bsc.openebench.model.tools.Tool;
 import io.swagger.oas.annotations.Operation;
 import io.swagger.oas.annotations.Parameter;
 import io.swagger.oas.annotations.media.Content;
 import io.swagger.oas.annotations.media.Schema;
 import io.swagger.oas.annotations.parameters.RequestBody;
 import io.swagger.oas.annotations.responses.ApiResponse;
+import io.swagger.oas.annotations.servers.Server;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.IOException;
@@ -44,6 +44,7 @@ import java.io.OutputStreamWriter;
 import java.io.StringReader;
 import java.io.Writer;
 import java.net.URI;
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.annotation.PostConstruct;
@@ -62,6 +63,7 @@ import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
+import javax.ws.rs.QueryParam;
 import javax.ws.rs.container.AsyncResponse;
 import javax.ws.rs.container.Suspended;
 import javax.ws.rs.core.Context;
@@ -109,8 +111,21 @@ public class BiotoolzServices {
     }
     
     /**
+     * Proxy method to return Tool JSON Schema.
+     * 
+     * @return JSON Schema for the Tool
+     */
+    @GET
+    @Path("/tool.json")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response getToolJsonSchema() {
+        return Response.ok(ctx.getResourceAsStream("/META-INF/resources/tool.json")).build();
+    }
+
+    /**
      * Get back all tools as a JSON array.
      * 
+     * @param projections
      * @param asyncResponse 
      */
     @GET
@@ -119,19 +134,20 @@ public class BiotoolzServices {
     @Operation(description = "Return all tools descriptions",
         responses = {
             @ApiResponse(content = @Content(mediaType = MediaType.APPLICATION_JSON,
-                                            schema = @Schema(implementation = Tool[].class)))
+                                            schema = @Schema(ref="https://elixir.bsc.es/tool/tool.json")))
         }
     )
-    public void getTools(@Suspended final AsyncResponse asyncResponse) {
+    public void getTools(@QueryParam("projection") final List<String> projections,
+                         @Suspended final AsyncResponse asyncResponse) {
         executor.submit(() -> {
-            asyncResponse.resume(getToolsAsync().build());
+            asyncResponse.resume(getToolsAsync(projections).build());
         });
     }
 
-    private ResponseBuilder getToolsAsync() {
+    private ResponseBuilder getToolsAsync(List<String> projections) {
         StreamingOutput stream = (OutputStream out) -> {
             try (Writer writer = new BufferedWriter(new OutputStreamWriter(out, "UTF-8"))) {
-                ToolDAO.write(mc, writer);
+                ToolDAO.write(mc, writer, projections);
             }
         };
                 
@@ -139,9 +155,33 @@ public class BiotoolzServices {
     }
 
     @GET
+    @Path("/{id}")
+    @Produces(MediaType.APPLICATION_JSON)
+    public void getTools(@QueryParam("projection") final List<String> projections,
+                         @Context final UriInfo uriInfo, 
+                         @Suspended final AsyncResponse asyncResponse) {
+        final URI uri = uriInfo.getRequestUri();
+        executor.submit(() -> {
+            asyncResponse.resume(getToolsAsync(uri.toString()).build());
+        });
+    }
+
+    @GET
+    @Path("/{id}/{type}")
+    @Produces(MediaType.APPLICATION_JSON)
+    public void getToolz(@Context final UriInfo uriInfo, 
+                         @Suspended final AsyncResponse asyncResponse) {
+        final URI uri = uriInfo.getRequestUri();
+        executor.submit(() -> {
+            asyncResponse.resume(getToolsAsync(uri.toString()).build());
+        });
+    }
+    
+    @GET
     @Path("/{id}/{type}/{host}{path:.*}")
     @Produces(MediaType.APPLICATION_JSON)
     @Operation(
+        servers = {@Server(url = "/tool")},
         description = "Return one or many tools by the id",
         parameters = {
             @Parameter(in = "path", name = "id", description = "prefixed tool id", required = true),
@@ -151,12 +191,8 @@ public class BiotoolzServices {
         },
         responses = {
             @ApiResponse(content = @Content(mediaType = MediaType.APPLICATION_JSON,
-                                            schema = @Schema(implementation = Tool.class))),
-            @ApiResponse(content = @Content(mediaType = MediaType.APPLICATION_JSON,
-                                            schema = @Schema(implementation = Tool[].class)
+                                            schema = @Schema(ref="https://elixir.bsc.es/tool/tool.json")
             )),
-
-            @ApiResponse(responseCode = "400", description = "no id parameter"),
             @ApiResponse(responseCode = "404", description = "tool(s) not found")
         }
     )
@@ -166,10 +202,6 @@ public class BiotoolzServices {
                         @PathParam("path") final String path,
                         @Context final UriInfo uriInfo, 
                         @Suspended final AsyncResponse asyncResponse) {
-        if (id == null || id.isEmpty()) {
-            asyncResponse.resume(Response.status(Response.Status.BAD_REQUEST).build());
-        }
-        
         final URI uri = uriInfo.getRequestUri();
         executor.submit(() -> {
             if (type == null || type.isEmpty() ||
@@ -250,10 +282,10 @@ public class BiotoolzServices {
             @Parameter(in = "path", name = "id", description = "prefixed tool id", required = true)
         }
     )
-    public void putTool(@PathParam("id") String id, 
+    public void putTool(@PathParam("id") final String id, 
                         @RequestBody(description = "json tool object",
-                            content = @Content(schema = @Schema(implementation = Tool.class)),
-                            required = true) String json,
+                            content = @Content(schema = @Schema(ref="https://elixir.bsc.es/tool/tool.json")),
+                            required = true) final String json,
                         @Suspended final AsyncResponse asyncResponse) {
         executor.submit(() -> {
             asyncResponse.resume(putToolAsync(id, json).build());
