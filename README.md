@@ -1,7 +1,7 @@
 ### Elixibilitas: Quality Metrics tool for Elixir BioTools Registry.
 
 ###### Enterprise Java 8 (JEE8) Platform
-Elixibilitas project is strictly adherent to the JEE8 specification.
+Elixibilitas project is strictly adherent to the [JEE8](https://www.jcp.org/en/jsr/detail?id=366) specification.
 The tools is developed and deployed on [WildFly 10.1](http://wildfly.org/) server, 
 but should run on other servers (i.e. [Apache Tomcat](http://tomcat.apache.org/)).
 
