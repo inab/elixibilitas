@@ -27,6 +27,12 @@ package es.elixir.bsc.elixibilitas.metrics.rest;
 
 import com.mongodb.MongoClient;
 import es.elixir.bsc.openebench.metrics.dao.MetricsDAO;
+import io.swagger.oas.annotations.Operation;
+import io.swagger.oas.annotations.Parameter;
+import io.swagger.oas.annotations.media.Content;
+import io.swagger.oas.annotations.media.Schema;
+import io.swagger.oas.annotations.responses.ApiResponse;
+import io.swagger.oas.annotations.servers.Server;
 import java.io.OutputStream;
 import java.io.StringReader;
 import javax.annotation.Resource;
@@ -37,12 +43,14 @@ import javax.json.JsonPointer;
 import javax.json.JsonStructure;
 import javax.json.JsonValue;
 import javax.json.JsonWriter;
+import javax.servlet.ServletContext;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.container.AsyncResponse;
 import javax.ws.rs.container.Suspended;
+import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.StreamingOutput;
@@ -62,9 +70,39 @@ public class MetricsService {
     @Resource
     private ManagedExecutorService executor;
     
+    /**
+     * Proxy method to return Metrics JSON Schema.
+     * 
+     * @param ctx injected servlet context.
+     * 
+     * @return JSON Schema for the Metrics
+     */
+    @GET
+    @Path("/metrics.json")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response getMetricsJsonSchema(@Context ServletContext ctx) {
+        return Response.ok(ctx.getResourceAsStream("/META-INF/resources/metrics.json")).build();
+    }
+
     @GET
     @Path("/{id}/{type}/{host}{path:.*}")
     @Produces(MediaType.APPLICATION_JSON)
+    @Operation(
+        servers = {@Server(url = "/metrics")},
+        description = "Return tools metrics by the tool's id",
+        parameters = {
+            @Parameter(in = "path", name = "id", description = "prefixed tool id", required = true),
+            @Parameter(in = "path", name = "type", description = "tool type", required = false),
+            @Parameter(in = "path", name = "host", description = "tool authority", required = false),
+            @Parameter(in = "path", name = "path", description = "json pointer", required = false)
+        },
+        responses = {
+            @ApiResponse(content = @Content(mediaType = MediaType.APPLICATION_JSON,
+                                            schema = @Schema(ref="https://elixir.bsc.es/metrics/metrics.json")
+            )),
+            @ApiResponse(responseCode = "404", description = "metrics not found")
+        }
+    )
     public void getMetrics(@PathParam("id") String id,
                            @PathParam("type") String type,
                            @PathParam("host") String host,

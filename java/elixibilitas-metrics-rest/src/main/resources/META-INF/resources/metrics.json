@@ -1,0 +1,207 @@
+{
+  "id": "https://elixir.bsc.es/metrics/metrics.json",
+  "$schema": "http://json-schema.org/draft-04/hyper-schema#",
+  "title": "OpenEBench Quality Metrics Schema",
+  "definitions": {
+      "Identity" : {
+        "type": "object",
+        "properties": {
+          "domain": {
+            "type": "boolean"
+          },
+          "logo": {
+            "type": "boolean"
+          },
+          "recognizability": {
+            "type": "boolean"
+          },
+          "uniqueness": {
+            "type": "boolean"
+          },
+          "trademark": {
+            "type": "boolean"
+          }
+        }
+      },
+      "Copyright" : {
+        "type": "object",
+        "properties": {
+        }
+      },
+      "Website" : {
+        "type": "object",
+        "properties": {
+          "operational": {
+            "type": "boolean"
+          },
+          "last_seen": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "history": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "format": "date-time"
+            }
+          },
+          "copyright": {
+            "$ref": "#/definitions/Copyright"
+          },
+          "license": {
+            "type": "boolean"
+          },
+          "resources": {
+            "type": "boolean"
+          }
+        }
+      },
+      "Build": {
+        "type": "object",
+        "properties": {
+          "instructions": {
+            "type": "boolean"
+          }
+        }
+      },
+      "License": {
+        "type": "object",
+        "properties": {
+          "open_source": {
+            "type": "boolean"
+          },
+          "osi": {
+            "type": "boolean"
+          }
+        }
+      },
+      "Documentation": {
+        "type": "object",
+        "properties": {
+          "api": {
+            "type": "boolean"
+          }
+        }
+      },
+      "Project": {
+        "type": "object",
+        "properties": {
+          "identity": {
+            "$ref": "#/definitions/Identity"
+          },
+          "website": {
+            "$ref": "#/definitions/Website"
+          },
+          "build": {
+            "$ref": "#/definitions/Build"
+          },
+          "license": {
+            "$ref": "#/definitions/License"
+          },
+          "documentation": {
+            "$ref": "#/definitions/Documentation"
+          },
+          "description": {
+            "type": "boolean"
+          },
+          "concept": {
+            "type": "boolean"
+          },
+          "rationale": {
+            "type": "boolean"
+          },
+          "architecture": {
+            "type": "boolean"
+          },
+          "publications": {
+            "type": "boolean"
+          },
+          "readme": {
+            "type": "boolean"
+          }
+        }
+      },
+      "Binaries": {
+        "type": "object",
+        "properties": {
+          "freeness": {
+            "type": "boolean"
+          },
+          "registration": {
+            "type": "boolean"
+          }
+        }
+      },
+      "Repository": {
+        "type": "object",
+        "properties": {
+          "anonymous": {
+            "type": "boolean"
+          }
+        }
+      },
+      "Sourcecode": {
+        "type": "object",
+        "properties": {
+          "copyright": {
+            "type": "boolean"
+          },
+          "license": {
+            "type": "boolean"
+          },
+          "repository": {
+            "$ref": "#/definitions/Repository"
+          }
+        }
+      },
+      "Distribution": {
+        "type": "object",
+        "properties": {
+          "readme": {
+            "type": "boolean"
+          },
+          "binaries": {
+            "$ref": "#/definitions/Binaries"
+          },
+          "sourcecode": {
+            "$ref": "#/definitions/Sourcecode"
+          }
+        }
+      },
+      "IssueTracking": {
+        "type": "object",
+        "properties": {
+          "public_tracker": {
+            "type": "boolean"
+          },
+          "resolve_time": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "Support": {
+        "type": "object",
+        "properties": {
+          "email": {
+            "type": "boolean"
+          },
+          "issue_tracking": {
+            "$ref": "#/definitions/IssueTracking"
+          }
+        }
+      }
+  },
+  "type": "object",
+  "properties": {
+      "project": {
+         "$ref": "#/definitions/Project"
+      },
+      "distribution": {
+         "$ref": "#/definitions/Distribution"
+      },
+      "support": {
+         "$ref": "#/definitions/Support"
+      }
+   }
+}
