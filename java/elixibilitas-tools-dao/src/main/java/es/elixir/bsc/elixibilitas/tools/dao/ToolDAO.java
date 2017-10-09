@@ -27,6 +27,7 @@ package es.elixir.bsc.elixibilitas.tools.dao;
 
 import com.mongodb.BasicDBObject;
 import com.mongodb.MongoClient;
+import com.mongodb.client.FindIterable;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoCursor;
 import com.mongodb.client.MongoDatabase;
@@ -45,6 +46,7 @@ import java.net.URI;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.json.JsonObject;
@@ -261,7 +263,7 @@ public class ToolDAO {
         return sb.toString();
     }
     
-    public static void write(MongoClient mc, Writer writer) {
+    public static void write(MongoClient mc, Writer writer, List<String> projections) {
         try {
             final MongoDatabase db = mc.getDatabase("elixibilitas");
             final MongoCollection<Document> col = db.getCollection("biotoolz");
@@ -278,7 +280,17 @@ public class ToolDAO {
                 };
 
                 writer.write("[");
-                try (MongoCursor<Document> cursor = col.find().iterator()) {
+                
+                FindIterable<Document> iterator = col.find();
+                if (projections != null && projections.size() > 0) {
+                    BasicDBObject bson = new BasicDBObject();
+                    for (String field : projections) {
+                        bson.append(field, true);
+                    }
+                    iterator = iterator.projection(bson);
+                }
+
+                try (MongoCursor<Document> cursor = iterator.iterator()) {
                     if (cursor.hasNext()) {
                         do {
                             final Document doc = cursor.next();
@@ -299,4 +311,97 @@ public class ToolDAO {
             Logger.getLogger(ToolDAO.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
+    
+    /**
+     * Write those tools ids those semantic annotations found in the map.
+     * 
+     * @param mc mongodb connection.
+     * @param writer the writer to write ids.
+     * @param map the map that has semantic ids as its keys.
+     */
+    public static void filter(MongoClient mc, Writer writer, Map<String, List<Map.Entry<String, String>>> map) {
+
+        final MongoDatabase db = mc.getDatabase("elixibilitas");
+        final MongoCollection<Document> col = db.getCollection("biotoolz");
+
+        FindIterable<Document> iterator = col.find().projection(new BasicDBObject("semantics", true));
+        try (MongoCursor<Document> cursor = iterator.iterator()) {
+
+            boolean first = true;
+            loop:
+            while (cursor.hasNext()) {
+
+                final Document doc = cursor.next();
+                final String id = createID((Document) doc.remove("_id"));
+
+                Document semantics = doc.get("semantics", Document.class);
+                if (semantics != null) {                        
+                    List<String> topics = semantics.get("topics", List.class);
+                    if (topics != null) {
+                        for (String topic : topics) {
+                            final List<Map.Entry<String, String>> list = map.get(topic);
+                            if (writeId(writer, list, id, first)) {
+                                first = false;
+                                continue loop;
+                            }
+                        }
+                    }
+                    List<String> operations = semantics.get("operations", List.class);
+                    if (operations != null) {
+                        for (String operation : operations) {
+                            final List<Map.Entry<String, String>> list = map.get(operation);
+                            if (writeId(writer, list, id, first)) {
+                                first = false;
+                                continue loop;
+                            }
+                        }
+                    }
+                    List<Document> inputs = semantics.get("inputs", List.class);
+                    if (inputs != null) {
+                        for (Document input : inputs) {
+                            final String datatype = input.getString("datatype");
+                            List<Map.Entry<String, String>> list = map.get(datatype);
+                            if (writeId(writer, list, id, first)) {
+                                first = false;
+                                continue loop;
+                            }
+                        }
+                    }
+                    List<Document> outputs = semantics.get("outputs", List.class);
+                    if (outputs != null) {
+                        for (Document output : outputs) {
+                            final String datatype = output.getString("datatype");
+                            List<Map.Entry<String, String>> list = map.get(datatype);
+                            if (writeId(writer, list, id, first)) {
+                                first = false;
+                                continue loop;
+                            }
+                        }
+                    }
+                }
+            }
+        } catch(Exception ex) {
+            Logger.getLogger(ToolDAO.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }
+
+    /**
+     * Conditionally writes the identifier to the writer.
+     * 
+     * @param writer the writer stream to write the identifier.
+     * @param list the search result.
+     * @param id the identifier to write.
+     * @param first whether this is the first identifier to write.
+     * 
+     * @return whether the identifier has been written;
+     * 
+     * @throws IOException 
+     */
+    private static boolean writeId(Writer writer, List list, String id, boolean first) throws IOException {
+        if (list != null && list.size() > 0 && (first || writer.append(",\n") != null)) {
+            writer.append("{\"@id\":\"").append(id).append("\"}");
+            return true;
+        }
+        return false;
+    }    
 }
