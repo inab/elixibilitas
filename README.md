@@ -34,26 +34,23 @@ https://elixir.bsc.es/tool/{id}/{type}/{host}
 https://elixir.bsc.es/tool/{id}/{type}/{host}/{path}
 ```
 where:
+- {projection} is the mongodb projection(s) to limit the output (i.e. "publications.doi")
 - {id} is the prefixed tool id (i.e. "bio.tools:pmut")
 - {type} is a type of the tool ("web", "app", "cmd", "db", "rest", "soap")
 - {host} is the tool provider which is usually provider's host
 - {path} is a JSON pointer to locate sub-property to return
 
 > Note that {id}/{type}/{host} uniquely identify the tool, while omitting the {type} or {host} returns an array of descriptions.
-> example 1: https://elixir.bsc.es/tool?projection=publications](https://elixir.bsc.es/tool?projection=publications).
-
-> example 2: [https://elixir.bsc.es/tool/bio.tools:pmut/web/mmb.irbbarcelona.org](https://elixir.bsc.es/tool/bio.tools:pmut/web/mmb.irbbarcelona.org).
-
+> example 1: [https://elixir.bsc.es/tool?projection=publications](https://elixir.bsc.es/tool?projection=publications).<br/>
+> example 2: [https://elixir.bsc.es/tool/bio.tools:pmut/web/mmb.irbbarcelona.org](https://elixir.bsc.es/tool/bio.tools:pmut/web/mmb.irbbarcelona.org).<br/>
 > example 3: [https://elixir.bsc.es/tool/bio.tools:pmut/web/mmb.irbbarcelona.org/credits](https://elixir.bsc.es/tool/bio.tools:pmut/web/mmb.irbbarcelona.org/credits).
 
 Quality Metrics accessed via:
 ```
 https://elixir.bsc.es/metrics/{id}/{type}/{host}/{path}
 ```
-> example1: [https://elixir.bsc.es/metrics/bio.tools:pmut/web/mmb.irbbarcelona.org](https://elixir.bsc.es/metrics/bio.tools:pmut/web/mmb.irbbarcelona.org).
-
+> example1: [https://elixir.bsc.es/metrics/bio.tools:pmut/web/mmb.irbbarcelona.org](https://elixir.bsc.es/metrics/bio.tools:pmut/web/mmb.irbbarcelona.org).<br/>
 > example2: [https://elixir.bsc.es/metrics/bio.tools:pmut/web/mmb.irbbarcelona.org/project/website](https://elixir.bsc.es/metrics/bio.tools:pmut/web/mmb.irbbarcelona.org/project/website).
-
 
 The API also provides EDAM descriptions for the tool:
 ```
