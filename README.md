@@ -27,6 +27,7 @@ The REST API is based on [JAX-RS](jcp.org/en/jsr/detail?id=370) API.
 
 The API provides an access to biological tools descriptions:
 ```
+https://elixir.bsc.es/tool[?{projection}]
 https://elixir.bsc.es/tool/{id}
 https://elixir.bsc.es/tool/{id}/{type}
 https://elixir.bsc.es/tool/{id}/{type}/{host}
@@ -39,18 +40,24 @@ where:
 - {path} is a JSON pointer to locate sub-property to return
 
 > Note that {id}/{type}/{host} uniquely identify the tool, while omitting the {type} or {host} returns an array of descriptions.
-> example 1: [https://elixir.bsc.es/tool/bio.tools:pmut/web/mmb.irbbarcelona.org](https://elixir.bsc.es/tool/bio.tools:pmut/web/mmb.irbbarcelona.org).
+> example 1: https://elixir.bsc.es/tool?projection=publications](https://elixir.bsc.es/tool?projection=publications).
 
-> example 2: [https://elixir.bsc.es/tool/bio.tools:pmut/web/mmb.irbbarcelona.org/credits](https://elixir.bsc.es/tool/bio.tools:pmut/web/mmb.irbbarcelona.org/credits).
+> example 2: [https://elixir.bsc.es/tool/bio.tools:pmut/web/mmb.irbbarcelona.org](https://elixir.bsc.es/tool/bio.tools:pmut/web/mmb.irbbarcelona.org).
+
+> example 3: [https://elixir.bsc.es/tool/bio.tools:pmut/web/mmb.irbbarcelona.org/credits](https://elixir.bsc.es/tool/bio.tools:pmut/web/mmb.irbbarcelona.org/credits).
 
 Quality Metrics accessed via:
 ```
 https://elixir.bsc.es/metrics/{id}/{type}/{host}/{path}
 ```
-> example: [https://elixir.bsc.es/metrics/bio.tools:pmut/web/mmb.irbbarcelona.org](https://elixir.bsc.es/metrics/bio.tools:pmut/web/mmb.irbbarcelona.org).
+> example1: [https://elixir.bsc.es/metrics/bio.tools:pmut/web/mmb.irbbarcelona.org](https://elixir.bsc.es/metrics/bio.tools:pmut/web/mmb.irbbarcelona.org).
+
+> example2: [https://elixir.bsc.es/metrics/bio.tools:pmut/web/mmb.irbbarcelona.org/project/website](https://elixir.bsc.es/metrics/bio.tools:pmut/web/mmb.irbbarcelona.org/project/website).
+
 
 The API also provides EDAM descriptions for the tool:
 ```
+https://elixir.bsc.es/edam/tool/
 https://elixir.bsc.es/edam/tool/{id}/{type}/{host}
 ```
 > example: [https://elixir.bsc.es/edam/tool/bio.tools:pmut/web/mmb.irbbarcelona.org](https://elixir.bsc.es/edam/tool/bio.tools:pmut/web/mmb.irbbarcelona.org).
