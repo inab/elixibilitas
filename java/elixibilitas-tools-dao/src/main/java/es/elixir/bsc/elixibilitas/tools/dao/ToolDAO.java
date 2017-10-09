@@ -38,6 +38,7 @@ import com.mongodb.client.model.ReturnDocument;
 import es.elixir.bsc.openebench.model.tools.CommandLineTool;
 import es.elixir.bsc.openebench.model.tools.DatabasePortal;
 import es.elixir.bsc.openebench.model.tools.DesktopApplication;
+import es.elixir.bsc.openebench.model.tools.Library;
 import es.elixir.bsc.openebench.model.tools.Tool;
 import es.elixir.bsc.openebench.model.tools.WebApplication;
 import java.io.IOException;
@@ -76,9 +77,11 @@ public class ToolDAO {
         try {
             final MongoDatabase db = mc.getDatabase("elixibilitas");
             final MongoCollection<Document> col = db.getCollection("biotoolz");
-            
-            for (Document doc : col.find()) {
-                tools.add(deserialize(doc));
+            FindIterable<Document> iterator = col.find().projection(new BasicDBObject());
+            try (MongoCursor<Document> cursor = iterator.iterator()) {
+                while (cursor.hasNext()) {
+                    tools.add(deserialize(cursor.next()));
+                }
             }
         } catch(Exception ex) {
             Logger.getLogger(ToolDAO.class.getName()).log(Level.SEVERE, null, ex);
@@ -109,6 +112,7 @@ public class ToolDAO {
             case "web": return jsonb.fromJson(json, WebApplication.class);
             case "db": return jsonb.fromJson(json, DatabasePortal.class);
             case "app": return jsonb.fromJson(json, DesktopApplication.class);
+            case "lib": return jsonb.fromJson(json, Library.class);
         }
         
         return jsonb.fromJson(json, Tool.class);
