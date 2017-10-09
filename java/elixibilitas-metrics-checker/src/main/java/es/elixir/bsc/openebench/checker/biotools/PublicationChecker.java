@@ -57,10 +57,10 @@ public class PublicationChecker implements MetricsChecker {
         
         Project project = metrics.getProject();
         if (project != null) {
-            project.setPublication(bool);
+            project.setPublications(bool);
         } else if (bool != null) {
             project = new Project();
-            project.setPublication(bool);
+            project.setPublications(bool);
             metrics.setProject(project);
         }
 
