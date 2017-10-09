@@ -30,8 +30,11 @@ import es.elixir.bsc.elixibilitas.tools.dao.ToolDAO;
 import es.elixir.bsc.openebench.model.tools.Datatype;
 import es.elixir.bsc.openebench.model.tools.Semantics;
 import es.elixir.bsc.openebench.model.tools.Tool;
+import java.io.BufferedWriter;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.io.OutputStreamWriter;
+import java.io.Writer;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -160,7 +163,7 @@ public class EdamServices {
     @Path("/search")
     @Produces(MediaType.APPLICATION_JSON)
     public void search(@QueryParam("text") final String text, 
-                      @Suspended final AsyncResponse asyncResponse) {
+                       @Suspended final AsyncResponse asyncResponse) {
         executor.submit(() -> {
             asyncResponse.resume(searchAsync(text).build());
         });
@@ -199,28 +202,9 @@ public class EdamServices {
     }
     
     private void search(final OutputStream out, final String text) {
-        List<BindingSet> results;
-        try (RepositoryConnection con = repository.getConnection()) {
-            ValueFactory vf = con.getValueFactory();
 
-            TupleQuery tq = con.prepareTupleQuery(QueryLanguage.SPARQL, QUERY);
-            tq.setBinding("term", vf.createLiteral(text.trim().replaceAll("\\s","* AND ") + "*"));
-            results = QueryResults.asList(tq.evaluate());
-        }
-
-        Map<String, List<Map.Entry<String, String>>> map = new HashMap<>();
-        results.forEach(res -> {
-            final String subject = res.getValue("subj").stringValue();
-            List<Map.Entry<String, String>> descriptions = map.get(subject);
-            if (descriptions == null) {
-                map.put(subject, descriptions = new ArrayList<>());
-            }
-            
-            final String property = res.getValue("property").stringValue();
-            final String snip = res.getValue("text").stringValue();
-            descriptions.add(new AbstractMap.SimpleImmutableEntry<>(property, snip));
-        });
-
+        final Map<String, List<Map.Entry<String, String>>> map = search(text);
+        
         try (JsonGenerator gen = Json.createGenerator(out)) {
             gen.writeStartArray();
             for (Map.Entry<String, List<Map.Entry<String, String>>> subjects : map.entrySet()) {
@@ -241,6 +225,56 @@ public class EdamServices {
         }
     }
     
+    private Map<String, List<Map.Entry<String, String>>> search(final String text) {
+        final List<BindingSet> results;
+        try (RepositoryConnection con = repository.getConnection()) {
+            ValueFactory vf = con.getValueFactory();
+
+            TupleQuery tq = con.prepareTupleQuery(QueryLanguage.SPARQL, QUERY);
+            tq.setBinding("term", vf.createLiteral(text.trim().replaceAll("\\s","* AND ") + "*"));
+            results = QueryResults.asList(tq.evaluate());
+        }
+
+        final Map<String, List<Map.Entry<String, String>>> map = new HashMap<>();
+        results.forEach(res -> {
+            final String subject = res.getValue("subj").stringValue();
+            List<Map.Entry<String, String>> descriptions = map.get(subject);
+            if (descriptions == null) {
+                map.put(subject, descriptions = new ArrayList<>());
+            }
+            
+            final String property = res.getValue("property").stringValue();
+            final String snip = res.getValue("text").stringValue();
+            descriptions.add(new AbstractMap.SimpleImmutableEntry<>(property, snip));
+        });
+        return map;
+    }
+    
+    @GET
+    @Path("/tool/search")
+    @Produces(MediaType.APPLICATION_JSON)
+    public void searchTools(@QueryParam("text") final String text, 
+                            @Suspended final AsyncResponse asyncResponse) {
+        executor.submit(() -> {
+            asyncResponse.resume(searchToolsAsync(text).build());
+        });
+    }
+
+    private Response.ResponseBuilder searchToolsAsync(final String text) {
+        final StreamingOutput stream = (OutputStream out) -> {
+            final Map<String, List<Map.Entry<String, String>>> map = search(text);
+            if (!map.isEmpty()) {
+                try (Writer writer = new BufferedWriter(new OutputStreamWriter(out, "UTF-8"))) {
+                    writer.append("[");
+                    ToolDAO.filter(mc, writer, map);
+                    writer.append("]");
+                }
+            }
+        };
+                
+        return Response.ok(stream);
+    }
+
     @GET
     @Path("/tool/{id: .*}")
     @Produces(MediaType.APPLICATION_JSON)
