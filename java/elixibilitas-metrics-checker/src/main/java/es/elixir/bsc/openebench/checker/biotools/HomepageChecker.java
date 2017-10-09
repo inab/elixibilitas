@@ -97,10 +97,18 @@ public class HomepageChecker implements MetricsChecker {
             if (bool != null) {
                 if (website == null) {
                     project.setWebsite(website = new Website());
+                } else {
+                    Boolean wasOperational = website.getOperational();
+                    if (wasOperational != null && !wasOperational.equals(bool)) {
+                        ZonedDateTime lastSeen = website.getLastSeen();
+                        if (lastSeen != null) {
+                            website.getHistory().add(lastSeen);
+                        }
+                    }
                 }
                 website.setOperational(bool);
                 if (bool) {
-                        website.setLastSeen(ZonedDateTime.now(ZoneId.of("Z")));
+                    website.setLastSeen(ZonedDateTime.now(ZoneId.of("Z")));
                 }
             } else if (website != null) {
                 website.setOperational(null);
