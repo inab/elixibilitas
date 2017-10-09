@@ -45,6 +45,8 @@ public class BiotoolzApplication extends Application {
 
         resources.add(OpenApiResource.class);
         resources.add(BiotoolzServices.class);
+        resources.add(CorsResponseFilter.class);
+        resources.add(JSONContentTypeFilter.class);
         
         return resources;
     }
