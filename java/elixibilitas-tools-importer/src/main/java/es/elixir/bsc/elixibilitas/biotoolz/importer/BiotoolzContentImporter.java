@@ -50,7 +50,16 @@ import es.elixir.bsc.openebench.model.tools.WebApplication;
 import es.elixir.bsc.openebench.model.tools.CommandLineTool;
 import es.elixir.bsc.openebench.model.tools.Community;
 import es.elixir.bsc.openebench.model.tools.Distributions;
+import es.elixir.bsc.openebench.model.tools.Ontology;
+import es.elixir.bsc.openebench.model.tools.Plugin;
+import es.elixir.bsc.openebench.model.tools.SOAPServices;
+import es.elixir.bsc.openebench.model.tools.SPARQLEndpoint;
+import es.elixir.bsc.openebench.model.tools.Script;
+import es.elixir.bsc.openebench.model.tools.Suite;
 import es.elixir.bsc.openebench.model.tools.Support;
+import es.elixir.bsc.openebench.model.tools.WebAPI;
+import es.elixir.bsc.openebench.model.tools.Workbench;
+import es.elixir.bsc.openebench.model.tools.Workflow;
 import java.io.InputStream;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
@@ -183,6 +192,33 @@ public class BiotoolzContentImporter {
                     case LIBRARY: tool = addLibrary(new Library(URI.create(
                                                     String.format(idTemplate.toString(), "lib"))), jtool);
                                        break;
+                    case WEB_SERVICE: tool = addSOAPServices(new SOAPServices(URI.create(
+                                                    String.format(idTemplate.toString(), "soap"))), jtool);
+                                       break;
+                    case WEB_API: tool = addWebAPI(new WebAPI(URI.create(
+                                                    String.format(idTemplate.toString(), "rest"))), jtool);
+                                       break;
+                    case SPARQL_ENDPOINT: tool = addSPARQLEndpoint(new SPARQLEndpoint(URI.create(
+                                                    String.format(idTemplate.toString(), "sparql"))), jtool);
+                                       break;
+                    case ONTOLOGY: tool = addOntology(new Ontology(URI.create(
+                                                    String.format(idTemplate.toString(), "ontology"))), jtool);
+                                       break;
+                    case WORKFLOW: tool = addWorkflow(new Workflow(URI.create(
+                                                    String.format(idTemplate.toString(), "workflow"))), jtool);
+                                       break;
+                    case SCRIPT: tool = addScript(new Script(URI.create(
+                                                    String.format(idTemplate.toString(), "script"))), jtool);
+                                       break;
+                    case PLUGIN: tool = addPlugin(new Plugin(URI.create(
+                                                    String.format(idTemplate.toString(), "plugin"))), jtool);
+                                       break;
+                    case SUITE: tool = addSuite(new Suite(URI.create(
+                                                    String.format(idTemplate.toString(), "suite"))), jtool);
+                                       break;
+                    case WORKBENCH: tool = addWorkbench(new Workbench(URI.create(
+                                                    String.format(idTemplate.toString(), "workbench"))), jtool);
+                                       break;
 
                     default: continue;
                 }
@@ -231,7 +267,43 @@ public class BiotoolzContentImporter {
     private Library addLibrary(Library tool, JsonObject jtool) {
         return tool;
     }
+    
+    private SOAPServices addSOAPServices(SOAPServices tool, JsonObject jtool) {
+        return tool;
+    }
+    
+    private WebAPI addWebAPI(WebAPI tool, JsonObject jtool) {
+        return tool;
+    }
+    
+    private SPARQLEndpoint addSPARQLEndpoint(SPARQLEndpoint tool, JsonObject jtool) {
+        return tool;
+    }
+    
+    private Ontology addOntology(Ontology tool, JsonObject jtool) {
+        return tool;
+    }
+    
+    private Workflow addWorkflow(Workflow tool, JsonObject jtool) {
+        return tool;
+    }
+    
+    private Script addScript(Script tool, JsonObject jtool) {
+        return tool;
+    }
 
+    private Plugin addPlugin(Plugin tool, JsonObject jtool) {
+        return tool;
+    }
+
+    private Suite addSuite(Suite tool, JsonObject jtool) {
+        return tool;
+    }
+    
+    private Workbench addWorkbench(Workbench tool, JsonObject jtool) {
+        return tool;
+    }
+    
     private void addDocumentation(Tool tool, JsonObject jtool) {
         final JsonArray jdocumentations = jtool.getJsonArray("documentation");
         if (jdocumentations.size() > 0) {

@@ -39,8 +39,17 @@ import es.elixir.bsc.openebench.model.tools.CommandLineTool;
 import es.elixir.bsc.openebench.model.tools.DatabasePortal;
 import es.elixir.bsc.openebench.model.tools.DesktopApplication;
 import es.elixir.bsc.openebench.model.tools.Library;
+import es.elixir.bsc.openebench.model.tools.Ontology;
+import es.elixir.bsc.openebench.model.tools.Plugin;
+import es.elixir.bsc.openebench.model.tools.SOAPServices;
+import es.elixir.bsc.openebench.model.tools.SPARQLEndpoint;
+import es.elixir.bsc.openebench.model.tools.Script;
+import es.elixir.bsc.openebench.model.tools.Suite;
 import es.elixir.bsc.openebench.model.tools.Tool;
+import es.elixir.bsc.openebench.model.tools.WebAPI;
 import es.elixir.bsc.openebench.model.tools.WebApplication;
+import es.elixir.bsc.openebench.model.tools.Workbench;
+import es.elixir.bsc.openebench.model.tools.Workflow;
 import java.io.IOException;
 import java.io.Writer;
 import java.net.URI;
@@ -113,6 +122,15 @@ public class ToolDAO {
             case "db": return jsonb.fromJson(json, DatabasePortal.class);
             case "app": return jsonb.fromJson(json, DesktopApplication.class);
             case "lib": return jsonb.fromJson(json, Library.class);
+            case "ontology": return jsonb.fromJson(json, Ontology.class);
+            case "workflow": return jsonb.fromJson(json, Workflow.class);
+            case "plugin": return jsonb.fromJson(json, Plugin.class);
+            case "sparql": return jsonb.fromJson(json, SPARQLEndpoint.class);
+            case "soap": return jsonb.fromJson(json, SOAPServices.class);
+            case "script": return jsonb.fromJson(json, Script.class);
+            case "rest": return jsonb.fromJson(json, WebAPI.class);
+            case "workbench": return jsonb.fromJson(json, Workbench.class);
+            case "suite": return jsonb.fromJson(json, Suite.class);
         }
         
         return jsonb.fromJson(json, Tool.class);
