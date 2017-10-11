@@ -9,6 +9,7 @@ import javax.json.bind.annotation.JsonbProperty;
 public class Repository {
 
     private Boolean anonymous;
+    private Boolean online;
      
     @JsonbProperty("anonymous")
     public Boolean getAnonymous() {
@@ -18,5 +19,15 @@ public class Repository {
     public void setAnonymous(Boolean anonymous) {
         this.anonymous = anonymous;
     }
+
+    @JsonbProperty("online")
+    public Boolean getOnline() {
+        return online;
+    }
+
+    public void setOnline(Boolean online) {
+        this.online = online;
+    }
+
 }
 
