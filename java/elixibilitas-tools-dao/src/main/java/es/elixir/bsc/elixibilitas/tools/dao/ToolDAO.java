@@ -303,7 +303,7 @@ public class ToolDAO {
 
                 writer.write("[");
                 
-                FindIterable<Document> iterator = col.find();
+                FindIterable<Document> iterator = col.find().sort(new BasicDBObject("name", 1));
                 if (projections != null && projections.size() > 0) {
                     BasicDBObject bson = new BasicDBObject();
                     for (String field : projections) {
