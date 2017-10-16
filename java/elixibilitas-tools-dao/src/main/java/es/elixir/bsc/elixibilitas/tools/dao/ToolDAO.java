@@ -285,11 +285,10 @@ public class ToolDAO {
         return sb.toString();
     }
     
-    public static void write(MongoClient mc, Writer writer, List<String> projections) {
+    public static void write(MongoClient mc, Writer writer, Integer skip, Integer limit, List<String> projections) {
         try {
             final MongoDatabase db = mc.getDatabase("elixibilitas");
             final MongoCollection<Document> col = db.getCollection("biotoolz");
-
             try (JsonWriter jwriter = new JsonWriter(writer, new JsonWriterSettings(true))) {
 
                 final DocumentCodec codec = new DocumentCodec() {
@@ -304,6 +303,14 @@ public class ToolDAO {
                 writer.write("[");
                 
                 FindIterable<Document> iterator = col.find().sort(new BasicDBObject("name", 1));
+                
+                if (skip != null) {
+                    iterator = iterator.skip(skip);
+                }
+                if (limit != null) {
+                    iterator.limit(limit);
+                }
+
                 if (projections != null && projections.size() > 0) {
                     BasicDBObject bson = new BasicDBObject();
                     for (String field : projections) {

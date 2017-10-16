@@ -125,6 +125,8 @@ public class BiotoolzServices {
     /**
      * Get back all tools as a JSON array.
      * 
+     * @param skip
+     * @param limit
      * @param projections
      * @param asyncResponse 
      */
@@ -132,22 +134,30 @@ public class BiotoolzServices {
     @Path("/")
     @Produces(MediaType.APPLICATION_JSON)
     @Operation(description = "Return all tools descriptions",
+        parameters = {
+            @Parameter(in = "query", name = "skip", description = "skip n tools", required = false),
+            @Parameter(in = "query", name = "limit", description = "return n tools", required = false),
+            @Parameter(in = "query", name = "projection", description = "fields to return", required = false)
+        },
+
         responses = {
             @ApiResponse(content = @Content(mediaType = MediaType.APPLICATION_JSON,
                                             schema = @Schema(ref="https://elixir.bsc.es/tool/tool.json")))
         }
     )
-    public void getTools(@QueryParam("projection") final List<String> projections,
+    public void getTools(@QueryParam("skip") final Integer skip,
+                         @QueryParam("limit") final Integer limit,
+                         @QueryParam("projection") final List<String> projections,
                          @Suspended final AsyncResponse asyncResponse) {
         executor.submit(() -> {
-            asyncResponse.resume(getToolsAsync(projections).build());
+            asyncResponse.resume(getToolsAsync(skip, limit, projections).build());
         });
     }
 
-    private ResponseBuilder getToolsAsync(List<String> projections) {
+    private ResponseBuilder getToolsAsync(Integer skip, Integer to, List<String> projections) {
         StreamingOutput stream = (OutputStream out) -> {
             try (Writer writer = new BufferedWriter(new OutputStreamWriter(out, "UTF-8"))) {
-                ToolDAO.write(mc, writer, projections);
+                ToolDAO.write(mc, writer, skip, to, projections);
             }
         };
                 
