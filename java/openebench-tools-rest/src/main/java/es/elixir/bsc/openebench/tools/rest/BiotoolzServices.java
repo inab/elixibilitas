@@ -181,7 +181,7 @@ public class BiotoolzServices {
     @Path("/{id}/{type}/{host}{path:.*}")
     @Produces(MediaType.APPLICATION_JSON)
     @Operation(
-        servers = {@Server(url = "/tool")},
+        servers = {@Server(url = "https://elixir.bsc.es/tool")},
         description = "Return one or many tools by the id",
         parameters = {
             @Parameter(in = "path", name = "id", description = "prefixed tool id", required = true),
