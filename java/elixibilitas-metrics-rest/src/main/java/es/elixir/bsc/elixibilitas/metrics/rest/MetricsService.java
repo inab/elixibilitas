@@ -29,8 +29,12 @@ import com.mongodb.MongoClient;
 import es.elixir.bsc.openebench.metrics.dao.MetricsDAO;
 import io.swagger.oas.annotations.Operation;
 import io.swagger.oas.annotations.Parameter;
+import io.swagger.oas.annotations.info.Contact;
+import io.swagger.oas.annotations.info.Info;
+import io.swagger.oas.annotations.info.License;
 import io.swagger.oas.annotations.media.Content;
 import io.swagger.oas.annotations.media.Schema;
+import io.swagger.oas.annotations.parameters.RequestBody;
 import io.swagger.oas.annotations.responses.ApiResponse;
 import io.swagger.oas.annotations.servers.Server;
 import java.io.OutputStream;
@@ -44,7 +48,9 @@ import javax.json.JsonStructure;
 import javax.json.JsonValue;
 import javax.json.JsonWriter;
 import javax.servlet.ServletContext;
+import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
+import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
@@ -61,6 +67,13 @@ import javax.ws.rs.core.StreamingOutput;
  * @author Dmitry Repchevsky
  */
 
+@Info(
+    title = "OpenEBench Metrics services",
+    version = "0.1",
+    description = "OpenEBench Metrics services",
+    license = @License(name = "LGPL 2.1", url = "https://www.gnu.org/licenses/old-licenses/lgpl-2.1.html"),
+    contact = @Contact(url = "https://elixir.bsc.es")
+)
 @Path("/")
 public class MetricsService {
     
@@ -88,18 +101,19 @@ public class MetricsService {
     @Path("/{id}/{type}/{host}{path:.*}")
     @Produces(MediaType.APPLICATION_JSON)
     @Operation(
-        servers = {@Server(url = "/metrics")},
+        servers = {@Server(url = "https://elixir.bsc.es/metrics")},
         description = "Return tools metrics by the tool's id",
         parameters = {
             @Parameter(in = "path", name = "id", description = "prefixed tool id", required = true),
-            @Parameter(in = "path", name = "type", description = "tool type", required = false),
-            @Parameter(in = "path", name = "host", description = "tool authority", required = false),
+            @Parameter(in = "path", name = "type", description = "tool type", required = true),
+            @Parameter(in = "path", name = "host", description = "tool authority", required = true),
             @Parameter(in = "path", name = "path", description = "json pointer", required = false)
         },
         responses = {
             @ApiResponse(content = @Content(mediaType = MediaType.APPLICATION_JSON,
-                                            schema = @Schema(ref="https://elixir.bsc.es/metrics/metrics.json")
-            )),
+                                            schema = @Schema(ref="https://elixir.bsc.es/metrics/metrics.json")),
+                         description = "Metrics JSON description"
+            ),
             @ApiResponse(responseCode = "404", description = "metrics not found")
         }
     )
@@ -141,5 +155,30 @@ public class MetricsService {
         }
         
         return Response.ok(json);
-    } 
+    }
+    
+    @PUT
+    @Path("/{id : .*}")
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Operation(
+        description = "insert the metrics into the database",
+        parameters = {
+            @Parameter(in = "path", name = "id", description = "prefixed tool id", required = true)
+        }
+    )
+    public void putMetrics(@PathParam("id") final String id, 
+                        @RequestBody(description = "json metrics object",
+                            content = @Content(schema = @Schema(ref="https://elixir.bsc.es/tool/tool.json")),
+                            required = true) final String json,
+                        @Suspended final AsyncResponse asyncResponse) {
+        executor.submit(() -> {
+            asyncResponse.resume(putToolAsync(id, json).build());
+        });
+    }
+    
+    private Response.ResponseBuilder putToolAsync(String id, String json) {
+        MetricsDAO.put(mc, id, json);
+        return Response.ok();
+    }
+
 }
