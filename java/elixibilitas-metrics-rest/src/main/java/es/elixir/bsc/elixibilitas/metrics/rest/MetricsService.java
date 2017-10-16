@@ -40,6 +40,7 @@ import io.swagger.oas.annotations.servers.Server;
 import java.io.OutputStream;
 import java.io.StringReader;
 import javax.annotation.Resource;
+import javax.annotation.security.RolesAllowed;
 import javax.enterprise.concurrent.ManagedExecutorService;
 import javax.inject.Inject;
 import javax.json.Json;
@@ -166,6 +167,7 @@ public class MetricsService {
             @Parameter(in = "path", name = "id", description = "prefixed tool id", required = true)
         }
     )
+    @RolesAllowed("admin")
     public void putMetrics(@PathParam("id") final String id, 
                         @RequestBody(description = "json metrics object",
                             content = @Content(schema = @Schema(ref="https://elixir.bsc.es/tool/tool.json")),
