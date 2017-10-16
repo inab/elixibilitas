@@ -49,6 +49,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.annotation.PostConstruct;
 import javax.annotation.Resource;
+import javax.annotation.security.RolesAllowed;
 import javax.enterprise.concurrent.ManagedExecutorService;
 import javax.inject.Inject;
 import javax.json.Json;
@@ -292,6 +293,7 @@ public class BiotoolzServices {
             @Parameter(in = "path", name = "id", description = "prefixed tool id", required = true)
         }
     )
+    @RolesAllowed("admin")
     public void putTool(@PathParam("id") final String id, 
                         @RequestBody(description = "json tool object",
                             content = @Content(schema = @Schema(ref="https://elixir.bsc.es/tool/tool.json")),

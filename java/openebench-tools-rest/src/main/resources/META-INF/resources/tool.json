@@ -1,0 +1,284 @@
+{
+  "id": "https://elixir.bsc.es/tool/tool.json",
+  "$schema": "http://json-schema.org/draft-04/hyper-schema#",
+  "title": "Benchmarking Tools Schema",
+  "definitions": {
+      "Support": {
+        "type": "object",
+        "properties": {
+          "helpdesk": {
+            "type": "string",
+            "format": "uri"
+          },
+          "issue_tracker": {
+            "type": "string",
+            "format": "uri"
+          },
+          "mailing_list": {
+            "type": "string",
+            "format": "uri"
+          }
+        }
+      },
+      "Credit": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "email": {
+            "type": "string"
+          },
+          "type": {
+            "type": "string"
+          },
+          "role": {
+            "type": "string"
+          },
+          "orcid": {
+            "type": "string"
+          },
+          "url": {
+            "type": "string",
+            "format": "uri"
+          },
+          "comment": {
+            "type": "string"
+          }
+        }
+      },
+      "Documentation": {
+        "type": "object",
+        "properties": {
+          "manual": {
+            "type": "string",
+            "format": "uri"
+          },
+          "terms_of_use": {
+            "type": "string",
+            "format": "uri"
+          },
+          "training_material": {
+            "type": "string",
+            "format": "uri"
+          },
+          "citation_instructions": {
+            "type": "string",
+            "format": "uri"
+          },
+          "doc_links": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "format": "uri"
+            }
+          },
+          "general": {
+            "type": "string",
+            "format": "uri"
+          },
+          "api": {
+            "type": "string",
+            "format": "uri"
+          }
+        }
+      },
+      "Publication": {
+        "type": "object",
+        "properties": {
+          "doi": {
+            "type": "string"
+          },
+          "pmcid": {
+            "type": "string"
+          },
+          "pmid": {
+            "type": "string"
+          }
+        }
+      },
+      "Community": {
+        "type": "object",
+        "properties": {
+          "social_media": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "format": "uri"
+            }
+          }
+        }
+      },
+      "Contact": {
+        "type": "object",
+        "properties": {
+          "url": {
+            "type": "string",
+            "format": "uri"
+          },
+          "email": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "phone": {
+            "type": "string"
+          }
+        }
+      },
+      "Distributions": {
+        "type": "object",
+        "properties": {
+          "binaries": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "format": "uri"
+            }
+          },
+          "binary_packages": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "format": "uri"
+            }
+          },
+          "sourcecode": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "format": "uri"
+            }
+          },
+          "source_packages": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "format": "uri"
+            }
+          }
+        }
+      },
+      "Datatype": {
+        "type": "object",
+        "properties": {
+          "datatype": {
+            "type": "string",
+            "format": "uri"
+          },
+          "formats": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "format": "uri"
+            }
+          }
+        }
+      },
+      "Semantics": {
+        "type": "object",
+        "properties": {
+          "topics": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "format": "uri"
+            }
+          },
+          "operations": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "format": "uri"
+            }
+          },
+          "inputs": {
+            "type": "array",
+            "items": {
+              "$ref": "#/definitions/Datatype"
+            }
+          },
+          "outputs": {
+            "type": "array",
+            "items": {
+              "$ref": "#/definitions/Datatype"
+            }
+          }
+        }
+      }
+  },
+
+  "type": "object",
+  "properties": {
+      "@id": {
+           "type": "string",
+            "format": "uri"
+            },
+      "@type": {
+            "type": "string"
+      },
+      "name": {
+            "type": "string"
+      },
+      "version": {
+            "type": "string"
+      },
+      "homepage": {
+            "type": "string",
+            "format": "uri"
+      },
+      "repositories": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "format": "uri"
+            }
+      },
+      "description": {
+            "type": "string"
+      },
+      "license": {
+            "type": "string"
+      },
+      "maturity": {
+            "type": "string"
+      },
+      "cost": {
+            "type": "string"
+      },
+      "support": {
+            "$ref": "#/definitions/Support"
+      },
+      "community": {
+            "$ref": "#/definitions/Community"
+      },
+      "distributions": {
+            "$ref": "#/definitions/Distributions"
+      },
+      "documentation": {
+            "$ref": "#/definitions/Documentation"
+      },
+      "semantics": {
+            "$ref": "#/definitions/Semantics"
+      },
+      "publications": {
+            "type": "array",
+            "items": {
+              "$ref": "#/definitions/Publication"
+            }
+      },
+      "contacts": {
+            "type": "array",
+            "items": {
+              "$ref": "#/definitions/Contact"
+            }
+      },
+      "credits": {
+            "type": "array",
+            "items": {
+              "$ref": "#/definitions/Credit"
+            }
+      }
+   }
+}
