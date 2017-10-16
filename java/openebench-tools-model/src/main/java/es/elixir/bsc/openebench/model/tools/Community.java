@@ -46,7 +46,7 @@ public class Community {
     }
     
     @JsonbProperty("social_media")
-    public void setPublications(List<URI> socialMedias) {
+    public void setSocialMedia(List<URI> socialMedias) {
         this.socialMedias = socialMedias;
     }
 }
