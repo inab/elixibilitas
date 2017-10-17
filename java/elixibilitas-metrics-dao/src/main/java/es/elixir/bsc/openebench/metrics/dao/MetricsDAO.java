@@ -53,14 +53,27 @@ import org.bson.Document;
 
 public class MetricsDAO implements Serializable {
     
+    public final static String COLLECTION = "metrics2";
     public final static String AUTHORITY = "http://elixir.bsc.es/metrics/";
     
+    public static long count(MongoClient mc) {
+        final MongoDatabase db = mc.getDatabase("elixibilitas");
+        final MongoCollection<Document> col = db.getCollection(COLLECTION);
+        return col.count();
+    }
+
+    public static long count(MongoClient mc, String query) {
+        final MongoDatabase db = mc.getDatabase("elixibilitas");
+        final MongoCollection<Document> col = db.getCollection(COLLECTION);
+        return col.count(Document.parse(query));
+    }
+
     public static List<Metrics> get(MongoClient mc) {
         List<Metrics> metrics = new ArrayList<>();
 
         try {
             final MongoDatabase db = mc.getDatabase("elixibilitas");
-            final MongoCollection<Document> col = db.getCollection("metrics2");
+            final MongoCollection<Document> col = db.getCollection(COLLECTION);
             
             for (Document doc : col.find()) {
                 metrics.add(deserialize(doc));
@@ -85,7 +98,7 @@ public class MetricsDAO implements Serializable {
     private static Document getBSON(MongoClient mc, String id) {
         try {
             final MongoDatabase db = mc.getDatabase("elixibilitas");
-            final MongoCollection<Document> col = db.getCollection("metrics2");
+            final MongoCollection<Document> col = db.getCollection(COLLECTION);
 
             Document doc = col.find(Filters.eq("_id", id)).first();
             if (doc != null) {
@@ -111,7 +124,7 @@ public class MetricsDAO implements Serializable {
     public static String put(MongoClient mc, String id, String json) {
         try {
             MongoDatabase db = mc.getDatabase("elixibilitas");
-            MongoCollection<Document> col = db.getCollection("metrics2");
+            MongoCollection<Document> col = db.getCollection(COLLECTION);
 
             FindOneAndUpdateOptions opt = new FindOneAndUpdateOptions().upsert(true)
                     .projection(Projections.excludeId()).returnDocument(ReturnDocument.AFTER);
