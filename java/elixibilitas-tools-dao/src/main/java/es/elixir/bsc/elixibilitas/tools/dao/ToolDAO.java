@@ -78,14 +78,27 @@ import org.bson.json.JsonWriterSettings;
 
 public class ToolDAO {
     
+    public final static String COLLECTION = "biotoolz";
     public final static String AUTHORITY = "http://elixir.bsc.es/tool/";
     
+    public static long count(MongoClient mc) {
+        final MongoDatabase db = mc.getDatabase("elixibilitas");
+        final MongoCollection<Document> col = db.getCollection(COLLECTION);
+        return col.count();
+    }
+    
+    public static long count(MongoClient mc, String query) {
+        final MongoDatabase db = mc.getDatabase("elixibilitas");
+        final MongoCollection<Document> col = db.getCollection(COLLECTION);
+        return col.count(Document.parse(query));
+    }
+
     public static List<Tool> get(MongoClient mc) {
         List<Tool> tools = new ArrayList<>();
 
         try {
             final MongoDatabase db = mc.getDatabase("elixibilitas");
-            final MongoCollection<Document> col = db.getCollection("biotoolz");
+            final MongoCollection<Document> col = db.getCollection(COLLECTION);
             FindIterable<Document> iterator = col.find().projection(new BasicDBObject());
             try (MongoCursor<Document> cursor = iterator.iterator()) {
                 while (cursor.hasNext()) {
@@ -180,7 +193,7 @@ public class ToolDAO {
         
         try {
             final MongoDatabase db = mc.getDatabase("elixibilitas");
-            final MongoCollection<Document> col = db.getCollection("biotoolz");
+            final MongoCollection<Document> col = db.getCollection(COLLECTION);
 
             final Bson query = createFindQuery(uri);
             if (query != null) {
@@ -214,7 +227,7 @@ public class ToolDAO {
     public static void put(MongoClient mc, String id, String json) {
         try {
             MongoDatabase db = mc.getDatabase("elixibilitas");
-            MongoCollection<Document> col = db.getCollection("biotoolz");
+            MongoCollection<Document> col = db.getCollection(COLLECTION);
             
             FindOneAndUpdateOptions opt = new FindOneAndUpdateOptions().upsert(true)
                 .projection(Projections.excludeId()).returnDocument(ReturnDocument.AFTER);
@@ -288,7 +301,7 @@ public class ToolDAO {
     public static void write(MongoClient mc, Writer writer, Integer skip, Integer limit, List<String> projections) {
         try {
             final MongoDatabase db = mc.getDatabase("elixibilitas");
-            final MongoCollection<Document> col = db.getCollection("biotoolz");
+            final MongoCollection<Document> col = db.getCollection(COLLECTION);
             try (JsonWriter jwriter = new JsonWriter(writer, new JsonWriterSettings(true))) {
 
                 final DocumentCodec codec = new DocumentCodec() {
@@ -351,7 +364,7 @@ public class ToolDAO {
     public static void filter(MongoClient mc, Writer writer, Map<String, List<Map.Entry<String, String>>> map) {
 
         final MongoDatabase db = mc.getDatabase("elixibilitas");
-        final MongoCollection<Document> col = db.getCollection("biotoolz");
+        final MongoCollection<Document> col = db.getCollection(COLLECTION);
 
         FindIterable<Document> iterator = col.find().projection(new BasicDBObject("semantics", true));
         try (MongoCursor<Document> cursor = iterator.iterator()) {
