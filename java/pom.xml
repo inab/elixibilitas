@@ -26,11 +26,11 @@
         <module>openebench-edam-rest</module>
         <module>elixibilitas-tools-dao</module>
         <module>elixibilitas-tools-importer</module>
-        <module>elixibilitas-tools-ontology</module>
         <module>elixibilitas-metrics-model</module>
         <module>elixibilitas-metrics-dao</module>
         <module>elixibilitas-metrics-checker</module>
         <module>elixibilitas-metrics-rest</module>
+        <module>elixibilitas-statistics-rest</module>
     </modules>
 
     <developers>
