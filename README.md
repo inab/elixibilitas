@@ -45,32 +45,42 @@ where:
 > Swagger: [https://elixir.bsc.es/metrics/openapi.json](https://elixir.bsc.es/metrics/openapi.json)<br/>
 > Metrics JSON Schema: [https://elixir.bsc.es/metrics/metrics.json](https://elixir.bsc.es/metrics/metrics.json)<br/><br/>
 > Note that {id}/{type}/{host} uniquely identify the tool, while omitting the {type} or {host} returns an array of descriptions.<br/><br/>
-> example 1: [https://elixir.bsc.es/tool?projection=publications](https://elixir.bsc.es/tool?projection=publications).<br/>
-> example 2: [https://elixir.bsc.es/tool/bio.tools:pmut/web/mmb.irbbarcelona.org](https://elixir.bsc.es/tool/bio.tools:pmut/web/mmb.irbbarcelona.org).<br/>
-> example 3: [https://elixir.bsc.es/tool/bio.tools:pmut/web/mmb.irbbarcelona.org/credits](https://elixir.bsc.es/tool/bio.tools:pmut/web/mmb.irbbarcelona.org/credits).
+> example 1: [https://elixir.bsc.es/tool?projection=publications](https://elixir.bsc.es/tool?projection=publications) .<br/>
+> example 2: [https://elixir.bsc.es/tool/bio.tools:pmut/web/mmb.irbbarcelona.org](https://elixir.bsc.es/tool/bio.tools:pmut/web/mmb.irbbarcelona.org) .<br/>
+> example 3: [https://elixir.bsc.es/tool/bio.tools:pmut/web/mmb.irbbarcelona.org/credits](https://elixir.bsc.es/tool/bio.tools:pmut/web/mmb.irbbarcelona.org/credits) .
 
 Quality Metrics accessed via:
 ```
 https://elixir.bsc.es/metrics/{id}/{type}/{host}/{path}
 ```
-> example1: [https://elixir.bsc.es/metrics/bio.tools:pmut/web/mmb.irbbarcelona.org](https://elixir.bsc.es/metrics/bio.tools:pmut/web/mmb.irbbarcelona.org).<br/>
-> example2: [https://elixir.bsc.es/metrics/bio.tools:pmut/web/mmb.irbbarcelona.org/project/website](https://elixir.bsc.es/metrics/bio.tools:pmut/web/mmb.irbbarcelona.org/project/website).
+> example1: [https://elixir.bsc.es/metrics/bio.tools:pmut/web/mmb.irbbarcelona.org](https://elixir.bsc.es/metrics/bio.tools:pmut/web/mmb.irbbarcelona.org) .<br/>
+> example2: [https://elixir.bsc.es/metrics/bio.tools:pmut/web/mmb.irbbarcelona.org/project/website](https://elixir.bsc.es/metrics/bio.tools:pmut/web/mmb.irbbarcelona.org/project/website) .
 
 The API also provides EDAM descriptions for the tool:
 ```
 https://elixir.bsc.es/edam/tool/
 https://elixir.bsc.es/edam/tool/{id}/{type}/{host}
 ```
-> example: [https://elixir.bsc.es/edam/tool/bio.tools:pmut/web/mmb.irbbarcelona.org](https://elixir.bsc.es/edam/tool/bio.tools:pmut/web/mmb.irbbarcelona.org).
+> example: [https://elixir.bsc.es/edam/tool/bio.tools:pmut/web/mmb.irbbarcelona.org](https://elixir.bsc.es/edam/tool/bio.tools:pmut/web/mmb.irbbarcelona.org) .
 
 or descriptions of the EDAM term itself:
 ```
 https://elixir.bsc.es/edam/description?term={edam id}
 ```
-> example: [https://elixir.bsc.es/edam/description?term=http://edamontology.org/format_3607](https://elixir.bsc.es/edam/description?term=http://edamontology.org/format_3607).
+> example: [https://elixir.bsc.es/edam/description?term=http://edamontology.org/format_3607](https://elixir.bsc.es/edam/description?term=http://edamontology.org/format_3607) .
 
 There is also full text search over EDAM ontology.
 ```
 https://elixir.bsc.es/edam/search?text={text to search}
 ```
-> example: [https://elixir.bsc.es/edam/search?text=alignment](https://elixir.bsc.es/edam/search?text=alignment).
+> example: [https://elixir.bsc.es/edam/search?text=alignment](https://elixir.bsc.es/edam/search?text=alignment) .
+
+There are simple stat info that can be obtained from the server:
+
+>[https://elixir.bsc.es/tools/statistics/total](https://elixir.bsc.es/tools/statistics/total) : total number of tools.<br/>
+>[https://elixir.bsc.es/tools/statistics/operational](https://elixir.bsc.es/tools/statistics/operational) : number of tools those homepage is accessible.
+
+```
+https://elixir.bsc.es/tools/statistics/{tool_type} : number of tools of particular type ("web", "cmd", etc.)
+```
+> example: [https://elixir.bsc.es/tools/statistics/cmd](https://elixir.bsc.es/tools/statistics/cmd) .
