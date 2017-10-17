@@ -17,6 +17,8 @@ public class Distributions {
     private List<URI> sourcecode;
     private List<URI> source_packages;
 
+    private List<Container> containers;
+    
     @JsonbProperty("binaries")
     public List<URI> getBinaryDistributions() {
         if (binaries == null) {
@@ -69,5 +71,16 @@ public class Distributions {
         this.source_packages = source_packages;
     }
     
+    @JsonbProperty("containers")
+    public List<Container> getContainers() {
+        if (containers == null) {
+            containers = new ArrayList<>();
+        }
+        return containers;
+    }
 
+    @JsonbProperty("containers")
+    public void setContainers(List<Container> containers) {
+        this.containers = containers;
+    }
 }

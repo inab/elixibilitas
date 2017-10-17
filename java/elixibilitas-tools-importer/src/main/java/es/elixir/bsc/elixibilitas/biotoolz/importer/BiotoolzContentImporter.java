@@ -26,6 +26,7 @@
 package es.elixir.bsc.elixibilitas.biotoolz.importer;
 
 import com.mongodb.MongoClient;
+import es.elixir.bsc.biotools.parser.model.ContainerFormatType;
 import es.elixir.bsc.biotools.parser.model.CostType;
 import es.elixir.bsc.biotools.parser.model.DocumentationType;
 import es.elixir.bsc.biotools.parser.model.EntityType;
@@ -49,6 +50,7 @@ import es.elixir.bsc.openebench.model.tools.Tool;
 import es.elixir.bsc.openebench.model.tools.WebApplication;
 import es.elixir.bsc.openebench.model.tools.CommandLineTool;
 import es.elixir.bsc.openebench.model.tools.Community;
+import es.elixir.bsc.openebench.model.tools.Container;
 import es.elixir.bsc.openebench.model.tools.Distributions;
 import es.elixir.bsc.openebench.model.tools.Ontology;
 import es.elixir.bsc.openebench.model.tools.Plugin;
@@ -125,11 +127,8 @@ public class BiotoolzContentImporter {
                 JsonObject jo = reader.readObject();
                 JsonArray jtools = jo.getJsonArray("list");
                 for (int i = 0, n = jtools.size(); i < n; i++) {
-                    JsonObject jtool = jtools.getJsonObject(i);
                     addTool(tools, jtools.getJsonObject(i));
                                         
-//                    addMaturity(tool, jtool);
-//                    addCost(tool, jtool);
 //                    addOperatingSystems(tool, jtool);
 //                    addToolTypes(tool, jtool);
 //                    addAccessibility(tool, jtool);
@@ -556,6 +555,23 @@ public class BiotoolzContentImporter {
                     case SOURCE_CODE:    distributions.getSourcecodeDistributions().add(uri);
                                          break;
                     case SOURCE_PACKAGE: distributions.getSourcePackagesDistributions().add(uri);
+                                         break;
+                    case CONTAINER_FILE: final String format = jdownload.getString("containerFormat", null);
+                                         Container container;
+                                         if (format == null) {
+                                             Logger.getLogger(BiotoolzContentImporter.class.getName()).log(Level.INFO, "no container format set");
+                                             container = new Container("unknown");
+                                         } else {
+                                             try {
+                                                ContainerFormatType.fromValue(format);
+                                                container = new Container(format);
+                                             } catch(IllegalArgumentException ex) {
+                                                Logger.getLogger(BiotoolzContentImporter.class.getName()).log(Level.INFO, "unrecognized container format: {0}", format);
+                                                container = new Container("unknown");
+                                             }
+                                         }
+                                         container.setURI(uri);
+                                         distributions.getContainers().add(container);
                                          break;
                     default: continue;
                 }
