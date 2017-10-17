@@ -28,6 +28,8 @@ package es.elixir.bsc.biotoolz.edam.rest;
 import com.mongodb.MongoClient;
 import com.mongodb.MongoClientURI;
 import java.io.Serializable;
+import javax.annotation.PostConstruct;
+import javax.annotation.PreDestroy;
 import javax.enterprise.context.ApplicationScoped;
 import javax.enterprise.inject.Produces;
 import javax.inject.Inject;
@@ -44,8 +46,20 @@ public class MongoDBProducer implements Serializable {
     @Inject 
     private ServletContext ctx;
 
+    private MongoClient mc;
+    
+    @PostConstruct
+    public void init() {
+        mc = new MongoClient(new MongoClientURI(ctx.getInitParameter("mongodb.url")));
+    }
+    
+    @PreDestroy
+    public void destroy() {
+        mc.close();
+    }
+    
     @Produces
     public MongoClient mongoClient() {
-        return new MongoClient(new MongoClientURI(ctx.getInitParameter("mongodb.url")));
+        return mc;
     }
 }
