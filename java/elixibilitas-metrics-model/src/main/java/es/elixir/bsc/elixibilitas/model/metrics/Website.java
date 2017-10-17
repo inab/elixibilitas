@@ -38,7 +38,7 @@ public class Website {
 
     private Boolean operational;
     private ZonedDateTime lastSeen;
-    private List<ZonedDateTime> history;
+    private List<HomePageHistoryRecord> history;
     private Copyright copyright;
     private Boolean license;
     private Boolean resources;
@@ -62,7 +62,7 @@ public class Website {
     }
     
     @JsonbProperty("history")
-    public List<ZonedDateTime> getHistory() {
+    public List<HomePageHistoryRecord> getHistory() {
         if (history == null) {
             history = new ArrayList<>();
         }
@@ -70,7 +70,7 @@ public class Website {
     }
 
     @JsonbProperty("history")
-    public void setHistory(List<ZonedDateTime> history) {
+    public void setHistory(List<HomePageHistoryRecord> history) {
         this.history = history;
     }
     

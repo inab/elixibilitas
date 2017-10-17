@@ -25,6 +25,7 @@
 
 package es.elixir.bsc.openebench.checker.biotools;
 
+import es.elixir.bsc.elixibilitas.model.metrics.HomePageHistoryRecord;
 import es.elixir.bsc.elixibilitas.model.metrics.Metrics;
 import es.elixir.bsc.elixibilitas.model.metrics.Project;
 import es.elixir.bsc.elixibilitas.model.metrics.Website;
@@ -89,43 +90,49 @@ public class HomepageChecker implements MetricsChecker {
 
     @Override
     public Boolean check(Tool tool, Metrics metrics) {
-        Boolean bool = check(tool);
+        final Integer code = check(tool);
+        final Boolean isOperational = isOperational(code);
         
         Project project = metrics.getProject();
         if (project != null) {
             Website website = project.getWebsite();
-            if (bool != null) {
+            if (code != null) {
                 if (website == null) {
                     project.setWebsite(website = new Website());
                 } else {
                     Boolean wasOperational = website.getOperational();
-                    if (wasOperational != null && !wasOperational.equals(bool)) {
-                        ZonedDateTime lastSeen = website.getLastSeen();
-                        if (lastSeen != null) {
-                            website.getHistory().add(lastSeen);
-                        }
+                    if (Boolean.TRUE.equals(wasOperational) && !isOperational) {
+                        HomePageHistoryRecord history = new HomePageHistoryRecord();
+                        history.setResponseCode(code);
+                        history.setTime(ZonedDateTime.now(ZoneId.of("Z")));
+                        website.getHistory().add(history);
                     }
                 }
-                website.setOperational(bool);
-                if (bool) {
+                website.setOperational(isOperational);
+                if (isOperational) {
                     website.setLastSeen(ZonedDateTime.now(ZoneId.of("Z")));
                 }
             } else if (website != null) {
                 website.setOperational(null);
             }
-        } else if (bool != null) {
+        } else if (code != null) {
             Website website = new Website();
-            website.setOperational(bool);
+            website.setOperational(isOperational);
             project = new Project();
             project.setWebsite(website);
             
             metrics.setProject(project);
         }
-    
-        return bool;
+        
+        return isOperational;
     }
     
-    private static Boolean check(Tool tool) {
+    private boolean isOperational(Integer code) {
+        return code != null && code == HttpURLConnection.HTTP_OK ||
+                code == HttpURLConnection.HTTP_NOT_MODIFIED;
+    }
+    
+    private static Integer check(Tool tool) {
         
         URI homepage = tool.getHomepage();
         if(homepage == null) {
@@ -141,7 +148,7 @@ public class HomepageChecker implements MetricsChecker {
 
                 switch (code) {
                     case HttpURLConnection.HTTP_OK: 
-                    case HttpURLConnection.HTTP_NOT_MODIFIED: return true;
+                    case HttpURLConnection.HTTP_NOT_MODIFIED: return code;
                     case HttpURLConnection.HTTP_MOVED_PERM:
                     case HttpURLConnection.HTTP_MOVED_TEMP:
                     case 307: // Temporary Redirect
@@ -150,19 +157,19 @@ public class HomepageChecker implements MetricsChecker {
                         URI redirect = response.getLocation();
                         if (redirect == null) {
                             Logger.getLogger(HomepageChecker.class.getName()).log(Level.INFO, String.format("\n-----> %1$s %2$s redirect to null", tool.id.toString(), homepage));
-                            return false;
+                            return code;
                         }
 
                         homepage = redirect.isAbsolute() ? redirect : homepage.resolve(redirect);
                         
                         continue;
                     default: Logger.getLogger(HomepageChecker.class.getName()).log(Level.INFO, String.format("\n-----> %1$s %2$s %3$s", tool.id.toString(), homepage, code));
-                             return false;
+                             return code;
                 }
             }
         } catch (Exception ex) {
             Logger.getLogger(HomepageChecker.class.getName()).log(Level.INFO, String.format("\n-----> %1$s %2$s error loading home page: %3$s", tool.id.toString(), homepage, ex.getMessage()));
         }
-        return false;
+        return HttpURLConnection.HTTP_CLIENT_TIMEOUT;
     }
 }
