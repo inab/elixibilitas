@@ -25,15 +25,20 @@
 
 package es.elixir.bsc.openebench.metrics.dao;
 
+import com.mongodb.BasicDBObject;
 import com.mongodb.MongoClient;
+import com.mongodb.client.FindIterable;
 import com.mongodb.client.MongoCollection;
+import com.mongodb.client.MongoCursor;
 import com.mongodb.client.MongoDatabase;
 import com.mongodb.client.model.Filters;
 import com.mongodb.client.model.FindOneAndUpdateOptions;
 import com.mongodb.client.model.Projections;
 import com.mongodb.client.model.ReturnDocument;
 import es.elixir.bsc.elixibilitas.model.metrics.Metrics;
+import java.io.IOException;
 import java.io.Serializable;
+import java.io.Writer;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
@@ -43,7 +48,12 @@ import javax.json.bind.JsonbBuilder;
 import javax.json.bind.JsonbConfig;
 import javax.json.bind.JsonbException;
 import javax.json.bind.config.PropertyNamingStrategy;
+import org.bson.BsonWriter;
 import org.bson.Document;
+import org.bson.codecs.DocumentCodec;
+import org.bson.codecs.EncoderContext;
+import org.bson.json.JsonWriter;
+import org.bson.json.JsonWriterSettings;
 
 /**
  * Utility class to get/put Metrics into MongoDB.
@@ -159,4 +169,53 @@ public class MetricsDAO implements Serializable {
         }
         return null;
     }
+    
+    public static void write(MongoClient mc, Writer writer, List<String> projections) {
+        try {
+            final MongoDatabase db = mc.getDatabase("elixibilitas");
+            final MongoCollection<Document> col = db.getCollection(COLLECTION);
+            try (JsonWriter jwriter = new JsonWriter(writer, new JsonWriterSettings(true))) {
+
+                final DocumentCodec codec = new DocumentCodec() {
+                    @Override
+                    public void encode(BsonWriter writer,
+                       Document document,
+                       EncoderContext encoderContext) {
+                            super.encode(jwriter, document, encoderContext);
+                    }
+                };
+
+                writer.write("[");
+                
+                FindIterable<Document> iterator = col.find();
+
+                if (projections != null && projections.size() > 0) {
+                    BasicDBObject bson = new BasicDBObject();
+                    for (String field : projections) {
+                        bson.append(field, true);
+                    }
+                    iterator = iterator.projection(bson);
+                }
+
+                try (MongoCursor<Document> cursor = iterator.iterator()) {
+                    if (cursor.hasNext()) {
+                        do {
+                            final Document doc = cursor.next();
+
+                            doc.append("@id", doc.remove("_id"));
+                            doc.append("@type", "metrics");
+
+                            doc.toJson(codec);
+                            jwriter.flush();
+                        } while (cursor.hasNext() && writer.append(",\n") != null);
+                    }
+                }
+                writer.write("]\n");
+            }
+
+        } catch(IOException ex) {
+            Logger.getLogger(MetricsDAO.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }
+
 }
