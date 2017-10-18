@@ -51,6 +51,7 @@ where:
 
 Quality Metrics accessed via:
 ```
+https://elixir.bsc.es/metrics/
 https://elixir.bsc.es/metrics/{id}/{type}/{host}/{path}
 ```
 > example1: [https://elixir.bsc.es/metrics/bio.tools:pmut/web/mmb.irbbarcelona.org](https://elixir.bsc.es/metrics/bio.tools:pmut/web/mmb.irbbarcelona.org) .<br/>
