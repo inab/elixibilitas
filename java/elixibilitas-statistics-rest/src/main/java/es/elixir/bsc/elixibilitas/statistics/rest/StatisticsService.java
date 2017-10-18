@@ -31,6 +31,8 @@ import es.elixir.bsc.openebench.metrics.dao.MetricsDAO;
 import javax.annotation.Resource;
 import javax.enterprise.concurrent.ManagedExecutorService;
 import javax.inject.Inject;
+import javax.json.Json;
+import javax.json.JsonObjectBuilder;
 import javax.servlet.ServletContext;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
@@ -72,6 +74,39 @@ public class StatisticsService {
     }
 
     @GET
+    @Path("/statistics/")
+    @Produces(MediaType.APPLICATION_JSON)
+    public void getStatistics(@Suspended final AsyncResponse asyncResponse) {
+            
+        executor.submit(() -> {
+            asyncResponse.resume(getStatisticsAsync().build());
+        });
+    }
+
+    private Response.ResponseBuilder getStatisticsAsync() {
+        
+        JsonObjectBuilder builder = Json.createObjectBuilder();
+        builder.add("total", getStatistics("total"));
+        builder.add("operational", getStatistics("operational"));
+        builder.add("cmd", getStatistics("cmd"));
+        builder.add("web", getStatistics("web"));
+        builder.add("db", getStatistics("db"));
+        builder.add("app", getStatistics("app"));
+        builder.add("lib", getStatistics("lib"));
+        builder.add("ontology", getStatistics("ontology"));
+        builder.add("workflow", getStatistics("workflow"));
+        builder.add("plugin", getStatistics("plugin"));
+        builder.add("sparql", getStatistics("sparql"));
+        builder.add("soap", getStatistics("soap"));
+        builder.add("script", getStatistics("script"));
+        builder.add("rest", getStatistics("rest"));
+        builder.add("workbench", getStatistics("workbench"));
+        builder.add("suite", getStatistics("suite"));
+        
+        return Response.ok(builder.build());
+    }
+
+    @GET
     @Path("/statistics/{field}")
     @Produces(MediaType.APPLICATION_JSON)
     public void getMetrics(@PathParam("field") String field,
@@ -84,9 +119,15 @@ public class StatisticsService {
     
     private Response.ResponseBuilder getStatisticsAsync(final String field) {
         
+        long result = getStatistics(field);
+        return result == Long.MIN_VALUE ? Response.status(Response.Status.BAD_REQUEST) :
+                         Response.ok(result);
+    }
+    
+    private long getStatistics(final String field) {
         switch(field) {
-            case "total": return Response.ok(ToolDAO.count(mc));
-            case "operational": return Response.ok(MetricsDAO.count(mc, "{'project.website.operational' : true}"));
+            case "total": return ToolDAO.count(mc);
+            case "operational": return MetricsDAO.count(mc, "{'project.website.operational' : true}");
             case "cmd":
             case "web":
             case "db":
@@ -100,9 +141,9 @@ public class StatisticsService {
             case "script":
             case "rest":
             case "workbench":
-            case "suite": return Response.ok(ToolDAO.count(mc, String.format("{'_id.type' : '%s'}", field)));
+            case "suite": return ToolDAO.count(mc, String.format("{'_id.type' : '%s'}", field));
         }
 
-        return Response.status(Response.Status.BAD_REQUEST);
+        return Long.MIN_VALUE;
     }
 }
