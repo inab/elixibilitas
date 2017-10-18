@@ -37,8 +37,12 @@ import io.swagger.oas.annotations.media.Schema;
 import io.swagger.oas.annotations.parameters.RequestBody;
 import io.swagger.oas.annotations.responses.ApiResponse;
 import io.swagger.oas.annotations.servers.Server;
+import java.io.BufferedWriter;
 import java.io.OutputStream;
+import java.io.OutputStreamWriter;
 import java.io.StringReader;
+import java.io.Writer;
+import java.util.List;
 import javax.annotation.Resource;
 import javax.annotation.security.RolesAllowed;
 import javax.enterprise.concurrent.ManagedExecutorService;
@@ -55,11 +59,13 @@ import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
+import javax.ws.rs.QueryParam;
 import javax.ws.rs.container.AsyncResponse;
 import javax.ws.rs.container.Suspended;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import javax.ws.rs.core.Response.ResponseBuilder;
 import javax.ws.rs.core.StreamingOutput;
 
 /**
@@ -134,8 +140,8 @@ public class MetricsService {
             asyncResponse.resume(getMetricsAsync(id + '/' + type + '/' + host, path).build());
         });
     }
-    
-    private Response.ResponseBuilder getMetricsAsync(String id, String path) {
+
+    private ResponseBuilder getMetricsAsync(String id, String path) {
         final String json = MetricsDAO.getJSON(mc, id);
         if (json == null) {
             return Response.status(Response.Status.NOT_FOUND);
@@ -156,6 +162,40 @@ public class MetricsService {
         }
         
         return Response.ok(json);
+    }
+    
+    @GET
+    @Path("/")
+    @Produces(MediaType.APPLICATION_JSON)
+    @Operation(
+        servers = {@Server(url = "https://elixir.bsc.es/metrics")},
+        description = "Return all tools metrics",
+        parameters = {
+            @Parameter(in = "query", name = "projection", description = "fields to return", required = false)
+        },
+        responses = {
+            @ApiResponse(content = @Content(mediaType = MediaType.APPLICATION_JSON,
+                                            schema = @Schema(ref="https://elixir.bsc.es/metrics/metrics.json")),
+                         description = "JSON array of metrics"
+            ),
+            @ApiResponse(responseCode = "404", description = "metrics not found")
+        }
+    )
+    public void getMetrics(@QueryParam("projection") final List<String> projections,
+                           @Suspended final AsyncResponse asyncResponse) {
+        executor.submit(() -> {
+            asyncResponse.resume(getToolsAsync(projections).build());
+        });
+    }
+
+    private ResponseBuilder getToolsAsync(List<String> projections) {
+        StreamingOutput stream = (OutputStream out) -> {
+            try (Writer writer = new BufferedWriter(new OutputStreamWriter(out, "UTF-8"))) {
+                MetricsDAO.write(mc, writer, projections);
+            }
+        };
+                
+        return Response.ok(stream);
     }
     
     @PUT
@@ -182,5 +222,4 @@ public class MetricsService {
         MetricsDAO.put(mc, id, json);
         return Response.ok();
     }
-
 }
