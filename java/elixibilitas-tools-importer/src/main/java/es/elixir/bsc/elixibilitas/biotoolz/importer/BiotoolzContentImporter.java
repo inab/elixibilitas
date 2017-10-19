@@ -28,6 +28,7 @@ package es.elixir.bsc.elixibilitas.biotoolz.importer;
 import com.mongodb.MongoClient;
 import es.elixir.bsc.biotools.parser.model.ContainerFormatType;
 import es.elixir.bsc.biotools.parser.model.CostType;
+import es.elixir.bsc.biotools.parser.model.DiskFormatType;
 import es.elixir.bsc.biotools.parser.model.DocumentationType;
 import es.elixir.bsc.biotools.parser.model.EntityType;
 import es.elixir.bsc.biotools.parser.model.RoleType;
@@ -59,6 +60,7 @@ import es.elixir.bsc.openebench.model.tools.SPARQLEndpoint;
 import es.elixir.bsc.openebench.model.tools.Script;
 import es.elixir.bsc.openebench.model.tools.Suite;
 import es.elixir.bsc.openebench.model.tools.Support;
+import es.elixir.bsc.openebench.model.tools.VMImage;
 import es.elixir.bsc.openebench.model.tools.WebAPI;
 import es.elixir.bsc.openebench.model.tools.Workbench;
 import es.elixir.bsc.openebench.model.tools.Workflow;
@@ -556,23 +558,41 @@ public class BiotoolzContentImporter {
                                          break;
                     case SOURCE_PACKAGE: distributions.getSourcePackagesDistributions().add(uri);
                                          break;
-                    case CONTAINER_FILE: final String format = jdownload.getString("containerFormat", null);
+                    case CONTAINER_FILE: final String cformat = jdownload.getString("containerFormat", null);
                                          Container container;
-                                         if (format == null) {
+                                         if (cformat == null) {
                                              Logger.getLogger(BiotoolzContentImporter.class.getName()).log(Level.INFO, "no container format set");
                                              container = new Container("unknown");
                                          } else {
                                              try {
-                                                ContainerFormatType.fromValue(format);
-                                                container = new Container(format);
+                                                ContainerFormatType.fromValue(cformat);
+                                                container = new Container(cformat);
                                              } catch(IllegalArgumentException ex) {
-                                                Logger.getLogger(BiotoolzContentImporter.class.getName()).log(Level.INFO, "unrecognized container format: {0}", format);
+                                                Logger.getLogger(BiotoolzContentImporter.class.getName()).log(Level.INFO, "unrecognized container format: {0}", cformat);
                                                 container = new Container("unknown");
                                              }
                                          }
                                          container.setURI(uri);
                                          distributions.getContainers().add(container);
                                          break;
+                    case VM_IMAGE:       final String dformat = jdownload.getString("diskFormat", null);
+                                         VMImage vmImage;
+                                         if (dformat == null) {
+                                             Logger.getLogger(BiotoolzContentImporter.class.getName()).log(Level.INFO, "no vm image format set");
+                                             vmImage = new VMImage("unknown");
+                                         } else {
+                                             try {
+                                                DiskFormatType.fromValue(dformat);
+                                                vmImage = new VMImage(dformat);
+                                             } catch(IllegalArgumentException ex) {
+                                                Logger.getLogger(BiotoolzContentImporter.class.getName()).log(Level.INFO, "unrecognized vm image  format: {0}", dformat);
+                                                vmImage = new VMImage("unknown");
+                                             }
+                                         }
+                                         vmImage.setURI(uri);
+                                         distributions.getVirtualMachineImages().add(vmImage);
+                                         break;
+
                     default: continue;
                 }
                 
