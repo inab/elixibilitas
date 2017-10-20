@@ -35,8 +35,10 @@ import javax.json.bind.annotation.JsonbProperty;
 
 public class Library extends Tool {
 
+    public final static String TYPE = "lib";
+    
     @JsonbCreator
     public Library(@JsonbProperty("@id") URI id) {
-        super(id, "lib");
+        super(id, TYPE);
     }
 }

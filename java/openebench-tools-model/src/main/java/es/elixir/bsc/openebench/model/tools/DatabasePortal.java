@@ -35,8 +35,10 @@ import javax.json.bind.annotation.JsonbProperty;
 
 public class DatabasePortal extends Tool {
 
+    public final static String TYPE = "db";
+    
     @JsonbCreator
     public DatabasePortal(@JsonbProperty("@id") URI id) {
-        super(id, "db");
+        super(id, TYPE);
     }
 }

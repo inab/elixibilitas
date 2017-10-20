@@ -35,8 +35,10 @@ import javax.json.bind.annotation.JsonbProperty;
 
 public class DesktopApplication extends Tool {
 
+    public final static String TYPE = "app";
+    
     @JsonbCreator
     public DesktopApplication(@JsonbProperty("@id") URI id) {
-        super(id, "app");
+        super(id, TYPE);
     }
 }

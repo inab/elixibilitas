@@ -35,11 +35,13 @@ import javax.json.bind.annotation.JsonbProperty;
 
 public class CommandLineTool extends Tool {
     
+    public final static String TYPE = "cmd";
+    
     private String executable;
 
     @JsonbCreator
     public CommandLineTool(@JsonbProperty("@id") URI id) {
-        super(id, "cmd");
+        super(id, TYPE);
     }
     
     @JsonbProperty("executable")

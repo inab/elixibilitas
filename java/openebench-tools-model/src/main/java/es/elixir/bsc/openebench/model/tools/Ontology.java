@@ -35,8 +35,10 @@ import javax.json.bind.annotation.JsonbProperty;
 
 public class Ontology extends Tool {
 
+    public final static String TYPE = "ontology";
+    
     @JsonbCreator
     public Ontology(@JsonbProperty("@id") URI id) {
-        super(id, "ontology");
+        super(id, TYPE);
     }
 }

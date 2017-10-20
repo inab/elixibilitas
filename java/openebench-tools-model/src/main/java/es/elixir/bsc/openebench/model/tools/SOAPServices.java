@@ -35,8 +35,10 @@ import javax.json.bind.annotation.JsonbProperty;
 
 public class SOAPServices extends Tool {
 
+    public final static String TYPE = "soap";
+    
     @JsonbCreator
     public SOAPServices(@JsonbProperty("@id") URI id) {
-        super(id, "soap");
+        super(id, TYPE);
     }
 }

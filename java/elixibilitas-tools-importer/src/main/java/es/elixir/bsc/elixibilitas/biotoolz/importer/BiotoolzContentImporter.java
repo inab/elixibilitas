@@ -179,46 +179,46 @@ public class BiotoolzContentImporter {
 
                 switch(toolType) {
                     case COMMAND_LINE: tool = addCommandLineTool(new CommandLineTool(URI.create(
-                                                    String.format(idTemplate.toString(), "cmd"))), jtool);
+                                                    String.format(idTemplate.toString(), CommandLineTool.TYPE))), jtool);
                                        break;
                     case WEB_APPLICATION: tool = addWebApplication(new WebApplication(URI.create(
-                                                    String.format(idTemplate.toString(), "web"))), jtool);
+                                                    String.format(idTemplate.toString(), WebApplication.TYPE))), jtool);
                                        break;
                     case DESKTOP_APPLICATION: tool = addDesktopApplication(new DesktopApplication(URI.create(
-                                                    String.format(idTemplate.toString(), "app"))), jtool);
+                                                    String.format(idTemplate.toString(), DesktopApplication.TYPE))), jtool);
                                        break;
                     case DATABASE_PORTAL: tool = addDatabasePortal(new DatabasePortal(URI.create(
-                                                    String.format(idTemplate.toString(), "db"))), jtool);
+                                                    String.format(idTemplate.toString(), DatabasePortal.TYPE))), jtool);
                                        break;
                     case LIBRARY: tool = addLibrary(new Library(URI.create(
-                                                    String.format(idTemplate.toString(), "lib"))), jtool);
+                                                    String.format(idTemplate.toString(), Library.TYPE))), jtool);
                                        break;
                     case WEB_SERVICE: tool = addSOAPServices(new SOAPServices(URI.create(
-                                                    String.format(idTemplate.toString(), "soap"))), jtool);
+                                                    String.format(idTemplate.toString(), SOAPServices.TYPE))), jtool);
                                        break;
                     case WEB_API: tool = addWebAPI(new WebAPI(URI.create(
-                                                    String.format(idTemplate.toString(), "rest"))), jtool);
+                                                    String.format(idTemplate.toString(), WebAPI.TYPE))), jtool);
                                        break;
                     case SPARQL_ENDPOINT: tool = addSPARQLEndpoint(new SPARQLEndpoint(URI.create(
-                                                    String.format(idTemplate.toString(), "sparql"))), jtool);
+                                                    String.format(idTemplate.toString(), SPARQLEndpoint.TYPE))), jtool);
                                        break;
                     case ONTOLOGY: tool = addOntology(new Ontology(URI.create(
-                                                    String.format(idTemplate.toString(), "ontology"))), jtool);
+                                                    String.format(idTemplate.toString(), Ontology.TYPE))), jtool);
                                        break;
                     case WORKFLOW: tool = addWorkflow(new Workflow(URI.create(
-                                                    String.format(idTemplate.toString(), "workflow"))), jtool);
+                                                    String.format(idTemplate.toString(), Workflow.TYPE))), jtool);
                                        break;
                     case SCRIPT: tool = addScript(new Script(URI.create(
-                                                    String.format(idTemplate.toString(), "script"))), jtool);
+                                                    String.format(idTemplate.toString(), Script.TYPE))), jtool);
                                        break;
                     case PLUGIN: tool = addPlugin(new Plugin(URI.create(
-                                                    String.format(idTemplate.toString(), "plugin"))), jtool);
+                                                    String.format(idTemplate.toString(), Plugin.TYPE))), jtool);
                                        break;
                     case SUITE: tool = addSuite(new Suite(URI.create(
-                                                    String.format(idTemplate.toString(), "suite"))), jtool);
+                                                    String.format(idTemplate.toString(), Suite.TYPE))), jtool);
                                        break;
                     case WORKBENCH: tool = addWorkbench(new Workbench(URI.create(
-                                                    String.format(idTemplate.toString(), "workbench"))), jtool);
+                                                    String.format(idTemplate.toString(), Workbench.TYPE))), jtool);
                                        break;
 
                     default: continue;

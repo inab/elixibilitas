@@ -35,8 +35,10 @@ import javax.json.bind.annotation.JsonbProperty;
 
 public class Workflow extends Tool {
 
+    public final static String TYPE = "workflow";
+    
     @JsonbCreator
     public Workflow(@JsonbProperty("@id") URI id) {
-        super(id, "workflow");
+        super(id, TYPE);
     }
 }

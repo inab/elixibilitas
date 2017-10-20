@@ -35,8 +35,10 @@ import javax.json.bind.annotation.JsonbProperty;
 
 public class Script extends Tool {
 
+    public final static String TYPE = "script";
+    
     @JsonbCreator
     public Script(@JsonbProperty("@id") URI id) {
-        super(id, "script");
+        super(id, TYPE);
     }
 }

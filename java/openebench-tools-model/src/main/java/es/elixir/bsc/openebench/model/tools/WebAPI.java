@@ -35,8 +35,10 @@ import javax.json.bind.annotation.JsonbProperty;
 
 public class WebAPI extends Tool {
 
+    public final static String TYPE = "rest";
+    
     @JsonbCreator
     public WebAPI(@JsonbProperty("@id") URI id) {
-        super(id, "rest");
+        super(id, TYPE);
     }
 }

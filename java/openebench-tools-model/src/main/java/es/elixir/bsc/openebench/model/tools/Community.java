@@ -35,18 +35,18 @@ import javax.json.bind.annotation.JsonbProperty;
  */
 
 public class Community {
-    private List<URI> socialMedias;
+    private List<URI> socialMedia;
     
     @JsonbProperty("social_media")
     public List<URI> getSocialMedia() {
-        if (socialMedias == null) {
-            socialMedias = new ArrayList<>();
+        if (socialMedia == null) {
+            socialMedia = new ArrayList<>();
         }
-        return socialMedias;
+        return socialMedia;
     }
     
     @JsonbProperty("social_media")
     public void setSocialMedia(List<URI> socialMedias) {
-        this.socialMedias = socialMedias;
+        this.socialMedia = socialMedias;
     }
 }

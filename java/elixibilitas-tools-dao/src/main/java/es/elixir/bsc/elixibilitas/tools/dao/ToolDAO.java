@@ -130,20 +130,20 @@ public class ToolDAO {
         final String json = doc.toJson();
         
         switch(type) {
-            case "cmd": return jsonb.fromJson(json, CommandLineTool.class);
-            case "web": return jsonb.fromJson(json, WebApplication.class);
-            case "db": return jsonb.fromJson(json, DatabasePortal.class);
-            case "app": return jsonb.fromJson(json, DesktopApplication.class);
-            case "lib": return jsonb.fromJson(json, Library.class);
-            case "ontology": return jsonb.fromJson(json, Ontology.class);
-            case "workflow": return jsonb.fromJson(json, Workflow.class);
-            case "plugin": return jsonb.fromJson(json, Plugin.class);
-            case "sparql": return jsonb.fromJson(json, SPARQLEndpoint.class);
-            case "soap": return jsonb.fromJson(json, SOAPServices.class);
-            case "script": return jsonb.fromJson(json, Script.class);
-            case "rest": return jsonb.fromJson(json, WebAPI.class);
-            case "workbench": return jsonb.fromJson(json, Workbench.class);
-            case "suite": return jsonb.fromJson(json, Suite.class);
+            case CommandLineTool.TYPE: return jsonb.fromJson(json, CommandLineTool.class);
+            case WebApplication.TYPE: return jsonb.fromJson(json, WebApplication.class);
+            case DatabasePortal.TYPE: return jsonb.fromJson(json, DatabasePortal.class);
+            case DesktopApplication.TYPE: return jsonb.fromJson(json, DesktopApplication.class);
+            case Library.TYPE: return jsonb.fromJson(json, Library.class);
+            case Ontology.TYPE: return jsonb.fromJson(json, Ontology.class);
+            case Workflow.TYPE: return jsonb.fromJson(json, Workflow.class);
+            case Plugin.TYPE: return jsonb.fromJson(json, Plugin.class);
+            case SPARQLEndpoint.TYPE: return jsonb.fromJson(json, SPARQLEndpoint.class);
+            case SOAPServices.TYPE: return jsonb.fromJson(json, SOAPServices.class);
+            case Script.TYPE: return jsonb.fromJson(json, Script.class);
+            case WebAPI.TYPE: return jsonb.fromJson(json, WebAPI.class);
+            case Workbench.TYPE: return jsonb.fromJson(json, Workbench.class);
+            case Suite.TYPE: return jsonb.fromJson(json, Suite.class);
         }
         
         return jsonb.fromJson(json, Tool.class);

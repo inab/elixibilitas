@@ -35,8 +35,10 @@ import javax.json.bind.annotation.JsonbProperty;
 
 public class SPARQLEndpoint extends Tool {
 
+    public final static String TYPE = "sparql";
+    
     @JsonbCreator
     public SPARQLEndpoint(@JsonbProperty("@id") URI id) {
-        super(id, "sparql");
+        super(id, TYPE);
     }
 }
