@@ -36,6 +36,7 @@ import es.elixir.bsc.biotools.parser.model.ToolType;
 import es.elixir.bsc.biotools.parser.model.DownloadType;
 import es.elixir.bsc.biotools.parser.model.LicenseType;
 import es.elixir.bsc.biotools.parser.model.MaturityType;
+import es.elixir.bsc.biotools.parser.model.OperatingSystemType;
 import es.elixir.bsc.biotools.parser.model.ToolLinkType;
 import es.elixir.bsc.elixibilitas.tools.dao.ToolDAO;
 import es.elixir.bsc.openebench.model.tools.Contact;
@@ -250,6 +251,7 @@ public class BiotoolzContentImporter {
     }
     
     private CommandLineTool addCommandLineTool(CommandLineTool tool, JsonObject jtool) {
+        setOperatingSystems(tool.getOperatingSystems(), jtool);
         return tool;
     }
     
@@ -695,6 +697,25 @@ public class BiotoolzContentImporter {
                 tool.setCost(cost);
             } catch(IllegalArgumentException ex) {
                 Logger.getLogger(BiotoolzContentImporter.class.getName()).log(Level.INFO, "unrecognized cost: {0}", cost);
+            }
+        }
+    }
+    
+    private void setOperatingSystems(List<String> operatingSystems, JsonObject jtool) {
+        final JsonArray jOperatingSystems = jtool.getJsonArray("operatingSystem");
+        if (jOperatingSystems != null) {
+            for (int i = 0, n = jOperatingSystems.size(); i < n; i++) {
+                final String operatingSystem = jOperatingSystems.getString(i, null);
+                if (operatingSystem == null || operatingSystem.isEmpty()) {
+                    Logger.getLogger(BiotoolzContentImporter.class.getName()).log(Level.INFO, "empty operating system in tool : {0}", jtool.getString("@id", ""));
+                } else {
+                    try {
+                        OperatingSystemType.fromValue(operatingSystem);
+                        operatingSystems.add(operatingSystem);
+                    } catch(IllegalArgumentException ex) {
+                        Logger.getLogger(BiotoolzContentImporter.class.getName()).log(Level.INFO, "unrecognized operating system : {0}", operatingSystem);
+                    }
+                }
             }
         }
     }

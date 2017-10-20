@@ -26,6 +26,8 @@
 package es.elixir.bsc.openebench.model.tools;
 
 import java.net.URI;
+import java.util.ArrayList;
+import java.util.List;
 import javax.json.bind.annotation.JsonbCreator;
 import javax.json.bind.annotation.JsonbProperty;
 
@@ -38,12 +40,26 @@ public class CommandLineTool extends Tool {
     public final static String TYPE = "cmd";
     
     private String executable;
+    private List<String> operatingSystems;
 
     @JsonbCreator
     public CommandLineTool(@JsonbProperty("@id") URI id) {
         super(id, TYPE);
     }
     
+    @JsonbProperty("os")
+    public List<String> getOperatingSystems() {
+        if (operatingSystems == null) {
+            operatingSystems = new ArrayList<>();
+        }
+        return operatingSystems;
+    }
+
+    @JsonbProperty("os")
+    public void setOperatingSystems(List<String> operatingSystems) {
+        this.operatingSystems = operatingSystems;
+    }
+
     @JsonbProperty("executable")
     public String getExecutable() {
         return executable;
