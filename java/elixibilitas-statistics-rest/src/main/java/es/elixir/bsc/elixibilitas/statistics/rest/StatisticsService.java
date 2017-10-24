@@ -103,6 +103,21 @@ public class StatisticsService {
         builder.add("workbench", getStatistics("workbench"));
         builder.add("suite", getStatistics("suite"));
         
+        builder.add("cmd.operational", getMetricsStatistics("cmd"));
+        builder.add("web.operational", getMetricsStatistics("web"));
+        builder.add("db.operational", getMetricsStatistics("db"));
+        builder.add("app.operational", getMetricsStatistics("app"));
+        builder.add("lib.operational", getMetricsStatistics("lib"));
+        builder.add("ontology.operational", getMetricsStatistics("ontology"));
+        builder.add("workflow.operational", getMetricsStatistics("workflow"));
+        builder.add("plugin.operational", getMetricsStatistics("plugin"));
+        builder.add("sparql.operational", getMetricsStatistics("sparql"));
+        builder.add("soap.operational", getMetricsStatistics("soap"));
+        builder.add("script.operational", getMetricsStatistics("script"));
+        builder.add("rest.operational", getMetricsStatistics("rest"));
+        builder.add("workbench.operational", getMetricsStatistics("workbench"));
+        builder.add("suite.operational", getMetricsStatistics("suite"));
+
         return Response.ok(builder.build());
     }
 
@@ -145,5 +160,9 @@ public class StatisticsService {
         }
 
         return Long.MIN_VALUE;
+    }
+
+    private long getMetricsStatistics(final String type) {
+        return MetricsDAO.count(mc, "{'project.website.operational' : true, '_id': { $regex: '/" + type + "/'}}");
     }
 }
