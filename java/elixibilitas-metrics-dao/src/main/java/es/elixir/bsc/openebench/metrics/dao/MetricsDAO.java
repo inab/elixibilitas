@@ -38,16 +38,25 @@ import com.mongodb.client.model.ReturnDocument;
 import es.elixir.bsc.elixibilitas.model.metrics.Metrics;
 import java.io.IOException;
 import java.io.Serializable;
+import java.io.StringReader;
+import java.io.StringWriter;
 import java.io.Writer;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.json.Json;
+import javax.json.JsonArray;
+import javax.json.JsonPatch;
+import javax.json.JsonStructure;
 import javax.json.bind.Jsonb;
 import javax.json.bind.JsonbBuilder;
 import javax.json.bind.JsonbConfig;
 import javax.json.bind.JsonbException;
 import javax.json.bind.config.PropertyNamingStrategy;
+import org.bson.BsonArray;
 import org.bson.BsonWriter;
 import org.bson.Document;
 import org.bson.codecs.DocumentCodec;
@@ -64,6 +73,8 @@ import org.bson.json.JsonWriterSettings;
 public class MetricsDAO implements Serializable {
     
     public final static String COLLECTION = "metrics2";
+    public final static String LOG_COLLECTION = "metrics2.log";
+    
     public final static String AUTHORITY = "http://elixir.bsc.es/metrics/";
     
     public static long count(MongoClient mc) {
@@ -131,13 +142,20 @@ public class MetricsDAO implements Serializable {
         return put(mc, id, json);
     }
     
-    public static String put(MongoClient mc, String id, String json) {
+    public static String patch(MongoClient mc, String user, String id, String json) {
+        final String src = put(mc, id, json);
+        log(mc, user, id, src, json);
+
+        return json;
+    }
+    
+    private static String put(MongoClient mc, String id, String json) {
         try {
             MongoDatabase db = mc.getDatabase("elixibilitas");
             MongoCollection<Document> col = db.getCollection(COLLECTION);
 
             FindOneAndUpdateOptions opt = new FindOneAndUpdateOptions().upsert(true)
-                    .projection(Projections.excludeId()).returnDocument(ReturnDocument.AFTER);
+                    .projection(Projections.excludeId()).returnDocument(ReturnDocument.BEFORE);
 
             Document bson = Document.parse(json);
             bson.append("_id", id);
@@ -145,11 +163,35 @@ public class MetricsDAO implements Serializable {
             Document doc = col.findOneAndUpdate(Filters.eq("_id", id),
                     new Document("$set", bson), opt);
 
-            return doc.toJson();
+            return doc != null ? doc.toJson() : null;
         } catch(Exception ex) {
             Logger.getLogger(MetricsDAO.class.getName()).log(Level.SEVERE, null, ex);
         }
         return null;
+    }
+    
+    private static void log(MongoClient mc, String user, String id, String src, String tgt) {
+        
+        final JsonStructure src_obj = Json.createReader(new StringReader(src == null || src.isEmpty() ? "{}" : src )).read();
+        final JsonStructure tgt_obj = Json.createReader(new StringReader(tgt == null || tgt.isEmpty() ? "{}" : tgt )).read();
+
+        final JsonPatch jpatch = Json.createDiff(src_obj, tgt_obj);
+        final JsonArray array = jpatch.toJsonArray();
+
+        if (!array.isEmpty()) {
+            final StringWriter writer = new StringWriter();
+            Json.createWriter(writer).writeArray(array);
+
+            MongoDatabase db = mc.getDatabase("elixibilitas");
+            MongoCollection<Document> col = db.getCollection(LOG_COLLECTION);
+
+            Document bson = new Document();
+            bson.append("_id", new BasicDBObject("id", id).append("date", ZonedDateTime.now(ZoneId.of("Z")).toString()));
+            bson.append("scr", user);
+            bson.append("patch", BsonArray.parse(writer.toString()));
+
+            col.insertOne(bson);
+        }
     }
     
     private static Metrics deserialize(Document doc) {
@@ -170,6 +212,13 @@ public class MetricsDAO implements Serializable {
         return null;
     }
     
+    /**
+     * Find metrics and write them into the reader.
+     * 
+     * @param mc - Mongodb client connection.
+     * @param writer - writer to write metrics into.
+     * @param projections - properties to write or null for all.
+     */
     public static void write(MongoClient mc, Writer writer, List<String> projections) {
         try {
             final MongoDatabase db = mc.getDatabase("elixibilitas");
