@@ -187,7 +187,7 @@ public class MetricsDAO implements Serializable {
 
             Document bson = new Document();
             bson.append("_id", new BasicDBObject("id", id).append("date", ZonedDateTime.now(ZoneId.of("Z")).toString()));
-            bson.append("scr", user);
+            bson.append("src", user);
             bson.append("patch", BsonArray.parse(writer.toString()));
 
             col.insertOne(bson);
