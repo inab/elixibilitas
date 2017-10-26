@@ -1,7 +1,7 @@
 /**
  * *****************************************************************************
- * Copyright (C) 2017 ELIXIR ES, Spanish National Bioinformatics Institute (INB)
- * and Barcelona Supercomputing Center (BSC)
+ * Copyright (C) 2016 Spanish National Bioinformatics Institute (INB) and
+ * Barcelona Supercomputing Center
  *
  * Modifications to the initial code base are copyright of their respective
  * authors, or their employers as appropriate.
@@ -25,24 +25,20 @@
 
 package es.elixir.bsc.elixibilitas.metrics.rest;
 
-import java.io.IOException;
-import javax.ws.rs.container.ContainerRequestContext;
-import javax.ws.rs.container.ContainerResponseContext;
-import javax.ws.rs.container.ContainerResponseFilter;
-import javax.ws.rs.container.PreMatching;
-import javax.ws.rs.ext.Provider;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
+import javax.ws.rs.HttpMethod;
+import javax.ws.rs.NameBinding;
 
 /**
  * @author Dmitry Repchevsky
  */
 
-@Provider
-@PreMatching
-public class CorsResponseFilter implements ContainerResponseFilter {
-    @Override
-    public void filter(ContainerRequestContext requestContext, ContainerResponseContext responseContext)
-        throws IOException {
-        responseContext.getHeaders().add("Access-Control-Allow-Origin","*");
-        responseContext.getHeaders().add("Access-Control-Allow-Methods", "GET, PUT, POST, DELETE, OPTIONS, PATCH");
-    }
-} 
+@Target({ElementType.METHOD})
+@Retention(RetentionPolicy.RUNTIME)
+@HttpMethod("PATCH")
+@NameBinding
+public @interface PATCH {    
+}

@@ -42,6 +42,8 @@ import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.StringReader;
 import java.io.Writer;
+import java.net.URI;
+import java.security.Principal;
 import java.util.List;
 import javax.annotation.Resource;
 import javax.annotation.security.RolesAllowed;
@@ -66,6 +68,7 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.ResponseBuilder;
+import javax.ws.rs.core.SecurityContext;
 import javax.ws.rs.core.StreamingOutput;
 
 /**
@@ -209,17 +212,49 @@ public class MetricsService {
     )
     @RolesAllowed("admin")
     public void putMetrics(@PathParam("id") final String id, 
-                        @RequestBody(description = "json metrics object",
-                            content = @Content(schema = @Schema(ref="https://elixir.bsc.es/tool/tool.json")),
-                            required = true) final String json,
-                        @Suspended final AsyncResponse asyncResponse) {
+                           @RequestBody(description = "json metrics object",
+                              content = @Content(schema = @Schema(ref="https://elixir.bsc.es/tool/tool.json")),
+                              required = true) final String json,
+                           @Context SecurityContext security,
+                           @Suspended final AsyncResponse asyncResponse) {
+        final Principal principal = security.getUserPrincipal();
+        final String user = principal != null ? principal.getName() : null;
+        
         executor.submit(() -> {
-            asyncResponse.resume(putToolAsync(id, json).build());
+            asyncResponse.resume(putToolAsync(user, id, json).build());
+        });
+    }
+
+    @PATCH
+    @Path("/{id : .*}")
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Operation(
+        description = "insert the metrics into the database",
+        parameters = {
+            @Parameter(in = "path", name = "id", description = "prefixed tool id", required = true)
+        }
+    )
+    @RolesAllowed("admin")
+    public void patchMetrics(@PathParam("id") final String id,
+                             @RequestBody(description = "json metrics object",
+                                content = @Content(schema = @Schema(ref="https://elixir.bsc.es/tool/tool.json")),
+                                required = true) final String json,
+                             @Context SecurityContext security,
+                             @Suspended final AsyncResponse asyncResponse) {
+        if (id == null || id.isEmpty()) {
+            asyncResponse.resume(Response.status(Response.Status.BAD_REQUEST).build());
+        }
+        
+        final Principal principal = security.getUserPrincipal();
+        final String user = principal != null ? principal.getName() : null;
+        
+        executor.submit(() -> {
+            asyncResponse.resume(putToolAsync(user, id, json).build());
         });
     }
     
-    private Response.ResponseBuilder putToolAsync(String id, String json) {
-        MetricsDAO.put(mc, id, json);
+    private Response.ResponseBuilder putToolAsync(String source, String id, String json) {
+        MetricsDAO.patch(mc, source, id, json);
         return Response.ok();
     }
 }
