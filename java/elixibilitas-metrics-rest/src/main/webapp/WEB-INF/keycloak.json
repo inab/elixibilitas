@@ -5,5 +5,6 @@
   "resource": "elixir_bench",
   "public-client": true,
   "use-resource-role-mappings": true,
-  "enable-basic-auth" : true
+  "enable-basic-auth" : true,
+  "principal-attribute" : "preferred_username"
 }
