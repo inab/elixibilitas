@@ -43,7 +43,6 @@ import java.io.Serializable;
 import java.io.StringReader;
 import java.io.StringWriter;
 import java.io.Writer;
-import java.math.BigDecimal;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
@@ -67,7 +66,6 @@ import org.bson.BsonWriter;
 import org.bson.Document;
 import org.bson.codecs.DocumentCodec;
 import org.bson.codecs.EncoderContext;
-import org.bson.conversions.Bson;
 import org.bson.json.JsonWriter;
 import org.bson.json.JsonWriterSettings;
 
@@ -141,12 +139,12 @@ public class MetricsDAO implements Serializable {
         return null;
     }
     
-    public static String put(MongoClient mc, String id, Metrics metrics) {
+    public static String put(MongoClient mc, String user, String id, Metrics metrics) {
         final Jsonb jsonb = JsonbBuilder.create(new JsonbConfig()
                     .withPropertyNamingStrategy(PropertyNamingStrategy.UPPER_CAMEL_CASE));
         final String json = jsonb.toJson(metrics);
         
-        return put(mc, id, json);
+        return patch(mc, user, id, json);
     }
     
     public static String patch(MongoClient mc, String user, String id, String json) {

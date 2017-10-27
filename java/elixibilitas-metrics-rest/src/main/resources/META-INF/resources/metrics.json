@@ -32,7 +32,7 @@
         "type": "object",
         "properties": {
           "operational": {
-            "type": "boolean"
+            "type": "integer"
           },
           "last_seen": {
             "type": "string",
@@ -114,7 +114,7 @@
             "type": "boolean"
           },
           "publications": {
-            "type": "boolean"
+            "type": "integer"
           },
           "readme": {
             "type": "boolean"

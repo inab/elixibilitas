@@ -53,7 +53,7 @@ public class BiotoolsMetricsScheduler implements ServletContextListener {
     public void contextInitialized(ServletContextEvent evnt) {
         final String mongo_url = evnt.getServletContext().getInitParameter("mongodb.url");
 
-        executor = Executors.newFixedThreadPool(8);
+        executor = Executors.newFixedThreadPool(16);
         scheduler.scheduleAtFixedRate(new MetricsImporter(executor, mongo_url), 0, 720, TimeUnit.MINUTES);
     }
 
