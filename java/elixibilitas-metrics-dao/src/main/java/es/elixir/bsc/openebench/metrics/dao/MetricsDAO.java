@@ -27,10 +27,12 @@ package es.elixir.bsc.openebench.metrics.dao;
 
 import com.mongodb.BasicDBObject;
 import com.mongodb.MongoClient;
+import com.mongodb.client.AggregateIterable;
 import com.mongodb.client.FindIterable;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoCursor;
 import com.mongodb.client.MongoDatabase;
+import com.mongodb.client.model.Aggregates;
 import com.mongodb.client.model.Filters;
 import com.mongodb.client.model.FindOneAndUpdateOptions;
 import com.mongodb.client.model.Projections;
@@ -41,14 +43,18 @@ import java.io.Serializable;
 import java.io.StringReader;
 import java.io.StringWriter;
 import java.io.Writer;
+import java.math.BigDecimal;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.json.Json;
 import javax.json.JsonArray;
+import javax.json.JsonArrayBuilder;
+import javax.json.JsonObjectBuilder;
 import javax.json.JsonPatch;
 import javax.json.JsonStructure;
 import javax.json.bind.Jsonb;
@@ -61,6 +67,7 @@ import org.bson.BsonWriter;
 import org.bson.Document;
 import org.bson.codecs.DocumentCodec;
 import org.bson.codecs.EncoderContext;
+import org.bson.conversions.Bson;
 import org.bson.json.JsonWriter;
 import org.bson.json.JsonWriterSettings;
 
@@ -168,6 +175,42 @@ public class MetricsDAO implements Serializable {
             Logger.getLogger(MetricsDAO.class.getName()).log(Level.SEVERE, null, ex);
         }
         return null;
+    }
+    
+    public static JsonArray findLog(MongoClient mc, String id, String jpointer) {
+
+        try {
+            final MongoDatabase db = mc.getDatabase("elixibilitas");
+            final MongoCollection<Document> col = db.getCollection(LOG_COLLECTION);
+            
+            AggregateIterable<Document> iterator = col.aggregate(Arrays.asList(
+                                        Aggregates.match(new BasicDBObject("_id.id", id)),
+                                        Aggregates.unwind("$patch"),
+                                        Aggregates.match(new BasicDBObject("patch.path", jpointer)),
+                                        Aggregates.project(new BasicDBObject("_id.date", 1).append("patch.value", 1))));
+            
+            JsonArrayBuilder builder = Json.createArrayBuilder();
+            
+            try (MongoCursor<Document> cursor = iterator.iterator()) {
+                while (cursor.hasNext()) {
+                    final Document doc = cursor.next();
+                    JsonObjectBuilder jab = Json.createObjectBuilder().add("date", doc.get("_id", Document.class).getString("date"));
+                    final String value = doc.get("patch", Document.class).getString("value");
+                    if (value == null) {
+                        jab.addNull("value");
+                    } else {
+                        jab.add("value", value);
+                    }
+                    
+                    builder.add(jab);
+                }
+            }
+            return builder.build();
+        } catch(Exception ex) {
+            Logger.getLogger(MetricsDAO.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return null;
+
     }
     
     private static void log(MongoClient mc, String user, String id, String src, String tgt) {

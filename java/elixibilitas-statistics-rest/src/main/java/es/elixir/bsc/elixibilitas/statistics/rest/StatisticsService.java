@@ -28,16 +28,19 @@ package es.elixir.bsc.elixibilitas.statistics.rest;
 import com.mongodb.MongoClient;
 import es.elixir.bsc.elixibilitas.tools.dao.ToolDAO;
 import es.elixir.bsc.openebench.metrics.dao.MetricsDAO;
+import java.util.List;
 import javax.annotation.Resource;
 import javax.enterprise.concurrent.ManagedExecutorService;
 import javax.inject.Inject;
 import javax.json.Json;
+import javax.json.JsonArray;
 import javax.json.JsonObjectBuilder;
 import javax.servlet.ServletContext;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
+import javax.ws.rs.QueryParam;
 import javax.ws.rs.container.AsyncResponse;
 import javax.ws.rs.container.Suspended;
 import javax.ws.rs.core.Context;
@@ -73,6 +76,33 @@ public class StatisticsService {
         return Response.ok(ctx.getResourceAsStream("biotools.owl")).build();
     }
 
+    @GET
+    @Path("/metrics/log/{id : .*}")
+    @Produces(MediaType.APPLICATION_JSON)
+    public void getMetricsLog(@PathParam("id") final String id,
+                              @QueryParam("field") final String field,
+                              @Suspended final AsyncResponse asyncResponse) {
+        if (id == null || id.isEmpty() ||
+            field == null || field.isEmpty()) {
+            asyncResponse.resume(Response.status(Response.Status.BAD_REQUEST).build());
+        }
+        executor.submit(() -> {
+            asyncResponse.resume(getMetricsLogAsync(id, field).build());
+        });
+    }
+
+    private Response.ResponseBuilder getMetricsLogAsync(String id, String field) {
+        final JsonArray array = MetricsDAO.findLog(mc, id, field);
+        if (array == null) {
+            return Response.status(Response.Status.INTERNAL_SERVER_ERROR);
+        }
+        if (array.isEmpty()) {
+            return Response.status(Response.Status.NOT_FOUND);
+        }
+        
+        return Response.ok(array);
+    }
+    
     @GET
     @Path("/statistics/")
     @Produces(MediaType.APPLICATION_JSON)
