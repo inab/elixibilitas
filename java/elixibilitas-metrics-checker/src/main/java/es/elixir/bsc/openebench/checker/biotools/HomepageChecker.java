@@ -25,7 +25,6 @@
 
 package es.elixir.bsc.openebench.checker.biotools;
 
-import es.elixir.bsc.elixibilitas.model.metrics.HomePageHistoryRecord;
 import es.elixir.bsc.elixibilitas.model.metrics.Metrics;
 import es.elixir.bsc.elixibilitas.model.metrics.Project;
 import es.elixir.bsc.elixibilitas.model.metrics.Website;
@@ -91,7 +90,7 @@ public class HomepageChecker implements MetricsChecker {
     @Override
     public Boolean check(Tool tool, Metrics metrics) {
         final Integer code = check(tool);
-        final Boolean isOperational = isOperational(code);
+        final boolean operational = isOperational(code);
         
         Project project = metrics.getProject();
         if (project != null) {
@@ -99,17 +98,9 @@ public class HomepageChecker implements MetricsChecker {
             if (code != null) {
                 if (website == null) {
                     project.setWebsite(website = new Website());
-                } else {
-                    Boolean wasOperational = website.getOperational();
-                    if (Boolean.TRUE.equals(wasOperational) && !isOperational) {
-                        HomePageHistoryRecord history = new HomePageHistoryRecord();
-                        history.setResponseCode(code);
-                        history.setTime(ZonedDateTime.now(ZoneId.of("Z")));
-                        website.getHistory().add(history);
-                    }
                 }
-                website.setOperational(isOperational);
-                if (isOperational) {
+                website.setOperational(code);
+                if (operational) {
                     website.setLastSeen(ZonedDateTime.now(ZoneId.of("Z")));
                 }
             } else if (website != null) {
@@ -117,14 +108,14 @@ public class HomepageChecker implements MetricsChecker {
             }
         } else if (code != null) {
             Website website = new Website();
-            website.setOperational(isOperational);
+            website.setOperational(code);
             project = new Project();
             project.setWebsite(website);
             
             metrics.setProject(project);
         }
         
-        return isOperational;
+        return operational;
     }
     
     private boolean isOperational(Integer code) {

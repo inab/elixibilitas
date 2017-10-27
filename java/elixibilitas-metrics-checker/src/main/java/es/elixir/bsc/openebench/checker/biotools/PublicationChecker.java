@@ -41,9 +41,9 @@ import javax.ws.rs.core.MediaType;
 
 public class PublicationChecker implements MetricsChecker {
     
-    private final static URI doiResolverURI = URI.create("https://doi.org/");
-    private final static URI pmidResolverURI = URI.create("https://www.ncbi.nlm.nih.gov/pubmed/");
-    private final static URI pmcidResolverURI = URI.create("https://www.ncbi.nlm.nih.gov/pmc/articles/");
+    private final static URI DOI_RESOLVER_URI = URI.create("https://doi.org/");
+    private final static URI PMID_RESOLVER_URI = URI.create("https://www.ncbi.nlm.nih.gov/pubmed/");
+    private final static URI PMCID_RESOLVER_URI = URI.create("https://www.ncbi.nlm.nih.gov/pmc/articles/");
         
     @Override
     public Boolean check(Tool tool, Metrics metrics) {
@@ -53,63 +53,66 @@ public class PublicationChecker implements MetricsChecker {
             return null;
         }
         
-        Boolean bool = check(publications);
+        Integer n = check(publications);
         
         Project project = metrics.getProject();
         if (project != null) {
-            project.setPublications(bool);
-        } else if (bool != null) {
+            project.setPublications(n);
+        } else if (n != null) {
             project = new Project();
-            project.setPublications(bool);
+            project.setPublications(n);
             metrics.setProject(project);
         }
 
-        return bool;
+        return n == null ? null : n > 0;
     }
     
-    private static Boolean check(List<Publication> publications) {
+    private static Integer check(List<Publication> publications) {
 
         if (publications.isEmpty()) {
             return null;
         }
         
-        try {
-            for (Publication publication : publications) {
+        int n = 0;
+
+        for (Publication publication : publications) {
+            try {
                 final String doi = publication.getDOI();
                 if (doi != null && checkDOI(doi)) {
-                    return true;
+                    n++;
+                    continue;
                 }
 
                 final String pmid = publication.getPMID();
                 if (pmid != null && checkPMID(pmid)) {
-                    return true;
+                    n++;
+                    continue;
                 }
-                
+
                 final String pmcid = publication.getPMCID();
                 if (pmcid != null && checkPMCID(pmcid)) {
-                    return true;
+                    n++;
                 }
-            }
-        } catch (Exception ex) {
-            return null;
+            } catch (Exception ex) {}
         }
-        return false;
+
+        return n;
     }
     
     private static boolean checkDOI(String doi) {
-        URI uri = doiResolverURI.resolve(doi);
+        URI uri = DOI_RESOLVER_URI.resolve(doi);
         final int code = ClientBuilder.newClient().target(uri).request(MediaType.WILDCARD).get().getStatus();
         return code != 404;
     }
     
     private static boolean checkPMID(String pmid) {
-        URI uri = pmidResolverURI.resolve(pmid);
+        URI uri = PMID_RESOLVER_URI.resolve(pmid);
         final int code = ClientBuilder.newClient().target(uri).request(MediaType.WILDCARD).get().getStatus();
         return code != 404;
     }
     
     private static boolean checkPMCID(String pmid) {
-        URI uri = pmcidResolverURI.resolve(pmid);
+        URI uri = PMCID_RESOLVER_URI.resolve(pmid);
         final int code = ClientBuilder.newClient().target(uri).request(MediaType.WILDCARD).get().getStatus();
         return code != 404;
     }

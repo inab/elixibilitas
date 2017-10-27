@@ -48,7 +48,7 @@ public class BatchMetricsChecker {
                 @Override
                 public void run() {
                     try {
-                        MetricsDAO.put(mc, id, future.get());
+                        MetricsDAO.put(mc, "biotools", id, future.get());
                     } catch (InterruptedException | ExecutionException ex) {
                         Logger.getLogger(BatchMetricsChecker.class.getName()).log(Level.SEVERE, null, ex);
                     }
