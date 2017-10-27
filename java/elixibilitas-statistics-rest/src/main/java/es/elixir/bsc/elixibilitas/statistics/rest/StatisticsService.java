@@ -116,37 +116,23 @@ public class StatisticsService {
     private Response.ResponseBuilder getStatisticsAsync() {
         
         JsonObjectBuilder builder = Json.createObjectBuilder();
-        builder.add("total", getStatistics("total"));
-        builder.add("operational", getStatistics("operational"));
-        builder.add("cmd", getStatistics("cmd"));
-        builder.add("web", getStatistics("web"));
-        builder.add("db", getStatistics("db"));
-        builder.add("app", getStatistics("app"));
-        builder.add("lib", getStatistics("lib"));
-        builder.add("ontology", getStatistics("ontology"));
-        builder.add("workflow", getStatistics("workflow"));
-        builder.add("plugin", getStatistics("plugin"));
-        builder.add("sparql", getStatistics("sparql"));
-        builder.add("soap", getStatistics("soap"));
-        builder.add("script", getStatistics("script"));
-        builder.add("rest", getStatistics("rest"));
-        builder.add("workbench", getStatistics("workbench"));
-        builder.add("suite", getStatistics("suite"));
-        
-        builder.add("cmd.operational", getMetricsStatistics("cmd"));
-        builder.add("web.operational", getMetricsStatistics("web"));
-        builder.add("db.operational", getMetricsStatistics("db"));
-        builder.add("app.operational", getMetricsStatistics("app"));
-        builder.add("lib.operational", getMetricsStatistics("lib"));
-        builder.add("ontology.operational", getMetricsStatistics("ontology"));
-        builder.add("workflow.operational", getMetricsStatistics("workflow"));
-        builder.add("plugin.operational", getMetricsStatistics("plugin"));
-        builder.add("sparql.operational", getMetricsStatistics("sparql"));
-        builder.add("soap.operational", getMetricsStatistics("soap"));
-        builder.add("script.operational", getMetricsStatistics("script"));
-        builder.add("rest.operational", getMetricsStatistics("rest"));
-        builder.add("workbench.operational", getMetricsStatistics("workbench"));
-        builder.add("suite.operational", getMetricsStatistics("suite"));
+        builder.add("all", Json.createObjectBuilder()
+                     .add("total", getStatistics("total"))
+                     .add("operational", getStatistics("operational")));
+        addMetricsStatistics(builder, "cmd");
+        addMetricsStatistics(builder, "web");
+        addMetricsStatistics(builder, "db");
+        addMetricsStatistics(builder, "app");
+        addMetricsStatistics(builder, "lib");
+        addMetricsStatistics(builder, "ontology");
+        addMetricsStatistics(builder, "workflow");
+        addMetricsStatistics(builder, "plugin");
+        addMetricsStatistics(builder, "sparql");
+        addMetricsStatistics(builder, "soap");
+        addMetricsStatistics(builder, "script");
+        addMetricsStatistics(builder, "rest");
+        addMetricsStatistics(builder, "workbench");
+        addMetricsStatistics(builder, "suite");
 
         return Response.ok(builder.build());
     }
@@ -169,10 +155,16 @@ public class StatisticsService {
                          Response.ok(result);
     }
     
+    public void addMetricsStatistics(JsonObjectBuilder builder, String field) {
+        builder.add(field, Json.createObjectBuilder()
+                     .add("total", getStatistics(field))
+                     .add("operational", getMetricsStatistics(field)));
+    }
+    
     private long getStatistics(final String field) {
         switch(field) {
             case "total": return ToolDAO.count(mc);
-            case "operational": return MetricsDAO.count(mc, "{'project.website.operational' : true}");
+            case "operational": return MetricsDAO.count(mc, "{'project.website.operational' : {$in: [200, 202]}}");
             case "cmd":
             case "web":
             case "db":
@@ -193,6 +185,6 @@ public class StatisticsService {
     }
 
     private long getMetricsStatistics(final String type) {
-        return MetricsDAO.count(mc, "{'project.website.operational' : true, '_id': { $regex: '/" + type + "/'}}");
+        return MetricsDAO.count(mc, "{'project.website.operational' : {$in: [200, 202]}, '_id': { $regex: '/" + type + "/'}}");
     }
 }
