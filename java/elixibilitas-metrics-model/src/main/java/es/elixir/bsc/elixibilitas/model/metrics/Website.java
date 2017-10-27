@@ -26,8 +26,6 @@
 package es.elixir.bsc.elixibilitas.model.metrics;
 
 import java.time.ZonedDateTime;
-import java.util.ArrayList;
-import java.util.List;
 import javax.json.bind.annotation.JsonbProperty;
 
 /**
@@ -36,19 +34,18 @@ import javax.json.bind.annotation.JsonbProperty;
 
 public class Website {
 
-    private Boolean operational;
+    private Integer operational;
     private ZonedDateTime lastSeen;
-    private List<HomePageHistoryRecord> history;
     private Copyright copyright;
     private Boolean license;
     private Boolean resources;
     
     @JsonbProperty("operational")
-    public Boolean getOperational() {
+    public Integer getOperational() {
         return operational;
     }
 
-    public void setOperational(Boolean operational) {
+    public void setOperational(Integer operational) {
         this.operational = operational;
     }
 
@@ -59,19 +56,6 @@ public class Website {
 
     public void setLastSeen(ZonedDateTime lastSeen) {
         this.lastSeen = lastSeen;
-    }
-    
-    @JsonbProperty("history")
-    public List<HomePageHistoryRecord> getHistory() {
-        if (history == null) {
-            history = new ArrayList<>();
-        }
-        return history;
-    }
-
-    @JsonbProperty("history")
-    public void setHistory(List<HomePageHistoryRecord> history) {
-        this.history = history;
     }
     
     @JsonbProperty("copyright")

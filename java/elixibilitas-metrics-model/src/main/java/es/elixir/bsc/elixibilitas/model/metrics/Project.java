@@ -42,7 +42,7 @@ public class Project {
     private Boolean concept;
     private Boolean rationale;
     private Boolean architecture;
-    private Boolean publications;
+    private Integer publications;
     private Boolean readme;
 
     @JsonbProperty("identity")
@@ -127,11 +127,11 @@ public class Project {
     }
 
     @JsonbProperty("publications")
-    public Boolean getPublications() {
+    public Integer getPublications() {
         return publications;
     }
 
-    public void setPublications(Boolean publications) {
+    public void setPublications(Integer publications) {
         this.publications = publications;
     }
 
