@@ -318,7 +318,7 @@ public class BiotoolzServices {
     @Path("/{id}/{type}/{host}{path:.*}")
     @Consumes(MediaType.APPLICATION_JSON)
     @Operation(
-        summary = "Update the tool in the database.",
+        summary = "Updates the tool in the database.",
         description = "generates and applies JSON PATCH (RFC 6902):\n" +
                       "[{ 'op': 'replace', 'path': $path, 'value': $json }]\n" +
                       "curl -v -X PATCH -u user:pass -H 'Content-Type: application/json' " +
@@ -342,7 +342,13 @@ public class BiotoolzServices {
                           @Context SecurityContext security,
                           @Suspended final AsyncResponse asyncResponse) {
 
-        final JsonValue value = Json.createReader(new StringReader(json)).readValue();
+        final JsonValue value;
+        try {
+            value = Json.createReader(new StringReader(json)).readValue();
+        } catch(Exception ex) {
+            asyncResponse.resume(Response.status(Response.Status.BAD_REQUEST.getStatusCode(), ex.getMessage()));
+            return;
+        }
         
         final Principal principal = security.getUserPrincipal();
         final String user = principal != null ? principal.getName() : null;
