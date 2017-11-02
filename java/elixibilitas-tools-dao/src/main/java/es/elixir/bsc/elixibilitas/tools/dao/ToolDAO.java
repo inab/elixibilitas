@@ -51,19 +51,28 @@ import es.elixir.bsc.openebench.model.tools.WebApplication;
 import es.elixir.bsc.openebench.model.tools.Workbench;
 import es.elixir.bsc.openebench.model.tools.Workflow;
 import java.io.IOException;
+import java.io.StringReader;
+import java.io.StringWriter;
 import java.io.Writer;
 import java.net.URI;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.json.Json;
+import javax.json.JsonArray;
 import javax.json.JsonObject;
+import javax.json.JsonPatch;
+import javax.json.JsonStructure;
 import javax.json.bind.Jsonb;
 import javax.json.bind.JsonbBuilder;
 import javax.json.bind.JsonbConfig;
 import javax.json.bind.config.PropertyNamingStrategy;
+import org.bson.BsonArray;
 import org.bson.BsonWriter;
 import org.bson.Document;
 import org.bson.codecs.DocumentCodec;
@@ -79,6 +88,7 @@ import org.bson.json.JsonWriterSettings;
 public class ToolDAO {
     
     public final static String COLLECTION = "biotoolz";
+    public final static String LOG_COLLECTION = "biotoolz.log";
     public final static String AUTHORITY = "http://elixir.bsc.es/tool/";
     
     public static long count(MongoClient mc) {
@@ -210,27 +220,38 @@ public class ToolDAO {
         return list;        
     }
     
-    public static void put(MongoClient mc, JsonObject json) {
+    public static void put(MongoClient mc, String user, JsonObject json) {
         final String id = json.getString("@id");
-        put(mc, id, json.toString());
+        put(mc, user, id, json.toString());
     }
 
-    public static void put(MongoClient mc, Tool tool) {
+    public static void put(MongoClient mc, String user, String id, String json) {
+        patch(mc, user, id, json);
+    }
+
+    public static void put(MongoClient mc, String user, Tool tool) {
         
         final Jsonb jsonb = JsonbBuilder.create(new JsonbConfig()
                     .withPropertyNamingStrategy(PropertyNamingStrategy.UPPER_CAMEL_CASE));
         final String json = jsonb.toJson(tool);
         
-        put(mc, tool.id.toString(), json);
+        patch(mc, user, tool.id.toString(), json);
     }
     
-    public static void put(MongoClient mc, String id, String json) {
+    public static String patch(MongoClient mc, String user, String id, String json) {
+        final String src = put(mc, id, json);
+        log(mc, user, id, src, json);
+
+        return json;
+    }
+    
+    private static String put(MongoClient mc, String id, String json) {
         try {
             MongoDatabase db = mc.getDatabase("elixibilitas");
             MongoCollection<Document> col = db.getCollection(COLLECTION);
             
             FindOneAndUpdateOptions opt = new FindOneAndUpdateOptions().upsert(true)
-                .projection(Projections.excludeId()).returnDocument(ReturnDocument.AFTER);
+                .projection(Projections.excludeId()).returnDocument(ReturnDocument.BEFORE);
 
             Bson pk = createPK(id);
             if (pk != null) {
@@ -241,14 +262,17 @@ public class ToolDAO {
                 bson.remove("@id");
                 bson.remove("@type");
 
-                col.findOneAndUpdate(Filters.eq("_id", pk),
+                Document doc = col.findOneAndUpdate(Filters.eq("_id", pk),
                         new Document("$set", bson), opt);
+                
+                return doc != null ? doc.toJson() : null;
             }
         } catch (IllegalArgumentException ex) {
             Logger.getLogger(ToolDAO.class.getName()).log(Level.SEVERE, null, ex);
         } catch(Exception ex) {
             Logger.getLogger(ToolDAO.class.getName()).log(Level.SEVERE, null, ex);
         }
+        return null;
     }
     
     private static Bson createFindQuery(String id) {
@@ -424,6 +448,30 @@ public class ToolDAO {
             }
         } catch(Exception ex) {
             Logger.getLogger(ToolDAO.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }
+
+    private static void log(MongoClient mc, String user, String id, String src, String tgt) {
+        
+        final JsonStructure src_obj = Json.createReader(new StringReader(src == null || src.isEmpty() ? "{}" : src )).read();
+        final JsonStructure tgt_obj = Json.createReader(new StringReader(tgt == null || tgt.isEmpty() ? "{}" : tgt )).read();
+
+        final JsonPatch jpatch = Json.createDiff(src_obj, tgt_obj);
+        final JsonArray array = jpatch.toJsonArray();
+
+        if (!array.isEmpty()) {
+            final StringWriter writer = new StringWriter();
+            Json.createWriter(writer).writeArray(array);
+
+            MongoDatabase db = mc.getDatabase("elixibilitas");
+            MongoCollection<Document> col = db.getCollection(LOG_COLLECTION);
+
+            Document bson = new Document();
+            bson.append("_id", new BasicDBObject("id", id).append("date", ZonedDateTime.now(ZoneId.of("Z")).toString()));
+            bson.append("src", user);
+            bson.append("patch", BsonArray.parse(writer.toString()));
+
+            col.insertOne(bson);
         }
     }
 
