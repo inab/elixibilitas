@@ -7,7 +7,7 @@
 
     <context-param>
         <param-name>mongodb.url</param-name>
-        <param-value>mongodb://localhost:27017/elixibilitas</param-value>
+        <param-value>mongodb://localhost:27017/elixibilitas?maxPoolSize=32</param-value>
     </context-param>
 
     <mime-mapping>
