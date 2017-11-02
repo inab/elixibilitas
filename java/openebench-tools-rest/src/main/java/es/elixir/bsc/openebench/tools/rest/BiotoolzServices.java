@@ -55,6 +55,7 @@ import javax.enterprise.concurrent.ManagedExecutorService;
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 import javax.json.Json;
+import javax.json.JsonPatch;
 import javax.json.JsonPointer;
 import javax.json.JsonStructure;
 import javax.json.JsonValue;
@@ -138,7 +139,7 @@ public class BiotoolzServices {
     @GET
     @Path("/")
     @Produces(MediaType.APPLICATION_JSON)
-    @Operation(description = "Return all tools descriptions",
+    @Operation(summary = "Returns all tools descriptions.",
         parameters = {
             @Parameter(in = "query", name = "skip", description = "skip n tools", required = false),
             @Parameter(in = "query", name = "limit", description = "return n tools", required = false),
@@ -197,7 +198,7 @@ public class BiotoolzServices {
     @Produces(MediaType.APPLICATION_JSON)
     @Operation(
         servers = {@Server(url = "https://elixir.bsc.es/tool")},
-        description = "Return one or many tools by the id",
+        summary = "Returns one or many tools by the id.",
         parameters = {
             @Parameter(in = "path", name = "id", description = "prefixed tool id", required = true),
             @Parameter(in = "path", name = "type", description = "tool type", required = false),
@@ -219,12 +220,7 @@ public class BiotoolzServices {
                         @Suspended final AsyncResponse asyncResponse) {
         final URI uri = uriInfo.getRequestUri();
         executor.submit(() -> {
-            if (type == null || type.isEmpty() ||
-                host == null || host.isEmpty()) {
-                asyncResponse.resume(getToolsAsync(uri.toString()).build());
-            } else {
-                asyncResponse.resume(getToolAsync(uri.toString(), path).build());
-            }
+            asyncResponse.resume(getToolAsync(uri.toString(), path).build());
         });
     }
 
@@ -292,7 +288,7 @@ public class BiotoolzServices {
     @Path("/{id : .*}")
     @Consumes(MediaType.APPLICATION_JSON)
     @Operation(
-        description = "insert the tool into the database",
+        summary = "Inserts the tool into the database.",
         parameters = {
             @Parameter(in = "path", name = "id", description = "prefixed tool id", required = true)
         }
@@ -313,36 +309,53 @@ public class BiotoolzServices {
         });
     }
     
+    private ResponseBuilder putToolAsync(String user, String id, String json) {
+        ToolDAO.put(mc, user, id, json);
+        return Response.ok();
+    }
+
     @PATCH
-    @Path("/{id : .*}")
+    @Path("/{id}/{type}/{host}{path:.*}")
     @Consumes(MediaType.APPLICATION_JSON)
     @Operation(
-        description = "update tool in the database",
+        summary = "Update the tool in the database.",
+        description = "generates and applies JSON PATCH (RFC 6902):\n" +
+                      "[{ 'op': 'replace', 'path': $path, 'value': $json }]\n" +
+                      "curl -v -X PATCH -u user:pass -H 'Content-Type: application/json' " +
+                      "https://elixir.bsc.es/tool/{id}/description -d '\"new tool description\"'",
+        
         parameters = {
-            @Parameter(in = "path", name = "id", description = "prefixed tool id", required = true)
+            @Parameter(in = "path", name = "id", description = "prefixed tool id", required = true),
+            @Parameter(in = "path", name = "type", description = "tool type", required = false),
+            @Parameter(in = "path", name = "host", description = "tool authority", required = false),
+            @Parameter(in = "path", name = "path", description = "json pointer", required = false)
         }
     )
     @RolesAllowed("admin")
     public void patchTool(@PathParam("id") final String id,
-                             @RequestBody(description = "json tool object",
-                                content = @Content(schema = @Schema(ref="https://elixir.bsc.es/tool/tool.json")),
+                          @PathParam("type") final String type,
+                          @PathParam("host") final String host,
+                          @PathParam("path") final String path,
+                          @Context final UriInfo uriInfo, 
+                          @RequestBody(description = "tool´s property value",
                                 required = true) final String json,
-                             @Context SecurityContext security,
-                             @Suspended final AsyncResponse asyncResponse) {
-        if (id == null || id.isEmpty()) {
-            asyncResponse.resume(Response.status(Response.Status.BAD_REQUEST).build());
-        }
+                          @Context SecurityContext security,
+                          @Suspended final AsyncResponse asyncResponse) {
+
+        final JsonValue value = Json.createReader(new StringReader(json)).readValue();
         
         final Principal principal = security.getUserPrincipal();
         final String user = principal != null ? principal.getName() : null;
         
+        final URI uri = uriInfo.getRequestUri();
         executor.submit(() -> {
-            asyncResponse.resume(putToolAsync(user, id, json).build());
+            asyncResponse.resume(patchToolAsync(user, uri.toString(), path, value).build());
         });
     }
 
-    private ResponseBuilder putToolAsync(String user, String id, String json) {
-        ToolDAO.put(mc, user, id, json);
-        return Response.ok();
+    private ResponseBuilder patchToolAsync(String user, String id, String path, JsonValue value) {
+        final JsonPatch patch = Json.createPatchBuilder().replace(path, value).build();
+        final String result = ToolDAO.patch(mc, user, id, patch);
+        return Response.status(result == null ? Status.NOT_MODIFIED : Status.OK);
     }
 }
