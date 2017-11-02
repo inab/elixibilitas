@@ -47,16 +47,26 @@ where:
 > Note that {id}/{type}/{host} uniquely identify the tool, while omitting the {type} or {host} returns an array of descriptions.<br/><br/>
 > example 1: [https://elixir.bsc.es/tool?projection=publications](https://elixir.bsc.es/tool?projection=publications) .<br/>
 > example 2: [https://elixir.bsc.es/tool/bio.tools:pmut/web/mmb.irbbarcelona.org](https://elixir.bsc.es/tool/bio.tools:pmut/web/mmb.irbbarcelona.org) .<br/>
-> example 3: [https://elixir.bsc.es/tool/bio.tools:pmut/web/mmb.irbbarcelona.org/credits](https://elixir.bsc.es/tool/bio.tools:pmut/web/mmb.irbbarcelona.org/credits) .
+> example 3: [https://elixir.bsc.es/tool/bio.tools:pmut/web/mmb.irbbarcelona.org/credits](https://elixir.bsc.es/tool/bio.tools:pmut/web/mmb.irbbarcelona.org/credits) .<br/>
+> curl patch tool data example: 
+```
+curl -v -X PATCH -u user:password -H 'Content-Type: application/json' /
+https://elixir.bsc.es/tool/{id}/description -d '"new description."'
 
+```
 Quality Metrics accessed via:
 ```
 https://elixir.bsc.es/metrics/
 https://elixir.bsc.es/metrics/{id}/{type}/{host}/{path}
 ```
 > example1: [https://elixir.bsc.es/metrics/bio.tools:pmut/web/mmb.irbbarcelona.org](https://elixir.bsc.es/metrics/bio.tools:pmut/web/mmb.irbbarcelona.org) .<br/>
-> example2: [https://elixir.bsc.es/metrics/bio.tools:pmut/web/mmb.irbbarcelona.org/project/website](https://elixir.bsc.es/metrics/bio.tools:pmut/web/mmb.irbbarcelona.org/project/website) .
+> example2: [https://elixir.bsc.es/metrics/bio.tools:pmut/web/mmb.irbbarcelona.org/project/website](https://elixir.bsc.es/metrics/bio.tools:pmut/web/mmb.irbbarcelona.org/project/website) .<br/>
+> curl patch metrics data example: 
+```
+curl -v -X PATCH -u user:password -H 'Content-Type: application/json' /
+https://elixir.bsc.es/metrics/{id}/support/email -d 'true'
 
+```
 The API also provides EDAM descriptions for the tool:
 ```
 https://elixir.bsc.es/edam/tool/
@@ -78,6 +88,7 @@ https://elixir.bsc.es/edam/search?text={text to search}
 
 There are simple stat info that can be obtained from the server:
 
+>[https://elixir.bsc.es/tools/statistics](https://elixir.bsc.es/tools/statistics) : basic statistics.<br/>
 >[https://elixir.bsc.es/tools/statistics/total](https://elixir.bsc.es/tools/statistics/total) : total number of tools.<br/>
 >[https://elixir.bsc.es/tools/statistics/operational](https://elixir.bsc.es/tools/statistics/operational) : number of tools those homepage is accessible.
 
