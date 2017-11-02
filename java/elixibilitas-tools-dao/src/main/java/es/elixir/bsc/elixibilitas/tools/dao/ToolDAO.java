@@ -258,24 +258,25 @@ public class ToolDAO {
         try  {
             MongoDatabase db = mc.getDatabase("elixibilitas");
             MongoCollection<Document> col = db.getCollection(COLLECTION);
-            
-            FindOneAndReplaceOptions opt = new FindOneAndReplaceOptions().returnDocument(ReturnDocument.AFTER);
 
             Bson pk = createPK(id);
             if (pk != null) {
                 final Document doc = col.find(Filters.eq("_id", pk)).first();
-                final JsonObject target = Json.createReader(new StringReader(doc.toJson())).readObject();
-                final JsonObject patched = patch.apply(target);
-                final StringWriter writer = new StringWriter();
-                Json.createWriter(writer).writeObject(patched);
-                
-                Document result = col.findOneAndReplace(Filters.eq("_id", pk), Document.parse(writer.toString()), opt);
-                
-                final Document _id = (Document) result.remove("_id");
-                result.append("@id", createID(_id));
-                result.append("@type", _id.getString("type"));
-                
-                return result.toJson();
+                if (doc != null) {
+                    final JsonObject target = Json.createReader(new StringReader(doc.toJson())).readObject();
+                    final JsonObject patched = patch.apply(target);
+                    final StringWriter writer = new StringWriter();
+                    Json.createWriter(writer).writeObject(patched);
+
+                    FindOneAndReplaceOptions opt = new FindOneAndReplaceOptions().returnDocument(ReturnDocument.AFTER);
+                    Document result = col.findOneAndReplace(Filters.eq("_id", pk), Document.parse(writer.toString()), opt);
+
+                    final Document _id = (Document) result.remove("_id");
+                    result.append("@id", createID(_id));
+                    result.append("@type", _id.getString("type"));
+
+                    return result.toJson();
+                }
             }
         } catch (IllegalArgumentException ex) {
             Logger.getLogger(ToolDAO.class.getName()).log(Level.SEVERE, null, ex);
