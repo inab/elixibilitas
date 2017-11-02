@@ -75,7 +75,10 @@ public class BiotoolsMetricsScheduler implements ServletContextListener {
         
         @Override
         public void run() {
-            new BatchMetricsChecker(executor).check(new MongoClient(new MongoClientURI(uri)));
+            try (MongoClient mc = new MongoClient(new MongoClientURI(uri))) {
+                mc.getMongoClientOptions().getConnectionsPerHost();
+                new BatchMetricsChecker(executor).check(mc);
+            }
         }
     }
 }

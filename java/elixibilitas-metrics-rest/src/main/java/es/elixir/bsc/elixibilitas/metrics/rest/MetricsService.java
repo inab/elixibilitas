@@ -50,6 +50,7 @@ import javax.annotation.security.RolesAllowed;
 import javax.enterprise.concurrent.ManagedExecutorService;
 import javax.inject.Inject;
 import javax.json.Json;
+import javax.json.JsonPatch;
 import javax.json.JsonPointer;
 import javax.json.JsonStructure;
 import javax.json.JsonValue;
@@ -68,8 +69,10 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.ResponseBuilder;
+import javax.ws.rs.core.Response.Status;
 import javax.ws.rs.core.SecurityContext;
 import javax.ws.rs.core.StreamingOutput;
+import javax.ws.rs.core.UriInfo;
 
 /**
  * REST Service to operate over Metrics objects.
@@ -112,7 +115,7 @@ public class MetricsService {
     @Produces(MediaType.APPLICATION_JSON)
     @Operation(
         servers = {@Server(url = "https://elixir.bsc.es/metrics")},
-        description = "Return tools metrics by the tool's id",
+        summary = "Returns tools metrics by the tool's id.",
         parameters = {
             @Parameter(in = "path", name = "id", description = "prefixed tool id", required = true),
             @Parameter(in = "path", name = "type", description = "tool type", required = true),
@@ -172,7 +175,7 @@ public class MetricsService {
     @Produces(MediaType.APPLICATION_JSON)
     @Operation(
         servers = {@Server(url = "https://elixir.bsc.es/metrics")},
-        description = "Return all tools metrics",
+        summary = "Returns all tools metrics.",
         parameters = {
             @Parameter(in = "query", name = "projection", description = "fields to return", required = false)
         },
@@ -205,7 +208,7 @@ public class MetricsService {
     @Path("/{id : .*}")
     @Consumes(MediaType.APPLICATION_JSON)
     @Operation(
-        description = "insert the metrics into the database",
+        summary = "Inserts the metrics into the database.",
         parameters = {
             @Parameter(in = "path", name = "id", description = "prefixed tool id", required = true)
         }
@@ -213,7 +216,7 @@ public class MetricsService {
     @RolesAllowed("admin")
     public void putMetrics(@PathParam("id") final String id, 
                            @RequestBody(description = "json metrics object",
-                              content = @Content(schema = @Schema(ref="https://elixir.bsc.es/tool/tool.json")),
+                              content = @Content(schema = @Schema(ref="https://elixir.bsc.es/metrics/metrics.json")),
                               required = true) final String json,
                            @Context SecurityContext security,
                            @Suspended final AsyncResponse asyncResponse) {
@@ -221,40 +224,56 @@ public class MetricsService {
         final String user = principal != null ? principal.getName() : null;
         
         executor.submit(() -> {
-            asyncResponse.resume(putToolAsync(user, id, json).build());
+            asyncResponse.resume(putMetricsAsync(user, id, json).build());
         });
     }
 
+    private Response.ResponseBuilder putMetricsAsync(String source, String id, String json) {
+        MetricsDAO.patch(mc, source, id, json);
+        return Response.ok();
+    }
+
     @PATCH
-    @Path("/{id : .*}")
+    @Path("/{id}/{type}/{host}{path:.*}")
     @Consumes(MediaType.APPLICATION_JSON)
     @Operation(
-        description = "insert the metrics into the database",
+        summary = "Updates metrics in the database.",
         parameters = {
-            @Parameter(in = "path", name = "id", description = "prefixed tool id", required = true)
+            @Parameter(in = "path", name = "id", description = "prefixed tool id", required = true),
+            @Parameter(in = "path", name = "type", description = "tool type", required = false),
+            @Parameter(in = "path", name = "host", description = "tool authority", required = false),
+            @Parameter(in = "path", name = "path", description = "json pointer", required = false)
         }
     )
     @RolesAllowed("admin")
     public void patchMetrics(@PathParam("id") final String id,
-                             @RequestBody(description = "json metrics object",
-                                content = @Content(schema = @Schema(ref="https://elixir.bsc.es/tool/tool.json")),
+                             @PathParam("type") final String type,
+                             @PathParam("host") final String host,
+                             @PathParam("path") final String path,
+                             @RequestBody(description = "metrics´ property value",
                                 required = true) final String json,
                              @Context SecurityContext security,
                              @Suspended final AsyncResponse asyncResponse) {
-        if (id == null || id.isEmpty()) {
-            asyncResponse.resume(Response.status(Response.Status.BAD_REQUEST).build());
+
+        final JsonValue value;
+        try {
+            value = Json.createReader(new StringReader(json)).readValue();
+        } catch(Exception ex) {
+            asyncResponse.resume(Response.status(Response.Status.BAD_REQUEST.getStatusCode(), ex.getMessage()));
+            return;
         }
         
         final Principal principal = security.getUserPrincipal();
         final String user = principal != null ? principal.getName() : null;
         
         executor.submit(() -> {
-            asyncResponse.resume(putToolAsync(user, id, json).build());
+            asyncResponse.resume(patchMetricsAsync(user, id + '/' + type + '/' + host, path, value).build());
         });
     }
     
-    private Response.ResponseBuilder putToolAsync(String source, String id, String json) {
-        MetricsDAO.patch(mc, source, id, json);
-        return Response.ok();
+    private ResponseBuilder patchMetricsAsync(String user, String id, String path, JsonValue value) {
+        final JsonPatch patch = Json.createPatchBuilder().replace(path, value).build();
+        final String result = MetricsDAO.patch(mc, user, id, patch);
+        return Response.status(result == null ? Status.NOT_MODIFIED : Status.OK);
     }
 }

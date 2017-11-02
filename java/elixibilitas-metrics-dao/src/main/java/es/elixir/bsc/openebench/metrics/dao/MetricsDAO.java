@@ -34,6 +34,7 @@ import com.mongodb.client.MongoCursor;
 import com.mongodb.client.MongoDatabase;
 import com.mongodb.client.model.Aggregates;
 import com.mongodb.client.model.Filters;
+import com.mongodb.client.model.FindOneAndReplaceOptions;
 import com.mongodb.client.model.FindOneAndUpdateOptions;
 import com.mongodb.client.model.Projections;
 import com.mongodb.client.model.ReturnDocument;
@@ -53,6 +54,7 @@ import java.util.logging.Logger;
 import javax.json.Json;
 import javax.json.JsonArray;
 import javax.json.JsonArrayBuilder;
+import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
 import javax.json.JsonPatch;
 import javax.json.JsonStructure;
@@ -66,6 +68,7 @@ import org.bson.BsonWriter;
 import org.bson.Document;
 import org.bson.codecs.DocumentCodec;
 import org.bson.codecs.EncoderContext;
+import org.bson.conversions.Bson;
 import org.bson.json.JsonWriter;
 import org.bson.json.JsonWriterSettings;
 
@@ -154,6 +157,42 @@ public class MetricsDAO implements Serializable {
         return json;
     }
     
+    public static String patch(MongoClient mc, String user, String id, JsonPatch patch) {
+        final String result = patch(mc, id, patch);
+        if (result != null) {
+            log(mc, user, id, patch);
+        }
+        return result;
+    }
+
+    public static String patch(MongoClient mc, String id, JsonPatch patch) {
+        try  {
+            MongoDatabase db = mc.getDatabase("elixibilitas");
+            MongoCollection<Document> col = db.getCollection(COLLECTION);
+
+            final Document doc = col.find(Filters.eq("_id", id)).first();
+            if (doc != null) {
+                final JsonObject target = Json.createReader(new StringReader(doc.toJson())).readObject();
+                final JsonObject patched = patch.apply(target);
+                final StringWriter writer = new StringWriter();
+                Json.createWriter(writer).writeObject(patched);
+
+                FindOneAndReplaceOptions opt = new FindOneAndReplaceOptions().returnDocument(ReturnDocument.AFTER);
+                Document result = col.findOneAndReplace(Filters.eq("_id", id), Document.parse(writer.toString()), opt);
+
+                doc.append("@id", doc.remove("_id"));
+                doc.append("@type", "metrics");
+
+                return result.toJson();
+            }
+        } catch (IllegalArgumentException ex) {
+            Logger.getLogger(MetricsDAO.class.getName()).log(Level.SEVERE, null, ex);
+        } catch(Exception ex) {
+            Logger.getLogger(MetricsDAO.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return null;
+    }
+
     private static String put(MongoClient mc, String id, String json) {
         try {
             MongoDatabase db = mc.getDatabase("elixibilitas");
@@ -216,8 +255,13 @@ public class MetricsDAO implements Serializable {
         final JsonStructure src_obj = Json.createReader(new StringReader(src == null || src.isEmpty() ? "{}" : src )).read();
         final JsonStructure tgt_obj = Json.createReader(new StringReader(tgt == null || tgt.isEmpty() ? "{}" : tgt )).read();
 
-        final JsonPatch jpatch = Json.createDiff(src_obj, tgt_obj);
-        final JsonArray array = jpatch.toJsonArray();
+        final JsonPatch patch = Json.createDiff(src_obj, tgt_obj);
+
+        log(mc, user, id, patch);
+    }
+    
+    private static void log(MongoClient mc, String user, String id, JsonPatch patch) {
+        final JsonArray array = patch.toJsonArray();
 
         if (!array.isEmpty()) {
             final StringWriter writer = new StringWriter();
