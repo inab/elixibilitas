@@ -44,6 +44,7 @@ import java.io.OutputStreamWriter;
 import java.io.StringReader;
 import java.io.Writer;
 import java.net.URI;
+import java.security.Principal;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -73,6 +74,7 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.ResponseBuilder;
 import javax.ws.rs.core.Response.Status;
+import javax.ws.rs.core.SecurityContext;
 import javax.ws.rs.core.StreamingOutput;
 import javax.ws.rs.core.UriInfo;
 
@@ -300,14 +302,47 @@ public class BiotoolzServices {
                         @RequestBody(description = "json tool object",
                             content = @Content(schema = @Schema(ref="https://elixir.bsc.es/tool/tool.json")),
                             required = true) final String json,
+                        @Context javax.ws.rs.core.SecurityContext security,
                         @Suspended final AsyncResponse asyncResponse) {
+        
+        final Principal principal = security.getUserPrincipal();
+        final String user = principal != null ? principal.getName() : null;
+        
         executor.submit(() -> {
-            asyncResponse.resume(putToolAsync(id, json).build());
+            asyncResponse.resume(putToolAsync(user, id, json).build());
         });
     }
     
-    private ResponseBuilder putToolAsync(String id, String json) {
-        ToolDAO.put(mc, id, json);
+    @PATCH
+    @Path("/{id : .*}")
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Operation(
+        description = "update tool in the database",
+        parameters = {
+            @Parameter(in = "path", name = "id", description = "prefixed tool id", required = true)
+        }
+    )
+    @RolesAllowed("admin")
+    public void patchTool(@PathParam("id") final String id,
+                             @RequestBody(description = "json tool object",
+                                content = @Content(schema = @Schema(ref="https://elixir.bsc.es/tool/tool.json")),
+                                required = true) final String json,
+                             @Context SecurityContext security,
+                             @Suspended final AsyncResponse asyncResponse) {
+        if (id == null || id.isEmpty()) {
+            asyncResponse.resume(Response.status(Response.Status.BAD_REQUEST).build());
+        }
+        
+        final Principal principal = security.getUserPrincipal();
+        final String user = principal != null ? principal.getName() : null;
+        
+        executor.submit(() -> {
+            asyncResponse.resume(putToolAsync(user, id, json).build());
+        });
+    }
+
+    private ResponseBuilder putToolAsync(String user, String id, String json) {
+        ToolDAO.put(mc, user, id, json);
         return Response.ok();
     }
 }
