@@ -32,6 +32,7 @@ import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoCursor;
 import com.mongodb.client.MongoDatabase;
 import com.mongodb.client.model.Filters;
+import com.mongodb.client.model.FindOneAndReplaceOptions;
 import com.mongodb.client.model.FindOneAndUpdateOptions;
 import com.mongodb.client.model.Projections;
 import com.mongodb.client.model.ReturnDocument;
@@ -109,7 +110,7 @@ public class ToolDAO {
         try {
             final MongoDatabase db = mc.getDatabase("elixibilitas");
             final MongoCollection<Document> col = db.getCollection(COLLECTION);
-            FindIterable<Document> iterator = col.find().projection(new BasicDBObject());
+            FindIterable<Document> iterator = col.find();
             try (MongoCursor<Document> cursor = iterator.iterator()) {
                 while (cursor.hasNext()) {
                     tools.add(deserialize(cursor.next()));
@@ -245,6 +246,45 @@ public class ToolDAO {
         return json;
     }
     
+    public static String patch(MongoClient mc, String user, String id, JsonPatch patch) {
+        final String result = patch(mc, id, patch);
+        if (result != null) {
+            log(mc, user, id, patch);
+        }
+        return result;
+    }
+    
+    public static String patch(MongoClient mc, String id, JsonPatch patch) {
+        try  {
+            MongoDatabase db = mc.getDatabase("elixibilitas");
+            MongoCollection<Document> col = db.getCollection(COLLECTION);
+            
+            FindOneAndReplaceOptions opt = new FindOneAndReplaceOptions().returnDocument(ReturnDocument.AFTER);
+
+            Bson pk = createPK(id);
+            if (pk != null) {
+                final Document doc = col.find(Filters.eq("_id", pk)).first();
+                final JsonObject target = Json.createReader(new StringReader(doc.toJson())).readObject();
+                final JsonObject patched = patch.apply(target);
+                final StringWriter writer = new StringWriter();
+                Json.createWriter(writer).writeObject(patched);
+                
+                Document result = col.findOneAndReplace(Filters.eq("_id", pk), Document.parse(writer.toString()), opt);
+                
+                final Document _id = (Document) result.remove("_id");
+                result.append("@id", createID(_id));
+                result.append("@type", _id.getString("type"));
+                
+                return result.toJson();
+            }
+        } catch (IllegalArgumentException ex) {
+            Logger.getLogger(ToolDAO.class.getName()).log(Level.SEVERE, null, ex);
+        } catch(Exception ex) {
+            Logger.getLogger(ToolDAO.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return null;
+    }
+    
     private static String put(MongoClient mc, String id, String json) {
         try {
             MongoDatabase db = mc.getDatabase("elixibilitas");
@@ -322,6 +362,15 @@ public class ToolDAO {
         return sb.toString();
     }
     
+    /**
+     * Find tools and write them into the reader.
+     * 
+     * @param mc mongodb client connection.
+     * @param writer writer to write metrics into.
+     * @param skip mongodb skip parameter (aka from).
+     * @param limit mongodb limit parameter (limits number of tools to be written).
+     * @param projections - properties to write or null for all.
+     */
     public static void write(MongoClient mc, Writer writer, Integer skip, Integer limit, List<String> projections) {
         try {
             final MongoDatabase db = mc.getDatabase("elixibilitas");
@@ -379,7 +428,7 @@ public class ToolDAO {
     }
     
     /**
-     * Write those tools ids those semantic annotations found in the map.
+     * Write tools ids those semantic annotations found in the map.
      * 
      * @param mc mongodb connection.
      * @param writer the writer to write ids.
@@ -456,8 +505,13 @@ public class ToolDAO {
         final JsonStructure src_obj = Json.createReader(new StringReader(src == null || src.isEmpty() ? "{}" : src )).read();
         final JsonStructure tgt_obj = Json.createReader(new StringReader(tgt == null || tgt.isEmpty() ? "{}" : tgt )).read();
 
-        final JsonPatch jpatch = Json.createDiff(src_obj, tgt_obj);
-        final JsonArray array = jpatch.toJsonArray();
+        final JsonPatch patch = Json.createDiff(src_obj, tgt_obj);
+
+        log(mc, user, id, patch);
+    }
+    
+    private static void log(MongoClient mc, String user, String id, JsonPatch patch) {
+        final JsonArray array = patch.toJsonArray();
 
         if (!array.isEmpty()) {
             final StringWriter writer = new StringWriter();
