@@ -41,6 +41,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
+import java.io.Reader;
 import java.io.StringReader;
 import java.io.Writer;
 import java.net.URI;
@@ -48,6 +49,7 @@ import java.security.Principal;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.stream.Stream;
 import javax.annotation.PostConstruct;
 import javax.annotation.Resource;
 import javax.annotation.security.RolesAllowed;
@@ -55,11 +57,13 @@ import javax.enterprise.concurrent.ManagedExecutorService;
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 import javax.json.Json;
+import javax.json.JsonArray;
 import javax.json.JsonPatch;
 import javax.json.JsonPointer;
 import javax.json.JsonStructure;
 import javax.json.JsonValue;
 import javax.json.JsonWriter;
+import javax.json.stream.JsonParser;
 import javax.servlet.ServletContext;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
@@ -163,7 +167,7 @@ public class BiotoolzServices {
     private ResponseBuilder getToolsAsync(Integer skip, Integer to, List<String> projections) {
         StreamingOutput stream = (OutputStream out) -> {
             try (Writer writer = new BufferedWriter(new OutputStreamWriter(out, "UTF-8"))) {
-                ToolDAO.write(mc, writer, skip, to, projections);
+                ToolDAO.write(mc, writer, skip, to, null, projections);
             }
         };
                 
@@ -311,6 +315,44 @@ public class BiotoolzServices {
     
     private ResponseBuilder putToolAsync(String user, String id, String json) {
         ToolDAO.put(mc, user, id, json);
+        return Response.ok();
+    }
+
+    @PATCH
+    @Path("/")
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Operation(
+        summary = "Updates tools in the database."
+    )
+    @RolesAllowed("admin")
+    public void patchTools(@RequestBody(description = "batch update of tools properties",
+                                required = true) final Reader reader,
+                           @Context SecurityContext security,
+                           @Suspended final AsyncResponse asyncResponse) {
+
+        
+        final Principal principal = security.getUserPrincipal();
+        final String user = principal != null ? principal.getName() : null;
+        
+        executor.submit(() -> {
+            asyncResponse.resume(patchToolsAsync(user, reader).build());
+        });
+    }
+
+    private ResponseBuilder patchToolsAsync(String user, Reader reader) {
+        final JsonParser parser = Json.createParser(reader);
+                
+        if (parser.hasNext() &&
+            parser.next() == JsonParser.Event.START_ARRAY) {
+            Stream<JsonValue> stream = parser.getArrayStream();
+            stream.forEach(item->{
+                if (JsonValue.ValueType.OBJECT == item.getValueType()) {
+                    ToolDAO.put(mc, user, item.asJsonObject());
+                }
+            });
+        } else {
+            Response.status(Response.Status.BAD_REQUEST);
+        }
         return Response.ok();
     }
 

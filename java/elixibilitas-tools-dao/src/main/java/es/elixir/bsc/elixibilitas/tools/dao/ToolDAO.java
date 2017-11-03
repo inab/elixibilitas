@@ -370,9 +370,10 @@ public class ToolDAO {
      * @param writer writer to write metrics into.
      * @param skip mongodb skip parameter (aka from).
      * @param limit mongodb limit parameter (limits number of tools to be written).
+     * @param text text to search.
      * @param projections - properties to write or null for all.
      */
-    public static void write(MongoClient mc, Writer writer, Integer skip, Integer limit, List<String> projections) {
+    public static void write(MongoClient mc, Writer writer, Integer skip, Integer limit, String text, List<String> projections) {
         try {
             final MongoDatabase db = mc.getDatabase("elixibilitas");
             final MongoCollection<Document> col = db.getCollection(COLLECTION);
@@ -389,7 +390,11 @@ public class ToolDAO {
 
                 writer.write("[");
                 
-                FindIterable<Document> iterator = col.find().sort(new BasicDBObject("name", 1));
+                FindIterable<Document> iterator = text == null || text.isEmpty() ? col.find() :
+                        col.find(Filters.or(Filters.regex("description", text, "i"),
+                                            Filters.regex("name", text, "i")));
+
+                iterator = iterator.sort(new BasicDBObject("name", 1));
                 
                 if (skip != null) {
                     iterator = iterator.skip(skip);
