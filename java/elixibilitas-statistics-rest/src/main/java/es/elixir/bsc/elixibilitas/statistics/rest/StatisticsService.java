@@ -28,6 +28,10 @@ package es.elixir.bsc.elixibilitas.statistics.rest;
 import com.mongodb.MongoClient;
 import es.elixir.bsc.elixibilitas.tools.dao.ToolDAO;
 import es.elixir.bsc.openebench.metrics.dao.MetricsDAO;
+import java.io.BufferedWriter;
+import java.io.OutputStream;
+import java.io.OutputStreamWriter;
+import java.io.Writer;
 import java.util.List;
 import javax.annotation.Resource;
 import javax.enterprise.concurrent.ManagedExecutorService;
@@ -46,6 +50,7 @@ import javax.ws.rs.container.Suspended;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import javax.ws.rs.core.StreamingOutput;
 
 /**
  * REST Service to get some statistics.
@@ -74,6 +79,33 @@ public class StatisticsService {
     @Produces("application/rdf+xml")
     public Response getMetricsJsonSchema(@Context ServletContext ctx) {
         return Response.ok(ctx.getResourceAsStream("biotools.owl")).build();
+    }
+
+    @GET
+    @Path("/search")
+    @Produces(MediaType.APPLICATION_JSON)
+    public void search(@QueryParam("skip") final Integer skip,
+                       @QueryParam("limit") final Integer limit,
+                       @QueryParam("projection") final List<String> projections,
+                       @QueryParam("text") final String text,
+                              @Suspended final AsyncResponse asyncResponse) {
+        executor.submit(() -> {
+            asyncResponse.resume(searchAsync(skip, limit, projections, text).build());
+        });
+    }
+    
+    private Response.ResponseBuilder searchAsync(final Integer skip, 
+                              final Integer limit, 
+                              final List<String> projections, 
+                              final String text) {
+
+        StreamingOutput stream = (OutputStream out) -> {
+            try (Writer writer = new BufferedWriter(new OutputStreamWriter(out, "UTF-8"))) {
+                ToolDAO.write(mc, writer, skip, limit, text, projections);
+            }
+        };
+                
+        return Response.ok(stream);
     }
 
     @GET
