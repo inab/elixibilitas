@@ -306,7 +306,7 @@ public class EdamServices {
                  PipedReader reader = new PipedReader(writer)) {
 
                 executor.submit(() -> {
-                    ToolDAO.write(mc, writer, null, null, Arrays.asList("semantics"));
+                    ToolDAO.write(mc, writer, null, null, null, Arrays.asList("semantics"));
                 });
 
                 final Jsonb jsonb = JsonbBuilder.create(new JsonbConfig()
