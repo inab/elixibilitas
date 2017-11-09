@@ -142,6 +142,15 @@ public class MetricsDAO implements Serializable {
         return null;
     }
     
+    public static void put(MongoClient mc, String user, JsonObject json) {
+        final String id = json.getString("@id");
+        put(mc, user, id, json.toString());
+    }
+
+    public static void put(MongoClient mc, String user, String id, String json) {
+        patch(mc, user, id, json);
+    }
+
     public static String put(MongoClient mc, String user, String id, Metrics metrics) {
         final Jsonb jsonb = JsonbBuilder.create(new JsonbConfig()
                     .withPropertyNamingStrategy(PropertyNamingStrategy.UPPER_CAMEL_CASE));
