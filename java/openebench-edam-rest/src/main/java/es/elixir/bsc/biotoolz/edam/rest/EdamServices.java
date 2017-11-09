@@ -300,7 +300,6 @@ public class EdamServices {
     private Response.ResponseBuilder getToolsSemanticsAsync() {
         
         final StreamingOutput stream = (OutputStream out) -> {
-            //ByteArrayOutputStream buf = new ByteArrayOutputStream();
 
             try (PipedWriter writer = new PipedWriter();
                  PipedReader reader = new PipedReader(writer)) {
