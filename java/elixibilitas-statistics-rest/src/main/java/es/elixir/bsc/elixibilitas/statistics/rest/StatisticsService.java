@@ -51,6 +51,7 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.StreamingOutput;
+import javax.ws.rs.core.UriInfo;
 
 /**
  * REST Service to get some statistics.
@@ -109,17 +110,21 @@ public class StatisticsService {
     }
 
     @GET
-    @Path("/metrics/log/{id : .*}")
+    @Path("/metrics/log/{id}/{type}/{host}{path:.*}")
     @Produces(MediaType.APPLICATION_JSON)
-    public void getMetricsLog(@PathParam("id") final String id,
-                              @QueryParam("field") final String field,
+    public void getMetricsLog(@PathParam("id") String id,
+                           @PathParam("type") String type,
+                           @PathParam("host") String host,
+                           @PathParam("path") String path,
+                              @Context final UriInfo uriInfo,
+                              //@QueryParam("field") final String field,
                               @Suspended final AsyncResponse asyncResponse) {
-        if (id == null || id.isEmpty() ||
-            field == null || field.isEmpty()) {
+        if (path == null || path.isEmpty()) {
             asyncResponse.resume(Response.status(Response.Status.BAD_REQUEST).build());
         }
+        final String prefix = uriInfo.getBaseUri().getPath();
         executor.submit(() -> {
-            asyncResponse.resume(getMetricsLogAsync(id, field).build());
+            asyncResponse.resume(getMetricsLogAsync(id + "/" + type + "/" + host, path).build());
         });
     }
 

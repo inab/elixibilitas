@@ -58,6 +58,7 @@ import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
 import javax.json.JsonPatch;
 import javax.json.JsonStructure;
+import javax.json.JsonValue;
 import javax.json.bind.Jsonb;
 import javax.json.bind.JsonbBuilder;
 import javax.json.bind.JsonbConfig;
@@ -68,7 +69,6 @@ import org.bson.BsonWriter;
 import org.bson.Document;
 import org.bson.codecs.DocumentCodec;
 import org.bson.codecs.EncoderContext;
-import org.bson.conversions.Bson;
 import org.bson.json.JsonWriter;
 import org.bson.json.JsonWriterSettings;
 
@@ -240,15 +240,20 @@ public class MetricsDAO implements Serializable {
             try (MongoCursor<Document> cursor = iterator.iterator()) {
                 while (cursor.hasNext()) {
                     final Document doc = cursor.next();
-                    JsonObjectBuilder jab = Json.createObjectBuilder().add("date", doc.get("_id", Document.class).getString("date"));
-                    final String value = doc.get("patch", Document.class).getString("value");
-                    if (value == null) {
-                        jab.addNull("value");
-                    } else {
-                        jab.add("value", value);
+                    final Document patch = doc.get("patch", Document.class);
+                    if (patch != null) {
+                        JsonObjectBuilder jab = Json.createObjectBuilder().add("date", doc.get("_id", Document.class).getString("date"));
+                        JsonObject o = Json.createReader(new StringReader(patch.toJson())).readObject();
+                        if (o != null) {
+                            JsonValue value = o.get("value");
+                            if (value == null) {
+                                jab.addNull("value");
+                            } else {
+                                jab.add("value", value.toString());
+                            }
+                        }
+                        builder.add(jab);
                     }
-                    
-                    builder.add(jab);
                 }
             }
             return builder.build();
@@ -264,11 +269,59 @@ public class MetricsDAO implements Serializable {
         final JsonStructure src_obj = Json.createReader(new StringReader(src == null || src.isEmpty() ? "{}" : src )).read();
         final JsonStructure tgt_obj = Json.createReader(new StringReader(tgt == null || tgt.isEmpty() ? "{}" : tgt )).read();
 
-        final JsonPatch patch = Json.createDiff(src_obj, tgt_obj);
+        JsonPatch patch = unroll(Json.createDiff(src_obj, tgt_obj));
 
         log(mc, user, id, patch);
     }
     
+    /**
+     * Unrolls JsonPatch in a way that all add operations become primitives
+     * 
+     * @param patch the original patch
+     * @return unrolled patch
+     */
+    private static JsonPatch unroll(JsonPatch patch) {
+        JsonArrayBuilder builder = Json.createArrayBuilder();
+        JsonArray operations = patch.toJsonArray();
+        for (int i = 0, n = operations.size(); i < n; i++) {
+            JsonObject operation = operations.getJsonObject(i);
+            JsonValue value = operation.get("value");
+            if (value != null) {
+                JsonObjectBuilder obuilder = Json.createObjectBuilder();
+                switch(value.getValueType()) {
+                    case OBJECT: obuilder.add("value", Json.createObjectBuilder());
+                                 break;
+                    case ARRAY: obuilder.add("value", Json.createArrayBuilder());
+                                break;
+                    default: builder.add(Json.createObjectBuilder(operation));
+                             continue;
+
+                }
+                String path = operation.getString("path", "");
+                String op = operation.getString("op", "");
+                switch(op) {
+                    case "replace": 
+                            builder.add(obuilder.add("op", "remove").add("path", path));
+                            // replace == remove + add
+                    case "add": 
+                            builder.add(obuilder.add("op", "add").add("path", path));
+                    
+                            JsonPatch subPatch = unroll(Json.createDiff(Json.createObjectBuilder().build(), 
+                                                (JsonStructure)value));
+                            JsonArray subOperations = subPatch.toJsonArray();
+                            for (int j = 0, m = subOperations.size(); j < m; j++) {
+                                JsonObject subOperation = subOperations.getJsonObject(j);
+                                builder.add(obuilder.add("op", "add")
+                                                    .add("path", path + subOperation.getString("path", ""))
+                                                    .add("value", subOperation.get("value")));
+                            }
+                }
+            }
+        }
+
+        return Json.createPatch(builder.build());
+    }
+
     private static void log(MongoClient mc, String user, String id, JsonPatch patch) {
         final JsonArray array = patch.toJsonArray();
 

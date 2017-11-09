@@ -40,21 +40,25 @@ import io.swagger.oas.annotations.servers.Server;
 import java.io.BufferedWriter;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
+import java.io.Reader;
 import java.io.StringReader;
 import java.io.Writer;
 import java.net.URI;
 import java.security.Principal;
 import java.util.List;
+import java.util.stream.Stream;
 import javax.annotation.Resource;
 import javax.annotation.security.RolesAllowed;
 import javax.enterprise.concurrent.ManagedExecutorService;
 import javax.inject.Inject;
 import javax.json.Json;
+import javax.json.JsonObject;
 import javax.json.JsonPatch;
 import javax.json.JsonPointer;
 import javax.json.JsonStructure;
 import javax.json.JsonValue;
 import javax.json.JsonWriter;
+import javax.json.stream.JsonParser;
 import javax.servlet.ServletContext;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
@@ -230,6 +234,56 @@ public class MetricsService {
 
     private Response.ResponseBuilder putMetricsAsync(String source, String id, String json) {
         MetricsDAO.patch(mc, source, id, json);
+        return Response.ok();
+    }
+
+    @PATCH
+    @Path("/")
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Operation(
+        summary = "Updates metrics in the database."
+    )
+    @RolesAllowed("admin")
+    public void patchMetrics(@RequestBody(description = "batch update of metrics properties",
+                                required = true) final Reader reader,
+                             @Context final UriInfo uriInfo,
+                             @Context SecurityContext security,
+                             @Suspended final AsyncResponse asyncResponse) {
+
+        final String prefix = uriInfo.getBaseUri().getPath();
+        final Principal principal = security.getUserPrincipal();
+        final String user = principal != null ? principal.getName() : null;
+        
+        executor.submit(() -> {
+            asyncResponse.resume(patchMetricsAsync(prefix, user, reader).build());
+        });
+    }
+    
+    private ResponseBuilder patchMetricsAsync(final String prefix, final String user, final Reader reader) {
+        final JsonParser parser = Json.createParser(reader);
+                
+        if (parser.hasNext() &&
+            parser.next() == JsonParser.Event.START_ARRAY) {
+            Stream<JsonValue> stream = parser.getArrayStream();
+            stream.forEach(item->{
+                if (JsonValue.ValueType.OBJECT == item.getValueType()) {
+                    final JsonObject object = item.asJsonObject();
+                    String id = object.getString("@id");
+                    if (id != null) {
+                        try {
+                            final String path = URI.create(id).getPath();
+                            if (path.startsWith(prefix)) {
+                                id = path.substring(prefix.length());
+                                MetricsDAO.put(mc, user, id, object.toString());
+                            }
+                            
+                        } catch (IllegalArgumentException ex) {}
+                    }
+                }
+            });
+        } else {
+            Response.status(Response.Status.BAD_REQUEST);
+        }
         return Response.ok();
     }
 
