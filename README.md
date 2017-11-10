@@ -27,14 +27,12 @@ The REST API is based on [JAX-RS](jcp.org/en/jsr/detail?id=370) API.
 
 The API provides an access to biological tools descriptions:
 ```
-https://elixir.bsc.es/tool[?{projection}]
 https://elixir.bsc.es/tool/{id}
 https://elixir.bsc.es/tool/{id}/{type}
 https://elixir.bsc.es/tool/{id}/{type}/{host}
 https://elixir.bsc.es/tool/{id}/{type}/{host}/{path}
 ```
 where:
-- {projection} is the mongodb projection(s) to limit the output (i.e. "publications.doi")
 - {id} is the prefixed tool id (i.e. "bio.tools:pmut")
 - {type} is a type of the tool ("web", "app", "cmd", "db", "rest", "soap")
 - {host} is the tool provider which is usually provider's host
@@ -45,9 +43,8 @@ where:
 > Swagger: [https://elixir.bsc.es/metrics/openapi.json](https://elixir.bsc.es/metrics/openapi.json)<br/>
 > Metrics JSON Schema: [https://elixir.bsc.es/metrics/metrics.json](https://elixir.bsc.es/metrics/metrics.json)<br/><br/>
 > Note that {id}/{type}/{host} uniquely identify the tool, while omitting the {type} or {host} returns an array of descriptions.<br/><br/>
-> example 1: [https://elixir.bsc.es/tool?projection=publications](https://elixir.bsc.es/tool?projection=publications) .<br/>
-> example 2: [https://elixir.bsc.es/tool/bio.tools:pmut/web/mmb.irbbarcelona.org](https://elixir.bsc.es/tool/bio.tools:pmut/web/mmb.irbbarcelona.org) .<br/>
-> example 3: [https://elixir.bsc.es/tool/bio.tools:pmut/web/mmb.irbbarcelona.org/credits](https://elixir.bsc.es/tool/bio.tools:pmut/web/mmb.irbbarcelona.org/credits) .<br/>
+> example 1: [https://elixir.bsc.es/tool/bio.tools:pmut/web/mmb.irbbarcelona.org](https://elixir.bsc.es/tool/bio.tools:pmut/web/mmb.irbbarcelona.org) .<br/>
+> example 2: [https://elixir.bsc.es/tool/bio.tools:pmut/web/mmb.irbbarcelona.org/credits](https://elixir.bsc.es/tool/bio.tools:pmut/web/mmb.irbbarcelona.org/credits) .<br/>
 > curl patch tool data example: 
 ```
 curl -v -X PATCH -u user:password -H 'Content-Type: application/json' /
