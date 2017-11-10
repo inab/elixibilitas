@@ -57,7 +57,6 @@ import javax.enterprise.concurrent.ManagedExecutorService;
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 import javax.json.Json;
-import javax.json.JsonArray;
 import javax.json.JsonPatch;
 import javax.json.JsonPointer;
 import javax.json.JsonStructure;
@@ -135,39 +134,27 @@ public class BiotoolzServices {
     /**
      * Get back all tools as a JSON array.
      * 
-     * @param skip
-     * @param limit
-     * @param projections
      * @param asyncResponse 
      */
     @GET
     @Path("/")
     @Produces(MediaType.APPLICATION_JSON)
     @Operation(summary = "Returns all tools descriptions.",
-        parameters = {
-            @Parameter(in = "query", name = "skip", description = "skip n tools", required = false),
-            @Parameter(in = "query", name = "limit", description = "return n tools", required = false),
-            @Parameter(in = "query", name = "projection", description = "fields to return", required = false)
-        },
-
         responses = {
             @ApiResponse(content = @Content(mediaType = MediaType.APPLICATION_JSON,
                                             schema = @Schema(ref="https://elixir.bsc.es/tool/tool.json")))
         }
     )
-    public void getTools(@QueryParam("skip") final Integer skip,
-                         @QueryParam("limit") final Integer limit,
-                         @QueryParam("projection") final List<String> projections,
-                         @Suspended final AsyncResponse asyncResponse) {
+    public void getTools(@Suspended final AsyncResponse asyncResponse) {
         executor.submit(() -> {
-            asyncResponse.resume(getToolsAsync(skip, limit, projections).build());
+            asyncResponse.resume(getToolsAsync());
         });
     }
 
-    private ResponseBuilder getToolsAsync(Integer skip, Integer to, List<String> projections) {
+    private ResponseBuilder getToolsAsync() {
         StreamingOutput stream = (OutputStream out) -> {
             try (Writer writer = new BufferedWriter(new OutputStreamWriter(out, "UTF-8"))) {
-                ToolDAO.write(mc, writer, skip, to, null, projections);
+                ToolDAO.write(mc, writer, null, null, null, null);
             }
         };
                 
