@@ -28,6 +28,11 @@ package es.elixir.bsc.elixibilitas.statistics.rest;
 import com.mongodb.MongoClient;
 import es.elixir.bsc.elixibilitas.tools.dao.ToolDAO;
 import es.elixir.bsc.openebench.metrics.dao.MetricsDAO;
+import io.swagger.oas.annotations.Operation;
+import io.swagger.oas.annotations.Parameter;
+import io.swagger.oas.annotations.media.Content;
+import io.swagger.oas.annotations.media.Schema;
+import io.swagger.oas.annotations.responses.ApiResponse;
 import java.io.BufferedWriter;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
@@ -51,7 +56,6 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.StreamingOutput;
-import javax.ws.rs.core.UriInfo;
 
 /**
  * REST Service to get some statistics.
@@ -85,6 +89,19 @@ public class StatisticsService {
     @GET
     @Path("/search")
     @Produces(MediaType.APPLICATION_JSON)
+    @Operation(summary = "Returns all tools descriptions.",
+        parameters = {
+            @Parameter(in = "query", name = "skip", description = "skip n tools", required = false),
+            @Parameter(in = "query", name = "limit", description = "return n tools", required = false),
+            @Parameter(in = "query", name = "projection", description = "fields to return", required = false),
+            @Parameter(in = "query", name = "text", description = "text to search", required = false)
+        },
+
+        responses = {
+            @ApiResponse(content = @Content(mediaType = MediaType.APPLICATION_JSON,
+                                            schema = @Schema(ref="https://elixir.bsc.es/tool/tool.json")))
+        }
+    )
     public void search(@QueryParam("skip") final Integer skip,
                        @QueryParam("limit") final Integer limit,
                        @QueryParam("projection") final List<String> projections,
@@ -116,13 +133,10 @@ public class StatisticsService {
                            @PathParam("type") String type,
                            @PathParam("host") String host,
                            @PathParam("path") String path,
-                              @Context final UriInfo uriInfo,
-                              //@QueryParam("field") final String field,
                               @Suspended final AsyncResponse asyncResponse) {
         if (path == null || path.isEmpty()) {
             asyncResponse.resume(Response.status(Response.Status.BAD_REQUEST).build());
         }
-        final String prefix = uriInfo.getBaseUri().getPath();
         executor.submit(() -> {
             asyncResponse.resume(getMetricsLogAsync(id + "/" + type + "/" + host, path).build());
         });
