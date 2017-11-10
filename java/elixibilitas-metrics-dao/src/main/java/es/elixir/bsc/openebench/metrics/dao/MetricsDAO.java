@@ -266,11 +266,7 @@ public class MetricsDAO implements Serializable {
     
     private static void log(MongoClient mc, String user, String id, String src, String tgt) {
         
-        final JsonStructure src_obj = Json.createReader(new StringReader(src == null || src.isEmpty() ? "{}" : src )).read();
-        final JsonStructure tgt_obj = Json.createReader(new StringReader(tgt == null || tgt.isEmpty() ? "{}" : tgt )).read();
-
-        JsonPatch patch = unroll(Json.createDiff(src_obj, tgt_obj));
-
+        JsonPatch patch = JsonLog.createJsonPatch(src, tgt);
         log(mc, user, id, patch);
     }
     
