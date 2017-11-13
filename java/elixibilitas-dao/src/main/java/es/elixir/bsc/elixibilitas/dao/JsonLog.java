@@ -168,9 +168,11 @@ public class JsonLog {
                                     break;
                                 }
                         case "add":
+                                final JsonStructure empty = type == ValueType.OBJECT ? Json.createObjectBuilder().build() : 
+                                                                       Json.createArrayBuilder().build();
                                 if (inv) {
-                                    unroll(builder, root + path, Json.createDiff(Json.createObjectBuilder().build(), 
-                                                    (JsonStructure)value), inv);
+                                    unroll(builder, root + path, 
+                                            Json.createDiff(empty, (JsonStructure)value), inv);
                                     builder.add(Json.createObjectBuilder()
                                             .add("op", "remove")
                                             .add("path", root + path));                                    
@@ -179,8 +181,8 @@ public class JsonLog {
                                             .add("op", "add")
                                             .add("path", root + path)
                                             .add("value", type == ValueType.OBJECT ? "{}" : "[]"));
-                                    unroll(builder, root + path, Json.createDiff(Json.createObjectBuilder().build(), 
-                                                    (JsonStructure)value), inv);
+                                    unroll(builder, root + path, 
+                                            Json.createDiff(empty, (JsonStructure)value), inv);
                                 }
                     }
                 } else if (inv) {

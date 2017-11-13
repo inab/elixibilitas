@@ -291,11 +291,8 @@ public class ToolDAO {
         try {
             MongoDatabase db = mc.getDatabase("elixibilitas");
             MongoCollection<Document> col = db.getCollection(COLLECTION);
-            
-            FindOneAndUpdateOptions opt = new FindOneAndUpdateOptions().upsert(true)
-                .projection(Projections.excludeId()).returnDocument(ReturnDocument.BEFORE);
 
-            Bson pk = createPK(id);
+            BasicDBObject pk = createPK(id);
             if (pk != null) {
                 Document bson = Document.parse(json);
                 
@@ -304,10 +301,20 @@ public class ToolDAO {
                 bson.remove("@id");
                 bson.remove("@type");
 
+                FindOneAndUpdateOptions opt = new FindOneAndUpdateOptions().upsert(true)
+                    .projection(Projections.excludeId()).returnDocument(ReturnDocument.BEFORE);
+
                 Document doc = col.findOneAndUpdate(Filters.eq("_id", pk),
                         new Document("$set", bson), opt);
+
+                if (doc == null) {
+                    return null;
+                }
                 
-                return doc != null ? doc.toJson() : null;
+                doc.append("@id", id);
+                doc.append("@type", pk.getString("type"));
+                
+                return doc.toJson();
             }
         } catch (IllegalArgumentException ex) {
             Logger.getLogger(ToolDAO.class.getName()).log(Level.SEVERE, null, ex);
@@ -339,7 +346,7 @@ public class ToolDAO {
         return null;
     }
     
-    private static Bson createPK(String id) {
+    private static BasicDBObject createPK(String id) {
         final URI uri = URI.create(id);
         final String path = uri.getPath();
         if (path != null) {
