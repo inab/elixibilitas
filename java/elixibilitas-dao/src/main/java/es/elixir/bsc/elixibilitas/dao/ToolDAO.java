@@ -36,6 +36,7 @@ import com.mongodb.client.model.FindOneAndReplaceOptions;
 import com.mongodb.client.model.FindOneAndUpdateOptions;
 import com.mongodb.client.model.Projections;
 import com.mongodb.client.model.ReturnDocument;
+import static es.elixir.bsc.elixibilitas.dao.MetricsDAO.LOG_COLLECTION;
 import es.elixir.bsc.openebench.model.tools.CommandLineTool;
 import es.elixir.bsc.openebench.model.tools.DatabasePortal;
 import es.elixir.bsc.openebench.model.tools.DesktopApplication;
@@ -56,8 +57,6 @@ import java.io.StringReader;
 import java.io.StringWriter;
 import java.io.Writer;
 import java.net.URI;
-import java.time.ZoneId;
-import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -68,12 +67,10 @@ import javax.json.Json;
 import javax.json.JsonArray;
 import javax.json.JsonObject;
 import javax.json.JsonPatch;
-import javax.json.JsonStructure;
 import javax.json.bind.Jsonb;
 import javax.json.bind.JsonbBuilder;
 import javax.json.bind.JsonbConfig;
 import javax.json.bind.config.PropertyNamingStrategy;
-import org.bson.BsonArray;
 import org.bson.BsonWriter;
 import org.bson.Document;
 import org.bson.codecs.DocumentCodec;
@@ -239,9 +236,13 @@ public class ToolDAO {
         patch(mc, user, tool.id.toString(), json);
     }
     
+    public static JsonArray findLog(MongoClient mc, String id, String jpointer) {
+        return new JsonLog("elixibilitas", LOG_COLLECTION).findLog(mc, id, jpointer);
+    }
+
     public static String patch(MongoClient mc, String user, String id, String json) {
         final String src = put(mc, id, json);
-        log(mc, user, id, src, json);
+        new JsonLog("elixibilitas", LOG_COLLECTION).log(mc, user, id, src, json);
 
         return json;
     }
@@ -249,7 +250,7 @@ public class ToolDAO {
     public static String patch(MongoClient mc, String user, String id, JsonPatch patch) {
         final String result = patch(mc, id, patch);
         if (result != null) {
-            log(mc, user, id, patch);
+            new JsonLog("elixibilitas", LOG_COLLECTION).log(mc, user, id, patch);
         }
         return result;
     }
@@ -503,35 +504,6 @@ public class ToolDAO {
             }
         } catch(Exception ex) {
             Logger.getLogger(ToolDAO.class.getName()).log(Level.SEVERE, null, ex);
-        }
-    }
-
-    private static void log(MongoClient mc, String user, String id, String src, String tgt) {
-        
-        final JsonStructure src_obj = Json.createReader(new StringReader(src == null || src.isEmpty() ? "{}" : src )).read();
-        final JsonStructure tgt_obj = Json.createReader(new StringReader(tgt == null || tgt.isEmpty() ? "{}" : tgt )).read();
-
-        final JsonPatch patch = Json.createDiff(src_obj, tgt_obj);
-
-        log(mc, user, id, patch);
-    }
-    
-    private static void log(MongoClient mc, String user, String id, JsonPatch patch) {
-        final JsonArray array = patch.toJsonArray();
-
-        if (!array.isEmpty()) {
-            final StringWriter writer = new StringWriter();
-            Json.createWriter(writer).writeArray(array);
-
-            MongoDatabase db = mc.getDatabase("elixibilitas");
-            MongoCollection<Document> col = db.getCollection(LOG_COLLECTION);
-
-            Document bson = new Document();
-            bson.append("_id", new BasicDBObject("id", id).append("date", ZonedDateTime.now(ZoneId.of("Z")).toString()));
-            bson.append("src", user);
-            bson.append("patch", BsonArray.parse(writer.toString()));
-
-            col.insertOne(bson);
         }
     }
 

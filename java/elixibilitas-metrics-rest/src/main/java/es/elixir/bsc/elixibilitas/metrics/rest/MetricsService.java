@@ -52,6 +52,7 @@ import javax.annotation.security.RolesAllowed;
 import javax.enterprise.concurrent.ManagedExecutorService;
 import javax.inject.Inject;
 import javax.json.Json;
+import javax.json.JsonArray;
 import javax.json.JsonObject;
 import javax.json.JsonPatch;
 import javax.json.JsonPointer;
@@ -330,4 +331,33 @@ public class MetricsService {
         final String result = MetricsDAO.patch(mc, user, id, patch);
         return Response.status(result == null ? Status.NOT_MODIFIED : Status.OK);
     }
+    
+    @GET
+    @Path("/log/{id}/{type}/{host}{path:.*}")
+    @Produces(MediaType.APPLICATION_JSON)
+    public void getMetricsLog(@PathParam("id") String id,
+                           @PathParam("type") String type,
+                           @PathParam("host") String host,
+                           @PathParam("path") String path,
+                              @Suspended final AsyncResponse asyncResponse) {
+        if (path == null || path.isEmpty()) {
+            asyncResponse.resume(Response.status(Response.Status.BAD_REQUEST).build());
+        }
+        executor.submit(() -> {
+            asyncResponse.resume(getMetricsLogAsync(id + "/" + type + "/" + host, path).build());
+        });
+    }
+
+    private Response.ResponseBuilder getMetricsLogAsync(String id, String field) {
+        final JsonArray array = MetricsDAO.findLog(mc, id, field);
+        if (array == null) {
+            return Response.status(Response.Status.INTERNAL_SERVER_ERROR);
+        }
+        if (array.isEmpty()) {
+            return Response.status(Response.Status.NOT_FOUND);
+        }
+        
+        return Response.ok(array);
+    }
+
 }

@@ -125,11 +125,10 @@ public class StatisticsService {
                 
         return Response.ok(stream);
     }
-
     @GET
-    @Path("/metrics/log/{id}/{type}/{host}{path:.*}")
+    @Path("/log/{id}/{type}/{host}{path:.*}")
     @Produces(MediaType.APPLICATION_JSON)
-    public void getMetricsLog(@PathParam("id") String id,
+    public void getToolsLog(@PathParam("id") String id,
                            @PathParam("type") String type,
                            @PathParam("host") String host,
                            @PathParam("path") String path,
@@ -138,12 +137,12 @@ public class StatisticsService {
             asyncResponse.resume(Response.status(Response.Status.BAD_REQUEST).build());
         }
         executor.submit(() -> {
-            asyncResponse.resume(getMetricsLogAsync(id + "/" + type + "/" + host, path).build());
+            asyncResponse.resume(getToolsLogAsync(id + "/" + type + "/" + host, path).build());
         });
     }
 
-    private Response.ResponseBuilder getMetricsLogAsync(String id, String field) {
-        final JsonArray array = MetricsDAO.findLog(mc, id, field);
+    private Response.ResponseBuilder getToolsLogAsync(String id, String field) {
+        final JsonArray array = ToolDAO.findLog(mc, id, field);
         if (array == null) {
             return Response.status(Response.Status.INTERNAL_SERVER_ERROR);
         }

@@ -1,13 +1,12 @@
 package es.elixir.bsc.openebench.checker;
 
 import com.mongodb.MongoClient;
+import es.elixir.bsc.elixibilitas.dao.MetricsDAO;
+import es.elixir.bsc.elixibilitas.dao.ToolDAO;
 import es.elixir.bsc.elixibilitas.model.metrics.Metrics;
-import es.elixir.bsc.elixibilitas.tools.dao.ToolDAO;
-import es.elixir.bsc.openebench.metrics.dao.MetricsDAO;
 import es.elixir.bsc.openebench.model.tools.Tool;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -32,8 +31,9 @@ public class BatchMetricsChecker {
     }
 
     public void check(MongoClient mc) {
-        List<Tool> tools = ToolDAO.get(mc);
-
+        final List<Tool> tools = ToolDAO.get(mc);
+        final CountDownLatch latch = new CountDownLatch(tools.size());
+        
         tools.forEach(tool -> {
             
             final String id = tool.id.getPath().substring(6); // "/tool/"
@@ -52,9 +52,14 @@ public class BatchMetricsChecker {
                     } catch (InterruptedException | ExecutionException ex) {
                         Logger.getLogger(BatchMetricsChecker.class.getName()).log(Level.SEVERE, null, ex);
                     }
-                    
+                    latch.countDown();
                 }
             });
         });
+        
+        // ensure that all taksks executed.
+        try {
+            latch.await();
+        } catch (InterruptedException ex) {}
     }
 }

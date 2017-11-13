@@ -27,12 +27,10 @@ package es.elixir.bsc.elixibilitas.dao;
 
 import com.mongodb.BasicDBObject;
 import com.mongodb.MongoClient;
-import com.mongodb.client.AggregateIterable;
 import com.mongodb.client.FindIterable;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoCursor;
 import com.mongodb.client.MongoDatabase;
-import com.mongodb.client.model.Aggregates;
 import com.mongodb.client.model.Filters;
 import com.mongodb.client.model.FindOneAndReplaceOptions;
 import com.mongodb.client.model.FindOneAndUpdateOptions;
@@ -44,27 +42,19 @@ import java.io.Serializable;
 import java.io.StringReader;
 import java.io.StringWriter;
 import java.io.Writer;
-import java.time.ZoneId;
-import java.time.ZonedDateTime;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.json.Json;
 import javax.json.JsonArray;
-import javax.json.JsonArrayBuilder;
 import javax.json.JsonObject;
-import javax.json.JsonObjectBuilder;
 import javax.json.JsonPatch;
-import javax.json.JsonStructure;
-import javax.json.JsonValue;
 import javax.json.bind.Jsonb;
 import javax.json.bind.JsonbBuilder;
 import javax.json.bind.JsonbConfig;
 import javax.json.bind.JsonbException;
 import javax.json.bind.config.PropertyNamingStrategy;
-import org.bson.BsonArray;
 import org.bson.BsonWriter;
 import org.bson.Document;
 import org.bson.codecs.DocumentCodec;
@@ -161,15 +151,14 @@ public class MetricsDAO implements Serializable {
     
     public static String patch(MongoClient mc, String user, String id, String json) {
         final String src = put(mc, id, json);
-        log(mc, user, id, src, json);
-
+        new JsonLog("elixibilitas", LOG_COLLECTION).log(mc, user, id, src, json);
         return json;
     }
     
     public static String patch(MongoClient mc, String user, String id, JsonPatch patch) {
         final String result = patch(mc, id, patch);
         if (result != null) {
-            log(mc, user, id, patch);
+            new JsonLog("elixibilitas", LOG_COLLECTION).log(mc, user, id, patch);
         }
         return result;
     }
@@ -224,117 +213,7 @@ public class MetricsDAO implements Serializable {
     }
     
     public static JsonArray findLog(MongoClient mc, String id, String jpointer) {
-
-        try {
-            final MongoDatabase db = mc.getDatabase("elixibilitas");
-            final MongoCollection<Document> col = db.getCollection(LOG_COLLECTION);
-            
-            AggregateIterable<Document> iterator = col.aggregate(Arrays.asList(
-                                        Aggregates.match(new BasicDBObject("_id.id", id)),
-                                        Aggregates.unwind("$patch"),
-                                        Aggregates.match(new BasicDBObject("patch.path", jpointer)),
-                                        Aggregates.project(new BasicDBObject("_id.date", 1).append("patch.value", 1))));
-            
-            JsonArrayBuilder builder = Json.createArrayBuilder();
-            
-            try (MongoCursor<Document> cursor = iterator.iterator()) {
-                while (cursor.hasNext()) {
-                    final Document doc = cursor.next();
-                    final Document patch = doc.get("patch", Document.class);
-                    if (patch != null) {
-                        JsonObjectBuilder jab = Json.createObjectBuilder().add("date", doc.get("_id", Document.class).getString("date"));
-                        JsonObject o = Json.createReader(new StringReader(patch.toJson())).readObject();
-                        if (o != null) {
-                            JsonValue value = o.get("value");
-                            if (value == null) {
-                                jab.addNull("value");
-                            } else {
-                                jab.add("value", value.toString());
-                            }
-                        }
-                        builder.add(jab);
-                    }
-                }
-            }
-            return builder.build();
-        } catch(Exception ex) {
-            Logger.getLogger(MetricsDAO.class.getName()).log(Level.SEVERE, null, ex);
-        }
-        return null;
-
-    }
-    
-    private static void log(MongoClient mc, String user, String id, String src, String tgt) {
-        
-        JsonPatch patch = JsonLog.createJsonPatch(src, tgt);
-        log(mc, user, id, patch);
-    }
-    
-    /**
-     * Unrolls JsonPatch in a way that all add operations become primitives
-     * 
-     * @param patch the original patch
-     * @return unrolled patch
-     */
-    private static JsonPatch unroll(JsonPatch patch) {
-        JsonArrayBuilder builder = Json.createArrayBuilder();
-        JsonArray operations = patch.toJsonArray();
-        for (int i = 0, n = operations.size(); i < n; i++) {
-            JsonObject operation = operations.getJsonObject(i);
-            JsonValue value = operation.get("value");
-            if (value != null) {
-                JsonObjectBuilder obuilder = Json.createObjectBuilder();
-                switch(value.getValueType()) {
-                    case OBJECT: obuilder.add("value", Json.createObjectBuilder());
-                                 break;
-                    case ARRAY: obuilder.add("value", Json.createArrayBuilder());
-                                break;
-                    default: builder.add(Json.createObjectBuilder(operation));
-                             continue;
-
-                }
-                String path = operation.getString("path", "");
-                String op = operation.getString("op", "");
-                switch(op) {
-                    case "replace": 
-                            builder.add(obuilder.add("op", "remove").add("path", path));
-                            // replace == remove + add
-                    case "add": 
-                            builder.add(obuilder.add("op", "add").add("path", path));
-                    
-                            JsonPatch subPatch = unroll(Json.createDiff(Json.createObjectBuilder().build(), 
-                                                (JsonStructure)value));
-                            JsonArray subOperations = subPatch.toJsonArray();
-                            for (int j = 0, m = subOperations.size(); j < m; j++) {
-                                JsonObject subOperation = subOperations.getJsonObject(j);
-                                builder.add(obuilder.add("op", "add")
-                                                    .add("path", path + subOperation.getString("path", ""))
-                                                    .add("value", subOperation.get("value")));
-                            }
-                }
-            }
-        }
-
-        return Json.createPatch(builder.build());
-    }
-
-    private static void log(MongoClient mc, String user, String id, JsonPatch patch) {
-        final JsonArray array = patch.toJsonArray();
-
-        if (!array.isEmpty()) {
-            final StringWriter writer = new StringWriter();
-            Json.createWriter(writer).writeArray(array);
-
-            MongoDatabase db = mc.getDatabase("elixibilitas");
-            MongoCollection<Document> col = db.getCollection(LOG_COLLECTION);
-
-            Document bson = new Document();
-            bson.append("_id", new BasicDBObject("id", id).append("date", ZonedDateTime.now(ZoneId.of("Z")).toString()));
-            bson.append("src", user);
-            bson.append("patch", BsonArray.parse(writer.toString()));
-
-            col.insertOne(bson);
-        }
+        return new JsonLog("elixibilitas", LOG_COLLECTION).findLog(mc, id, jpointer);
     }
     
     private static Metrics deserialize(Document doc) {
@@ -409,5 +288,4 @@ public class MetricsDAO implements Serializable {
             Logger.getLogger(MetricsDAO.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
-
 }

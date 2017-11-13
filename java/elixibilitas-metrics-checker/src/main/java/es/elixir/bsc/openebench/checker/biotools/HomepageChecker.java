@@ -45,6 +45,7 @@ import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLSession;
 import javax.net.ssl.TrustManager;
 import javax.net.ssl.X509TrustManager;
+import javax.ws.rs.client.Client;
 import javax.ws.rs.client.ClientBuilder;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
@@ -134,28 +135,37 @@ public class HomepageChecker implements MetricsChecker {
 
             int code;
             for (int i = 0; i < 10; i++) {
-                Response response = CB.build().target(homepage).request(MediaType.WILDCARD).header("User-Agent", "Mozilla/5.0 Gecko/20100101 Firefox/54.0").get();
-                code = response.getStatus();
+                final Client client = CB.build();
+                try {
+                    final Response response = client.target(homepage).request(MediaType.WILDCARD).header("User-Agent", "Mozilla/5.0 Gecko/20100101 Firefox/54.0").get();
+                    try {
+                        code = response.getStatus();
 
-                switch (code) {
-                    case HttpURLConnection.HTTP_OK: 
-                    case HttpURLConnection.HTTP_NOT_MODIFIED: return code;
-                    case HttpURLConnection.HTTP_MOVED_PERM:
-                    case HttpURLConnection.HTTP_MOVED_TEMP:
-                    case 307: // Temporary Redirect
-                    case 308: // Permanent Redirect
-                    case HttpURLConnection.HTTP_SEE_OTHER:
-                        URI redirect = response.getLocation();
-                        if (redirect == null) {
-                            Logger.getLogger(HomepageChecker.class.getName()).log(Level.INFO, String.format("\n-----> %1$s %2$s redirect to null", tool.id.toString(), homepage));
-                            return code;
+                        switch (code) {
+                            case HttpURLConnection.HTTP_OK: 
+                            case HttpURLConnection.HTTP_NOT_MODIFIED: return code;
+                            case HttpURLConnection.HTTP_MOVED_PERM:
+                            case HttpURLConnection.HTTP_MOVED_TEMP:
+                            case 307: // Temporary Redirect
+                            case 308: // Permanent Redirect
+                            case HttpURLConnection.HTTP_SEE_OTHER:
+                                URI redirect = response.getLocation();
+                                if (redirect == null) {
+                                    Logger.getLogger(HomepageChecker.class.getName()).log(Level.INFO, String.format("\n-----> %1$s %2$s redirect to null", tool.id.toString(), homepage));
+                                    return code;
+                                }
+
+                                homepage = redirect.isAbsolute() ? redirect : homepage.resolve(redirect);
+
+                                continue;
+                            default: Logger.getLogger(HomepageChecker.class.getName()).log(Level.INFO, String.format("\n-----> %1$s %2$s %3$s", tool.id.toString(), homepage, code));
+                                     return code;
                         }
-
-                        homepage = redirect.isAbsolute() ? redirect : homepage.resolve(redirect);
-                        
-                        continue;
-                    default: Logger.getLogger(HomepageChecker.class.getName()).log(Level.INFO, String.format("\n-----> %1$s %2$s %3$s", tool.id.toString(), homepage, code));
-                             return code;
+                    } finally {
+                        response.close();
+                    }
+                } finally {
+                    client.close();
                 }
             }
         } catch (Exception ex) {
