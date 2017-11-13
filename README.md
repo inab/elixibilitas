@@ -94,9 +94,10 @@ https://elixir.bsc.es/tools/statistics/{tool_type} : number of tools of particul
 ```
 > example: [https://elixir.bsc.es/tools/statistics/cmd](https://elixir.bsc.es/tools/statistics/cmd) .
 
-All metrics changes are stored in a log collection and could be accessed:
+All changes are stored in a log collection and could be accessed:
 
 ```
-https://elixir.bsc.es/tools/metrics/log/{id}/{type}/{host}/{path}
+https://elixir.bsc.es/tools/log/{id}/{type}/{host}/{path}
+https://elixir.bsc.es/metrics/log/{id}/{type}/{host}/{path}
 ```
-> example: [https://elixir.bsc.es/tools/metrics/log/bio.tools:pmut/cmd/mmb.irbbarcelona.org/project/website/operational](https://elixir.bsc.es/tools/metrics/log/bio.tools:pmut/cmd/mmb.irbbarcelona.org/project/website/operational) .
+> example: [https://elixir.bsc.es/metrics/log/bio.tools:pmut/cmd/mmb.irbbarcelona.org/project/website/operational](https://elixir.bsc.es/metrics/log/bio.tools:pmut/cmd/mmb.irbbarcelona.org/project/website/operational) .
