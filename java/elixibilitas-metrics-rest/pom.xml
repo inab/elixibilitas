@@ -63,13 +63,6 @@
         </dependency>
 
         <dependency>
-            <groupId>es.elixir.bsc.elixibilitas</groupId>
-            <artifactId>elixibilitas-tools-dao</artifactId>
-            <version>0.1-SNAPSHOT</version>
-            <type>jar</type>
-        </dependency>
-
-        <dependency>
             <groupId>org.mongodb</groupId>
             <artifactId>mongodb-driver</artifactId>
             <version>3.4.1</version>
