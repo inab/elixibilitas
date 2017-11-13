@@ -24,10 +24,9 @@
         <module>openebench-tools-model</module>
         <module>openebench-tools-rest</module>
         <module>openebench-edam-rest</module>
-        <module>elixibilitas-tools-dao</module>
+        <module>elixibilitas-dao</module>
         <module>elixibilitas-tools-importer</module>
         <module>elixibilitas-metrics-model</module>
-        <module>elixibilitas-metrics-dao</module>
         <module>elixibilitas-metrics-checker</module>
         <module>elixibilitas-metrics-rest</module>
         <module>elixibilitas-statistics-rest</module>

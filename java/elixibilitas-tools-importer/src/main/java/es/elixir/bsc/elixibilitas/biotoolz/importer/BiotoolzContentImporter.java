@@ -99,7 +99,7 @@ public class BiotoolzContentImporter {
             page = next(tools, page);
             
             tools.forEach((tool) -> {
-                ToolDAO.put(mc, tool);
+                ToolDAO.put(mc, "biotools", tool);
             });
         } while (page > 0);
     }

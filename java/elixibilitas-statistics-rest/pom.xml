@@ -44,16 +44,15 @@
 
         <dependency>
             <groupId>es.elixir.bsc.elixibilitas</groupId>
-            <artifactId>elixibilitas-metrics-dao</artifactId>
+            <artifactId>elixibilitas-dao</artifactId>
             <version>0.1-SNAPSHOT</version>
             <type>jar</type>
         </dependency>
 
         <dependency>
-            <groupId>es.elixir.bsc.elixibilitas</groupId>
-            <artifactId>elixibilitas-tools-dao</artifactId>
-            <version>0.1-SNAPSHOT</version>
-            <type>jar</type>
+            <groupId>io.swagger</groupId>
+            <artifactId>swagger-jaxrs2</artifactId>
+            <version>2.0.0-rc2</version>
         </dependency>
 
     </dependencies>
