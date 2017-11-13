@@ -1,6 +1,5 @@
-package es.elixir.bsc.opeebench.metrics.dao;
+package es.elixir.bsc.elixibilitas.dao;
 
-import es.elixir.bsc.openebench.metrics.dao.JsonLog;
 import javax.json.JsonPatch;
 import org.junit.Assert;
 import org.junit.Test;

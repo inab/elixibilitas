@@ -23,7 +23,7 @@
  *****************************************************************************
  */
 
-package es.elixir.bsc.elixibilitas.tools.dao;
+package es.elixir.bsc.elixibilitas.dao;
 
 import com.mongodb.BasicDBObject;
 import com.mongodb.MongoClient;

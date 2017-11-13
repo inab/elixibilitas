@@ -26,7 +26,7 @@
 package es.elixir.bsc.elixibilitas.metrics.rest;
 
 import com.mongodb.MongoClient;
-import es.elixir.bsc.openebench.metrics.dao.MetricsDAO;
+import es.elixir.bsc.elixibilitas.dao.MetricsDAO;
 import io.swagger.oas.annotations.Operation;
 import io.swagger.oas.annotations.Parameter;
 import io.swagger.oas.annotations.info.Contact;

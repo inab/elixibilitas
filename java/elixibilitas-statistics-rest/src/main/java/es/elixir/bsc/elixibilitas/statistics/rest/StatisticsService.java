@@ -26,8 +26,8 @@
 package es.elixir.bsc.elixibilitas.statistics.rest;
 
 import com.mongodb.MongoClient;
-import es.elixir.bsc.elixibilitas.tools.dao.ToolDAO;
-import es.elixir.bsc.openebench.metrics.dao.MetricsDAO;
+import es.elixir.bsc.elixibilitas.dao.MetricsDAO;
+import es.elixir.bsc.elixibilitas.dao.ToolDAO;
 import io.swagger.oas.annotations.Operation;
 import io.swagger.oas.annotations.Parameter;
 import io.swagger.oas.annotations.media.Content;

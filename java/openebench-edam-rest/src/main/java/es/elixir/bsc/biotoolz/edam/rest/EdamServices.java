@@ -26,7 +26,7 @@
 package es.elixir.bsc.biotoolz.edam.rest;
 
 import com.mongodb.MongoClient;
-import es.elixir.bsc.elixibilitas.tools.dao.ToolDAO;
+import es.elixir.bsc.elixibilitas.dao.ToolDAO;
 import es.elixir.bsc.openebench.model.tools.Datatype;
 import es.elixir.bsc.openebench.model.tools.Semantics;
 import es.elixir.bsc.openebench.model.tools.Tool;

@@ -23,7 +23,7 @@
  *****************************************************************************
  */
 
-package es.elixir.bsc.openebench.metrics.dao;
+package es.elixir.bsc.elixibilitas.dao;
 
 import java.io.StringReader;
 import javax.json.Json;
