@@ -57,30 +57,29 @@ import org.bson.Document;
 
 public class JsonLog {
 
-    private final String database;
+    private final MongoDatabase database;
     private final String log_collection;
     
-    public JsonLog(final String database, 
+    public JsonLog(final MongoDatabase database, 
                    final String log_collection) {
         this.database = database;
         this.log_collection = log_collection;
     }
 
-    public void log(MongoClient mc, String user, String id, String src, String tgt) {
+    public void log(String user, String id, String src, String tgt) {
         
         JsonPatch patch = JsonLog.createJsonPatch(src, tgt);
-        log(mc, user, id, patch);
+        log(user, id, patch);
     }
 
-    public void log(MongoClient mc, String user, String id, JsonPatch patch) {
+    public void log(String user, String id, JsonPatch patch) {
         final JsonArray array = patch.toJsonArray();
 
         if (!array.isEmpty()) {
             final StringWriter writer = new StringWriter();
             Json.createWriter(writer).writeArray(array);
 
-            MongoDatabase db = mc.getDatabase(database);
-            MongoCollection<Document> col = db.getCollection(log_collection);
+            MongoCollection<Document> col = database.getCollection(log_collection);
 
             Document bson = new Document();
             bson.append("_id", new BasicDBObject("id", id).append("date", ZonedDateTime.now(ZoneId.of("Z")).toString()));
@@ -91,11 +90,10 @@ public class JsonLog {
         }
     }
 
-    public JsonArray findLog(MongoClient mc, String id, String jpointer) {
+    public JsonArray findLog(String id, String jpointer) {
 
         try {
-            final MongoDatabase db = mc.getDatabase(database);
-            final MongoCollection<Document> col = db.getCollection(log_collection);
+            final MongoCollection<Document> col = database.getCollection(log_collection);
             
             AggregateIterable<Document> iterator = col.aggregate(Arrays.asList(
                                         Aggregates.match(new BasicDBObject("_id.id", id)),
@@ -200,5 +198,4 @@ public class JsonLog {
             }
         }
     }
-
 }

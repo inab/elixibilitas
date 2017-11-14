@@ -26,7 +26,7 @@
 package es.elixir.bsc.openebench.tools.rest;
 
 import com.mongodb.MongoClient;
-import es.elixir.bsc.elixibilitas.dao.ToolDAO;
+import es.elixir.bsc.elixibilitas.dao.ToolsDAO;
 import io.swagger.oas.annotations.Operation;
 import io.swagger.oas.annotations.Parameter;
 import io.swagger.oas.annotations.media.Content;
@@ -101,6 +101,8 @@ public class BiotoolzServices {
 
     private String ctx_jsonld;
     
+    private ToolsDAO toolsDAO;
+    
     @PostConstruct
     public void init() {
         try (InputStream in = ctx.getResourceAsStream("/META-INF/resources/jsonld.owl")) {
@@ -117,6 +119,7 @@ public class BiotoolzServices {
             Logger.getLogger(BiotoolzServices.class.getName()).log(Level.SEVERE, null, ex);
         }
 
+        toolsDAO = new ToolsDAO(mc.getDatabase("elixibilitas"));
     }
     
     /**
@@ -154,7 +157,7 @@ public class BiotoolzServices {
     private ResponseBuilder getToolsAsync() {
         StreamingOutput stream = (OutputStream out) -> {
             try (Writer writer = new BufferedWriter(new OutputStreamWriter(out, "UTF-8"))) {
-                ToolDAO.write(mc, writer, null, null, null, null);
+                toolsDAO.write(writer, null, null, null, null);
             }
         };
                 
@@ -216,7 +219,7 @@ public class BiotoolzServices {
     }
 
     private ResponseBuilder getToolAsync(String id, String path) {
-        final String json = ToolDAO.getJSON(mc, id);
+        final String json = toolsDAO.getJSON(id);
         if (json == null) {
             return Response.status(Response.Status.NOT_FOUND);
         }
@@ -239,7 +242,7 @@ public class BiotoolzServices {
     }
     
     private ResponseBuilder getToolsAsync(String uri) {
-        final String json = ToolDAO.getJSONArray(mc, uri);
+        final String json = toolsDAO.getJSONArray(uri);
         return json != null ? Response.ok(json, MediaType.APPLICATION_JSON_TYPE) :
                               Response.status(Status.NOT_FOUND);
     }
@@ -256,7 +259,7 @@ public class BiotoolzServices {
     }
 
     private ResponseBuilder getOntologyAsync(String id) {
-        final String json = ToolDAO.getJSON(mc, id);
+        final String json = toolsDAO.getJSON(id);
         if (json == null) {
             return Response.status(Status.NOT_FOUND);
         }
@@ -301,7 +304,7 @@ public class BiotoolzServices {
     }
     
     private ResponseBuilder putToolAsync(String user, String id, String json) {
-        ToolDAO.put(mc, user, id, json);
+        toolsDAO.put(user, id, json);
         return Response.ok();
     }
 
@@ -334,7 +337,7 @@ public class BiotoolzServices {
             Stream<JsonValue> stream = parser.getArrayStream();
             stream.forEach(item->{
                 if (JsonValue.ValueType.OBJECT == item.getValueType()) {
-                    ToolDAO.put(mc, user, item.asJsonObject());
+                    toolsDAO.put(user, item.asJsonObject());
                 }
             });
         } else {
@@ -390,7 +393,7 @@ public class BiotoolzServices {
 
     private ResponseBuilder patchToolAsync(String user, String id, String path, JsonValue value) {
         final JsonPatch patch = Json.createPatchBuilder().replace(path, value).build();
-        final String result = ToolDAO.patch(mc, user, id, patch);
+        final String result = toolsDAO.patch(user, id, patch);
         return Response.status(result == null ? Status.NOT_MODIFIED : Status.OK);
     }
 }

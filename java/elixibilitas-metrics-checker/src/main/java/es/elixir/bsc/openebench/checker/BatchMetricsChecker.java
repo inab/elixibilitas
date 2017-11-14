@@ -2,7 +2,7 @@ package es.elixir.bsc.openebench.checker;
 
 import com.mongodb.MongoClient;
 import es.elixir.bsc.elixibilitas.dao.MetricsDAO;
-import es.elixir.bsc.elixibilitas.dao.ToolDAO;
+import es.elixir.bsc.elixibilitas.dao.ToolsDAO;
 import es.elixir.bsc.elixibilitas.model.metrics.Metrics;
 import es.elixir.bsc.openebench.model.tools.Tool;
 import java.util.List;
@@ -31,14 +31,18 @@ public class BatchMetricsChecker {
     }
 
     public void check(MongoClient mc) {
-        final List<Tool> tools = ToolDAO.get(mc);
+        
+        final ToolsDAO toolsDAO = new ToolsDAO(mc.getDatabase("elixibilitas"));
+        final MetricsDAO metricsDAO = new MetricsDAO(mc.getDatabase("elixibilitas"));
+        
+        final List<Tool> tools = toolsDAO.get();
         final CountDownLatch latch = new CountDownLatch(tools.size());
         
         tools.forEach(tool -> {
             
             final String id = tool.id.getPath().substring(6); // "/tool/"
             
-            Metrics metrics = MetricsDAO.get(mc, id);
+            Metrics metrics = metricsDAO.get(id);
             if (metrics == null) {
                 metrics = new Metrics();
             }
@@ -48,7 +52,7 @@ public class BatchMetricsChecker {
                 @Override
                 public void run() {
                     try {
-                        MetricsDAO.put(mc, "biotools", id, future.get());
+                        metricsDAO.put("biotools", id, future.get());
                     } catch (InterruptedException | ExecutionException ex) {
                         Logger.getLogger(BatchMetricsChecker.class.getName()).log(Level.SEVERE, null, ex);
                     }

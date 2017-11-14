@@ -26,7 +26,7 @@
 package es.elixir.bsc.biotoolz.edam.rest;
 
 import com.mongodb.MongoClient;
-import es.elixir.bsc.elixibilitas.dao.ToolDAO;
+import es.elixir.bsc.elixibilitas.dao.ToolsDAO;
 import es.elixir.bsc.openebench.model.tools.Datatype;
 import es.elixir.bsc.openebench.model.tools.Semantics;
 import es.elixir.bsc.openebench.model.tools.Tool;
@@ -125,6 +125,8 @@ public class EdamServices {
     @Resource
     private ManagedExecutorService executor;
     
+    private ToolsDAO toolsDAO;
+ 
     @PostConstruct
     public void init() {
 
@@ -159,6 +161,8 @@ public class EdamServices {
                 Logger.getLogger(EdamServices.class.getName()).log(Level.SEVERE, null, ex2);
             }
         }
+        
+        toolsDAO = new ToolsDAO(mc.getDatabase("elixibilitas"));
     }
 
     @PreDestroy
@@ -279,7 +283,7 @@ public class EdamServices {
             if (!map.isEmpty()) {
                 try (Writer writer = new BufferedWriter(new OutputStreamWriter(out, "UTF-8"))) {
                     writer.append("[");
-                    ToolDAO.filter(mc, writer, map);
+                    toolsDAO.filter(writer, map);
                     writer.append("]");
                 }
             }
@@ -305,7 +309,7 @@ public class EdamServices {
                  PipedReader reader = new PipedReader(writer)) {
 
                 executor.submit(() -> {
-                    ToolDAO.write(mc, writer, null, null, null, Arrays.asList("semantics"));
+                    toolsDAO.write(writer, null, null, null, Arrays.asList("semantics"));
                 });
 
                 final Jsonb jsonb = JsonbBuilder.create(new JsonbConfig()
@@ -352,7 +356,7 @@ public class EdamServices {
     }
     
     private Response.ResponseBuilder getToolSemanticsAsync(final String id) {
-        final Tool tool = ToolDAO.get(mc, id);
+        final Tool tool = toolsDAO.get(id);
         if (tool == null) {
             return Response.status(Response.Status.NOT_FOUND);
         }

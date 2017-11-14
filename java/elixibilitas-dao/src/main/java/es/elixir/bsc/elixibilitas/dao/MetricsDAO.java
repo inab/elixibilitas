@@ -26,7 +26,6 @@
 package es.elixir.bsc.elixibilitas.dao;
 
 import com.mongodb.BasicDBObject;
-import com.mongodb.MongoClient;
 import com.mongodb.client.FindIterable;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoCursor;
@@ -47,7 +46,6 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.json.Json;
-import javax.json.JsonArray;
 import javax.json.JsonObject;
 import javax.json.JsonPatch;
 import javax.json.bind.Jsonb;
@@ -68,31 +66,20 @@ import org.bson.json.JsonWriterSettings;
  * @author Dmitry Repchevsky
  */
 
-public class MetricsDAO implements Serializable {
+public class MetricsDAO extends AbstractDAO implements Serializable {
     
     public final static String COLLECTION = "metrics2";
-    public final static String LOG_COLLECTION = "metrics2.log";
-    
     public final static String AUTHORITY = "http://elixir.bsc.es/metrics/";
     
-    public static long count(MongoClient mc) {
-        final MongoDatabase db = mc.getDatabase("elixibilitas");
-        final MongoCollection<Document> col = db.getCollection(COLLECTION);
-        return col.count();
+    public MetricsDAO(MongoDatabase database) {
+        super(database, COLLECTION);
     }
 
-    public static long count(MongoClient mc, String query) {
-        final MongoDatabase db = mc.getDatabase("elixibilitas");
-        final MongoCollection<Document> col = db.getCollection(COLLECTION);
-        return col.count(Document.parse(query));
-    }
-
-    public static List<Metrics> get(MongoClient mc) {
+    public List<Metrics> get() {
         List<Metrics> metrics = new ArrayList<>();
 
         try {
-            final MongoDatabase db = mc.getDatabase("elixibilitas");
-            final MongoCollection<Document> col = db.getCollection(COLLECTION);
+            final MongoCollection<Document> col = database.getCollection(collection);
             
             for (Document doc : col.find()) {
                 metrics.add(deserialize(doc));
@@ -104,20 +91,19 @@ public class MetricsDAO implements Serializable {
         return metrics;
     }
     
-    public static Metrics get(MongoClient mc, String id) {
-        final Document doc = getBSON(mc, id);
+    public Metrics get(String id) {
+        final Document doc = getBSON(id);
         return doc != null ? deserialize(doc) : null;
     }
     
-    public static String getJSON(MongoClient mc, String id) {
-        final Document doc = getBSON(mc, id);
+    public String getJSON(String id) {
+        final Document doc = getBSON(id);
         return doc != null ? doc.toJson() : null;
     }
     
-    private static Document getBSON(MongoClient mc, String id) {
+    private Document getBSON(String id) {
         try {
-            final MongoDatabase db = mc.getDatabase("elixibilitas");
-            final MongoCollection<Document> col = db.getCollection(COLLECTION);
+            final MongoCollection<Document> col = database.getCollection(collection);
 
             Document doc = col.find(Filters.eq("_id", id)).first();
             if (doc != null) {
@@ -132,41 +118,40 @@ public class MetricsDAO implements Serializable {
         return null;
     }
     
-    public static void put(MongoClient mc, String user, JsonObject json) {
+    public void put(String user, JsonObject json) {
         final String id = json.getString("@id");
-        put(mc, user, id, json.toString());
+        put(user, id, json.toString());
     }
 
-    public static void put(MongoClient mc, String user, String id, String json) {
-        patch(mc, user, id, json);
+    public void put(String user, String id, String json) {
+        patch(user, id, json);
     }
 
-    public static String put(MongoClient mc, String user, String id, Metrics metrics) {
+    public String put(String user, String id, Metrics metrics) {
         final Jsonb jsonb = JsonbBuilder.create(new JsonbConfig()
                     .withPropertyNamingStrategy(PropertyNamingStrategy.UPPER_CAMEL_CASE));
         final String json = jsonb.toJson(metrics);
         
-        return patch(mc, user, id, json);
+        return patch(user, id, json);
     }
     
-    public static String patch(MongoClient mc, String user, String id, String json) {
-        final String src = put(mc, id, json);
-        new JsonLog("elixibilitas", LOG_COLLECTION).log(mc, user, id, src, json);
+    public String patch(String user, String id, String json) {
+        final String src = put(id, json);
+        log.log(user, id, src, json);
         return json;
     }
     
-    public static String patch(MongoClient mc, String user, String id, JsonPatch patch) {
-        final String result = patch(mc, id, patch);
+    public String patch(String user, String id, JsonPatch patch) {
+        final String result = patch(id, patch);
         if (result != null) {
-            new JsonLog("elixibilitas", LOG_COLLECTION).log(mc, user, id, patch);
+            log.log(user, id, patch);
         }
         return result;
     }
 
-    public static String patch(MongoClient mc, String id, JsonPatch patch) {
+    public String patch(String id, JsonPatch patch) {
         try  {
-            MongoDatabase db = mc.getDatabase("elixibilitas");
-            MongoCollection<Document> col = db.getCollection(COLLECTION);
+            MongoCollection<Document> col = database.getCollection(collection);
 
             final Document doc = col.find(Filters.eq("_id", id)).first();
             if (doc != null) {
@@ -191,10 +176,9 @@ public class MetricsDAO implements Serializable {
         return null;
     }
 
-    private static String put(MongoClient mc, String id, String json) {
+    private String put(String id, String json) {
         try {
-            MongoDatabase db = mc.getDatabase("elixibilitas");
-            MongoCollection<Document> col = db.getCollection(COLLECTION);
+            MongoCollection<Document> col = database.getCollection(collection);
 
             FindOneAndUpdateOptions opt = new FindOneAndUpdateOptions().upsert(true)
                     .projection(Projections.excludeId()).returnDocument(ReturnDocument.BEFORE);
@@ -210,10 +194,6 @@ public class MetricsDAO implements Serializable {
             Logger.getLogger(MetricsDAO.class.getName()).log(Level.SEVERE, null, ex);
         }
         return null;
-    }
-    
-    public static JsonArray findLog(MongoClient mc, String id, String jpointer) {
-        return new JsonLog("elixibilitas", LOG_COLLECTION).findLog(mc, id, jpointer);
     }
     
     private static Metrics deserialize(Document doc) {
@@ -237,14 +217,12 @@ public class MetricsDAO implements Serializable {
     /**
      * Find metrics and write them into the reader.
      * 
-     * @param mc - Mongodb client connection.
      * @param writer - writer to write metrics into.
      * @param projections - properties to write or null for all.
      */
-    public static void write(MongoClient mc, Writer writer, List<String> projections) {
+    public void write(Writer writer, List<String> projections) {
         try {
-            final MongoDatabase db = mc.getDatabase("elixibilitas");
-            final MongoCollection<Document> col = db.getCollection(COLLECTION);
+            final MongoCollection<Document> col = database.getCollection(collection);
             try (JsonWriter jwriter = new JsonWriter(writer, new JsonWriterSettings(true))) {
 
                 final DocumentCodec codec = new DocumentCodec() {

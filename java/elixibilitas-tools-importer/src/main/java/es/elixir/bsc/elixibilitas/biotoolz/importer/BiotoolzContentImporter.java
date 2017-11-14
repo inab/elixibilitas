@@ -38,7 +38,7 @@ import es.elixir.bsc.biotools.parser.model.LicenseType;
 import es.elixir.bsc.biotools.parser.model.MaturityType;
 import es.elixir.bsc.biotools.parser.model.OperatingSystemType;
 import es.elixir.bsc.biotools.parser.model.ToolLinkType;
-import es.elixir.bsc.elixibilitas.dao.ToolDAO;
+import es.elixir.bsc.elixibilitas.dao.ToolsDAO;
 import es.elixir.bsc.openebench.model.tools.Contact;
 import es.elixir.bsc.openebench.model.tools.Credit;
 import es.elixir.bsc.openebench.model.tools.DatabasePortal;
@@ -99,7 +99,8 @@ public class BiotoolzContentImporter {
             page = next(tools, page);
             
             tools.forEach((tool) -> {
-                ToolDAO.put(mc, "biotools", tool);
+                ToolsDAO toolsDAO = new ToolsDAO(mc.getDatabase("elixibilitas"));
+                toolsDAO.put("biotools", tool);
             });
         } while (page > 0);
     }
@@ -155,7 +156,7 @@ public class BiotoolzContentImporter {
         
         String id = jtool.getString("id", null);
 
-        StringBuilder idTemplate = new StringBuilder(ToolDAO.AUTHORITY).append("bio.tools:").append(id).append("/%s");
+        StringBuilder idTemplate = new StringBuilder(ToolsDAO.AUTHORITY).append("bio.tools:").append(id).append("/%s");
         final String jhomepage = jtool.getString("homepage", null);
         URI homepage = null;
         if (jhomepage != null) {

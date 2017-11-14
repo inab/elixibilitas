@@ -27,7 +27,7 @@ package es.elixir.bsc.elixibilitas.statistics.rest;
 
 import com.mongodb.MongoClient;
 import es.elixir.bsc.elixibilitas.dao.MetricsDAO;
-import es.elixir.bsc.elixibilitas.dao.ToolDAO;
+import es.elixir.bsc.elixibilitas.dao.ToolsDAO;
 import io.swagger.oas.annotations.Operation;
 import io.swagger.oas.annotations.Parameter;
 import io.swagger.oas.annotations.media.Content;
@@ -38,6 +38,7 @@ import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.Writer;
 import java.util.List;
+import javax.annotation.PostConstruct;
 import javax.annotation.Resource;
 import javax.enterprise.concurrent.ManagedExecutorService;
 import javax.inject.Inject;
@@ -72,6 +73,15 @@ public class StatisticsService {
     @Resource
     private ManagedExecutorService executor;
     
+    private ToolsDAO toolsDAO;
+    private MetricsDAO metricsDAO;
+    
+    @PostConstruct
+    public void init() {
+        toolsDAO = new ToolsDAO(mc.getDatabase("elixibilitas"));
+        metricsDAO = new MetricsDAO(mc.getDatabase("elixibilitas"));
+    }
+
     /**
      * Proxy method to return Biotoolz ontology.
      * 
@@ -119,7 +129,7 @@ public class StatisticsService {
 
         StreamingOutput stream = (OutputStream out) -> {
             try (Writer writer = new BufferedWriter(new OutputStreamWriter(out, "UTF-8"))) {
-                ToolDAO.write(mc, writer, skip, limit, text, projections);
+                toolsDAO.write(writer, skip, limit, text, projections);
             }
         };
                 
@@ -142,7 +152,7 @@ public class StatisticsService {
     }
 
     private Response.ResponseBuilder getToolsLogAsync(String id, String field) {
-        final JsonArray array = ToolDAO.findLog(mc, id, field);
+        final JsonArray array = toolsDAO.findLog(id, field);
         if (array == null) {
             return Response.status(Response.Status.INTERNAL_SERVER_ERROR);
         }
@@ -213,8 +223,8 @@ public class StatisticsService {
     
     private long getStatistics(final String field) {
         switch(field) {
-            case "total": return ToolDAO.count(mc);
-            case "operational": return MetricsDAO.count(mc, "{'project.website.operational' : {$in: [200, 202]}}");
+            case "total": return toolsDAO.count();
+            case "operational": return metricsDAO.count("{'project.website.operational' : {$in: [200, 202]}}");
             case "cmd":
             case "web":
             case "db":
@@ -228,13 +238,13 @@ public class StatisticsService {
             case "script":
             case "rest":
             case "workbench":
-            case "suite": return ToolDAO.count(mc, String.format("{'_id.type' : '%s'}", field));
+            case "suite": return toolsDAO.count(String.format("{'_id.type' : '%s'}", field));
         }
 
         return Long.MIN_VALUE;
     }
 
     private long getMetricsStatistics(final String type) {
-        return MetricsDAO.count(mc, "{'project.website.operational' : {$in: [200, 202]}, '_id': { $regex: '/" + type + "/'}}");
+        return metricsDAO.count("{'project.website.operational' : {$in: [200, 202]}, '_id': { $regex: '/" + type + "/'}}");
     }
 }

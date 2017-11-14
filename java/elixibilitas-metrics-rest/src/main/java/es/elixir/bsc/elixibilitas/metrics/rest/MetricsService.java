@@ -47,6 +47,7 @@ import java.net.URI;
 import java.security.Principal;
 import java.util.List;
 import java.util.stream.Stream;
+import javax.annotation.PostConstruct;
 import javax.annotation.Resource;
 import javax.annotation.security.RolesAllowed;
 import javax.enterprise.concurrent.ManagedExecutorService;
@@ -101,6 +102,13 @@ public class MetricsService {
     @Resource
     private ManagedExecutorService executor;
     
+    private MetricsDAO metricsDAO;
+    
+    @PostConstruct
+    public void init() {
+        metricsDAO = new MetricsDAO(mc.getDatabase("elixibilitas"));
+    }
+
     /**
      * Proxy method to return Metrics JSON Schema.
      * 
@@ -153,7 +161,7 @@ public class MetricsService {
     }
 
     private ResponseBuilder getMetricsAsync(String id, String path) {
-        final String json = MetricsDAO.getJSON(mc, id);
+        final String json = metricsDAO.getJSON(id);
         if (json == null) {
             return Response.status(Response.Status.NOT_FOUND);
         }
@@ -202,7 +210,7 @@ public class MetricsService {
     private ResponseBuilder getToolsAsync(List<String> projections) {
         StreamingOutput stream = (OutputStream out) -> {
             try (Writer writer = new BufferedWriter(new OutputStreamWriter(out, "UTF-8"))) {
-                MetricsDAO.write(mc, writer, projections);
+                metricsDAO.write(writer, projections);
             }
         };
                 
@@ -234,7 +242,7 @@ public class MetricsService {
     }
 
     private Response.ResponseBuilder putMetricsAsync(String source, String id, String json) {
-        MetricsDAO.patch(mc, source, id, json);
+        metricsDAO.patch(source, id, json);
         return Response.ok();
     }
 
@@ -275,7 +283,7 @@ public class MetricsService {
                             final String path = URI.create(id).getPath();
                             if (path.startsWith(prefix)) {
                                 id = path.substring(prefix.length());
-                                MetricsDAO.put(mc, user, id, object.toString());
+                                metricsDAO.put(user, id, object.toString());
                             }
                             
                         } catch (IllegalArgumentException ex) {}
@@ -328,7 +336,7 @@ public class MetricsService {
     
     private ResponseBuilder patchMetricsAsync(String user, String id, String path, JsonValue value) {
         final JsonPatch patch = Json.createPatchBuilder().replace(path, value).build();
-        final String result = MetricsDAO.patch(mc, user, id, patch);
+        final String result = metricsDAO.patch(user, id, patch);
         return Response.status(result == null ? Status.NOT_MODIFIED : Status.OK);
     }
     
@@ -349,7 +357,7 @@ public class MetricsService {
     }
 
     private Response.ResponseBuilder getMetricsLogAsync(String id, String field) {
-        final JsonArray array = MetricsDAO.findLog(mc, id, field);
+        final JsonArray array = metricsDAO.findLog(id, field);
         if (array == null) {
             return Response.status(Response.Status.INTERNAL_SERVER_ERROR);
         }

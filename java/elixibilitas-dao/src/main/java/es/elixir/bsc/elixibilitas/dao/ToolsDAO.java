@@ -26,7 +26,6 @@
 package es.elixir.bsc.elixibilitas.dao;
 
 import com.mongodb.BasicDBObject;
-import com.mongodb.MongoClient;
 import com.mongodb.client.FindIterable;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoCursor;
@@ -36,7 +35,6 @@ import com.mongodb.client.model.FindOneAndReplaceOptions;
 import com.mongodb.client.model.FindOneAndUpdateOptions;
 import com.mongodb.client.model.Projections;
 import com.mongodb.client.model.ReturnDocument;
-import static es.elixir.bsc.elixibilitas.dao.MetricsDAO.LOG_COLLECTION;
 import es.elixir.bsc.openebench.model.tools.CommandLineTool;
 import es.elixir.bsc.openebench.model.tools.DatabasePortal;
 import es.elixir.bsc.openebench.model.tools.DesktopApplication;
@@ -53,6 +51,7 @@ import es.elixir.bsc.openebench.model.tools.WebApplication;
 import es.elixir.bsc.openebench.model.tools.Workbench;
 import es.elixir.bsc.openebench.model.tools.Workflow;
 import java.io.IOException;
+import java.io.Serializable;
 import java.io.StringReader;
 import java.io.StringWriter;
 import java.io.Writer;
@@ -64,7 +63,6 @@ import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.json.Json;
-import javax.json.JsonArray;
 import javax.json.JsonObject;
 import javax.json.JsonPatch;
 import javax.json.bind.Jsonb;
@@ -83,30 +81,20 @@ import org.bson.json.JsonWriterSettings;
  * @author Dmitry Repchevsky
  */
 
-public class ToolDAO {
+public class ToolsDAO extends AbstractDAO implements Serializable {
     
     public final static String COLLECTION = "biotoolz";
-    public final static String LOG_COLLECTION = "biotoolz.log";
     public final static String AUTHORITY = "http://elixir.bsc.es/tool/";
     
-    public static long count(MongoClient mc) {
-        final MongoDatabase db = mc.getDatabase("elixibilitas");
-        final MongoCollection<Document> col = db.getCollection(COLLECTION);
-        return col.count();
-    }
-    
-    public static long count(MongoClient mc, String query) {
-        final MongoDatabase db = mc.getDatabase("elixibilitas");
-        final MongoCollection<Document> col = db.getCollection(COLLECTION);
-        return col.count(Document.parse(query));
+    public ToolsDAO(MongoDatabase database) {
+        super(database, COLLECTION);
     }
 
-    public static List<Tool> get(MongoClient mc) {
+    public List<Tool> get() {
         List<Tool> tools = new ArrayList<>();
 
         try {
-            final MongoDatabase db = mc.getDatabase("elixibilitas");
-            final MongoCollection<Document> col = db.getCollection(COLLECTION);
+            final MongoCollection<Document> col = database.getCollection(collection);
             FindIterable<Document> iterator = col.find();
             try (MongoCursor<Document> cursor = iterator.iterator()) {
                 while (cursor.hasNext()) {
@@ -114,18 +102,18 @@ public class ToolDAO {
                 }
             }
         } catch(Exception ex) {
-            Logger.getLogger(ToolDAO.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(ToolsDAO.class.getName()).log(Level.SEVERE, null, ex);
         }
 
         return tools;
     }
     
-    public static Tool get(MongoClient mc, String id) {
-        final List<Document> docs = getBSON(mc, id);
+    public Tool get(String id) {
+        final List<Document> docs = getBSON(id);
         return docs.isEmpty() ? null : deserialize(docs.get(0));
     }
     
-    private static Tool deserialize(Document doc) {
+    private Tool deserialize(Document doc) {
         final Document _id = (Document) doc.remove("_id");
         final String type = _id.getString("type");
 
@@ -157,8 +145,8 @@ public class ToolDAO {
         return jsonb.fromJson(json, Tool.class);
     }
     
-    public static String getJSON(MongoClient mc, String id) {
-        final List<Document> docs = getBSON(mc, id);
+    public String getJSON(String id) {
+        final List<Document> docs = getBSON(id);
         
         if (docs.isEmpty()) {
             return null;
@@ -172,8 +160,8 @@ public class ToolDAO {
         return doc.toJson();        
     }
     
-    public static String getJSONArray(MongoClient mc, String uri) {
-        final List<Document> docs = getBSON(mc, uri);
+    public String getJSONArray(String uri) {
+        final List<Document> docs = getBSON(uri);
         if (docs.isEmpty()) {
             return null;
         }
@@ -196,12 +184,11 @@ public class ToolDAO {
         return sb.toString();
     }
     
-    private static List<Document> getBSON(MongoClient mc, String uri) {
+    private List<Document> getBSON(String uri) {
         List<Document> list = new ArrayList<>();
         
         try {
-            final MongoDatabase db = mc.getDatabase("elixibilitas");
-            final MongoCollection<Document> col = db.getCollection(COLLECTION);
+            final MongoCollection<Document> col = database.getCollection(collection);
 
             final Bson query = createFindQuery(uri);
             if (query != null) {
@@ -213,52 +200,47 @@ public class ToolDAO {
                 }
             }
         } catch(Exception ex) {
-            Logger.getLogger(ToolDAO.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(ToolsDAO.class.getName()).log(Level.SEVERE, null, ex);
         }
         return list;        
     }
     
-    public static void put(MongoClient mc, String user, JsonObject json) {
+    public void put(String user, JsonObject json) {
         final String id = json.getString("@id");
-        put(mc, user, id, json.toString());
+        patch(user, id, json.toString());
     }
 
-    public static void put(MongoClient mc, String user, String id, String json) {
-        patch(mc, user, id, json);
+    public void put(String user, String id, String json) {
+        patch(user, id, json);
     }
 
-    public static void put(MongoClient mc, String user, Tool tool) {
+    public void put(String user, Tool tool) {
         
         final Jsonb jsonb = JsonbBuilder.create(new JsonbConfig()
                     .withPropertyNamingStrategy(PropertyNamingStrategy.UPPER_CAMEL_CASE));
         final String json = jsonb.toJson(tool);
         
-        patch(mc, user, tool.id.toString(), json);
-    }
-    
-    public static JsonArray findLog(MongoClient mc, String id, String jpointer) {
-        return new JsonLog("elixibilitas", LOG_COLLECTION).findLog(mc, id, jpointer);
+        patch(user, tool.id.toString(), json);
     }
 
-    public static String patch(MongoClient mc, String user, String id, String json) {
-        final String src = put(mc, id, json);
-        new JsonLog("elixibilitas", LOG_COLLECTION).log(mc, user, id, src, json);
+    public String patch(String user, String id, String json) {
+        final String src = put(id, json);
+        log.log(user, id.substring(AUTHORITY.length()), src, json);
 
         return json;
     }
     
-    public static String patch(MongoClient mc, String user, String id, JsonPatch patch) {
-        final String result = patch(mc, id, patch);
+    public String patch(String user, String id, JsonPatch patch) {
+        final String result = patch(id, patch);
         if (result != null) {
-            new JsonLog("elixibilitas", LOG_COLLECTION).log(mc, user, id, patch);
+            log.log(user, id, patch);
         }
         return result;
     }
     
-    public static String patch(MongoClient mc, String id, JsonPatch patch) {
+    public String patch(String id, JsonPatch patch) {
         try  {
-            MongoDatabase db = mc.getDatabase("elixibilitas");
-            MongoCollection<Document> col = db.getCollection(COLLECTION);
+            MongoCollection<Document> col = database.getCollection(collection);
 
             Bson pk = createPK(id);
             if (pk != null) {
@@ -280,51 +262,52 @@ public class ToolDAO {
                 }
             }
         } catch (IllegalArgumentException ex) {
-            Logger.getLogger(ToolDAO.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(ToolsDAO.class.getName()).log(Level.SEVERE, null, ex);
         } catch(Exception ex) {
-            Logger.getLogger(ToolDAO.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(ToolsDAO.class.getName()).log(Level.SEVERE, null, ex);
         }
         return null;
     }
     
-    private static String put(MongoClient mc, String id, String json) {
+    private String put(String id, String json) {
+        BasicDBObject pk = createPK(id);
+        if (pk == null) {
+            return null;
+        }
+
         try {
-            MongoDatabase db = mc.getDatabase("elixibilitas");
-            MongoCollection<Document> col = db.getCollection(COLLECTION);
+            MongoCollection<Document> col = database.getCollection(COLLECTION);
 
-            BasicDBObject pk = createPK(id);
-            if (pk != null) {
-                Document bson = Document.parse(json);
-                
-                // do not store @id and @type, but compound mongodb primary key
-                bson.append("_id", pk);
-                bson.remove("@id");
-                bson.remove("@type");
+            Document bson = Document.parse(json);
 
-                FindOneAndUpdateOptions opt = new FindOneAndUpdateOptions().upsert(true)
-                    .projection(Projections.excludeId()).returnDocument(ReturnDocument.BEFORE);
+            // do not store @id and @type, but compound mongodb primary key
+            bson.append("_id", pk);
+            bson.remove("@id");
+            bson.remove("@type");
 
-                Document doc = col.findOneAndUpdate(Filters.eq("_id", pk),
-                        new Document("$set", bson), opt);
+            FindOneAndUpdateOptions opt = new FindOneAndUpdateOptions().upsert(true)
+                .projection(Projections.excludeId()).returnDocument(ReturnDocument.BEFORE);
 
-                if (doc == null) {
-                    return null;
-                }
-                
-                doc.append("@id", id);
-                doc.append("@type", pk.getString("type"));
-                
-                return doc.toJson();
+            Document doc = col.findOneAndUpdate(Filters.eq("_id", pk),
+                    new Document("$set", bson), opt);
+
+            if (doc == null) {
+                return null;
             }
+
+            doc.append("@id", id);
+            doc.append("@type", pk.getString("type"));
+
+            return doc.toJson();
         } catch (IllegalArgumentException ex) {
-            Logger.getLogger(ToolDAO.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(ToolsDAO.class.getName()).log(Level.SEVERE, null, ex);
         } catch(Exception ex) {
-            Logger.getLogger(ToolDAO.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(ToolsDAO.class.getName()).log(Level.SEVERE, null, ex);
         }
         return null;
     }
     
-    private static Bson createFindQuery(String id) {
+    private Bson createFindQuery(String id) {
         final URI uri = URI.create(id);
         final String path = uri.getPath();
         if (path != null) {
@@ -346,9 +329,14 @@ public class ToolDAO {
         return null;
     }
     
-    private static BasicDBObject createPK(String id) {
-        final URI uri = URI.create(id);
-        final String path = uri.getPath();
+    /**
+     * Create a primary key from the tool URI
+     * 
+     * @param uri
+     * @return the primary key for the tool
+     */
+    private BasicDBObject createPK(String uri) {
+        final String path = URI.create(uri).getPath();
         if (path != null) {
             final String[] nodes = path.split("/");
             if (nodes.length > 4) {
@@ -361,7 +349,7 @@ public class ToolDAO {
         return null;
     }
     
-    private static String createID(Document _id) {
+    private String createID(Document _id) {
         StringBuilder sb = new StringBuilder(AUTHORITY);
         
         sb.append(_id.getString("id")).append('/');
@@ -374,17 +362,15 @@ public class ToolDAO {
     /**
      * Find tools and write them into the reader.
      * 
-     * @param mc mongodb client connection.
      * @param writer writer to write metrics into.
      * @param skip mongodb skip parameter (aka from).
      * @param limit mongodb limit parameter (limits number of tools to be written).
      * @param text text to search.
      * @param projections - properties to write or null for all.
      */
-    public static void write(MongoClient mc, Writer writer, Integer skip, Integer limit, String text, List<String> projections) {
+    public void write(Writer writer, Integer skip, Integer limit, String text, List<String> projections) {
         try {
-            final MongoDatabase db = mc.getDatabase("elixibilitas");
-            final MongoCollection<Document> col = db.getCollection(COLLECTION);
+            final MongoCollection<Document> col = database.getCollection(collection);
             try (JsonWriter jwriter = new JsonWriter(writer, new JsonWriterSettings(true))) {
 
                 final DocumentCodec codec = new DocumentCodec() {
@@ -437,21 +423,19 @@ public class ToolDAO {
             }
 
         } catch(IOException ex) {
-            Logger.getLogger(ToolDAO.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(ToolsDAO.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
     
     /**
      * Write tools ids those semantic annotations found in the map.
      * 
-     * @param mc mongodb connection.
      * @param writer the writer to write ids.
      * @param map the map that has semantic ids as its keys.
      */
-    public static void filter(MongoClient mc, Writer writer, Map<String, List<Map.Entry<String, String>>> map) {
+    public void filter(Writer writer, Map<String, List<Map.Entry<String, String>>> map) {
 
-        final MongoDatabase db = mc.getDatabase("elixibilitas");
-        final MongoCollection<Document> col = db.getCollection(COLLECTION);
+        final MongoCollection<Document> col = database.getCollection(COLLECTION);
 
         FindIterable<Document> iterator = col.find().projection(new BasicDBObject("semantics", true));
         try (MongoCursor<Document> cursor = iterator.iterator()) {
@@ -510,7 +494,7 @@ public class ToolDAO {
                 }
             }
         } catch(Exception ex) {
-            Logger.getLogger(ToolDAO.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(ToolsDAO.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
 
@@ -526,7 +510,7 @@ public class ToolDAO {
      * 
      * @throws IOException 
      */
-    private static boolean writeId(Writer writer, List list, String id, boolean first) throws IOException {
+    private boolean writeId(Writer writer, List list, String id, boolean first) throws IOException {
         if (list != null && list.size() > 0 && (first || writer.append(",\n") != null)) {
             writer.append("{\"@id\":\"").append(id).append("\"}");
             return true;
