@@ -26,12 +26,12 @@
 package es.elixir.bsc.elixibilitas.dao;
 
 import com.mongodb.BasicDBObject;
-import com.mongodb.MongoClient;
 import com.mongodb.client.AggregateIterable;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoCursor;
 import com.mongodb.client.MongoDatabase;
 import com.mongodb.client.model.Aggregates;
+import com.mongodb.client.model.Filters;
 import java.io.StringReader;
 import java.io.StringWriter;
 import java.time.ZoneId;
@@ -50,6 +50,7 @@ import javax.json.JsonValue;
 import javax.json.JsonValue.ValueType;
 import org.bson.BsonArray;
 import org.bson.Document;
+import org.bson.conversions.Bson;
 
 /**
  * @author Dmitry Repchevsky
@@ -90,13 +91,23 @@ public class JsonLog {
         }
     }
 
-    public JsonArray findLog(String id, String jpointer) {
+    public JsonArray findLog(String id, String jpointer, String from, String to, Integer limit) {
 
         try {
             final MongoCollection<Document> col = database.getCollection(log_collection);
-            
+
+            Bson query = new BasicDBObject("_id.id", id);
+            if (from != null && to == null) {
+                query = Filters.and(query, Filters.gte("_id.date", from));
+            } else if (from == null && to != null) {
+                query = Filters.and(query, Filters.lte("_id.date", to));
+            } else if (from != null && to != null) {
+                query = Filters.and(query, Filters.gte("_id.date", from), Filters.lte("_id.date", to));
+            }
+
             AggregateIterable<Document> iterator = col.aggregate(Arrays.asList(
-                                        Aggregates.match(new BasicDBObject("_id.id", id)),
+                                        Aggregates.match(query),
+                                        Aggregates.limit(limit == null ? Integer.MAX_VALUE : limit),
                                         Aggregates.unwind("$patch"),
                                         Aggregates.match(new BasicDBObject("patch.path", jpointer)),
                                         Aggregates.project(new BasicDBObject("_id.date", 1).append("patch.value", 1))));

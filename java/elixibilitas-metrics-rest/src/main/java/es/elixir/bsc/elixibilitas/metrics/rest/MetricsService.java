@@ -45,6 +45,7 @@ import java.io.StringReader;
 import java.io.Writer;
 import java.net.URI;
 import java.security.Principal;
+import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.stream.Stream;
 import javax.annotation.PostConstruct;
@@ -343,21 +344,36 @@ public class MetricsService {
     @GET
     @Path("/log/{id}/{type}/{host}{path:.*}")
     @Produces(MediaType.APPLICATION_JSON)
+    @Operation(
+        summary = "Retrieves metrics changes log",
+        parameters = {
+            @Parameter(in = "path", name = "id", description = "prefixed tool id", required = true),
+            @Parameter(in = "path", name = "type", description = "tool type", required = true),
+            @Parameter(in = "path", name = "host", description = "tool authority", required = true),
+            @Parameter(in = "path", name = "path", description = "json pointer", required = true),
+            @Parameter(in = "query", name = "from", description = "log from the date", required = false),
+            @Parameter(in = "query", name = "to", description = "log to the date", required = false),
+            @Parameter(in = "query", name = "limit", description = "return n tools", required = false),
+        }
+    )
     public void getMetricsLog(@PathParam("id") String id,
                            @PathParam("type") String type,
                            @PathParam("host") String host,
                            @PathParam("path") String path,
-                              @Suspended final AsyncResponse asyncResponse) {
+                           @QueryParam("from") final String from,
+                           @QueryParam("to") final String to,
+                           @QueryParam("limit") final Integer limit,
+                           @Suspended final AsyncResponse asyncResponse) {
         if (path == null || path.isEmpty()) {
             asyncResponse.resume(Response.status(Response.Status.BAD_REQUEST).build());
         }
         executor.submit(() -> {
-            asyncResponse.resume(getMetricsLogAsync(id + "/" + type + "/" + host, path).build());
+            asyncResponse.resume(getMetricsLogAsync(id + "/" + type + "/" + host, path, from, to, limit).build());
         });
     }
 
-    private Response.ResponseBuilder getMetricsLogAsync(String id, String field) {
-        final JsonArray array = metricsDAO.findLog(id, field);
+    private Response.ResponseBuilder getMetricsLogAsync(String id, String field, String from, String to, Integer limit) {
+        final JsonArray array = metricsDAO.findLog(id, field, from, to, limit);
         if (array == null) {
             return Response.status(Response.Status.INTERNAL_SERVER_ERROR);
         }

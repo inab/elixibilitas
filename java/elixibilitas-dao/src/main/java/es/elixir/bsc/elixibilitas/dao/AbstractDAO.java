@@ -2,6 +2,7 @@ package es.elixir.bsc.elixibilitas.dao;
 
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
+import java.time.ZonedDateTime;
 import javax.json.JsonArray;
 import org.bson.Document;
 
@@ -32,7 +33,7 @@ public class AbstractDAO {
         return col.count(Document.parse(query));
     }
     
-    public JsonArray findLog(String id, String jpointer) {
-        return log.findLog(id, jpointer);
+    public JsonArray findLog(String id, String jpointer, String from, String to, Integer limit) {
+        return log.findLog(id, jpointer, from, to, limit);
     }
 }

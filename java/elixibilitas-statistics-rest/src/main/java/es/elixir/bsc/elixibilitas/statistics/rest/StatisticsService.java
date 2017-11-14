@@ -37,6 +37,7 @@ import java.io.BufferedWriter;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.Writer;
+import java.time.ZonedDateTime;
 import java.util.List;
 import javax.annotation.PostConstruct;
 import javax.annotation.Resource;
@@ -142,17 +143,20 @@ public class StatisticsService {
                            @PathParam("type") String type,
                            @PathParam("host") String host,
                            @PathParam("path") String path,
-                              @Suspended final AsyncResponse asyncResponse) {
+                           @QueryParam("from") final String  from,
+                           @QueryParam("to") final String  to,
+                           @QueryParam("limit") final Integer limit,
+                           @Suspended final AsyncResponse asyncResponse) {
         if (path == null || path.isEmpty()) {
             asyncResponse.resume(Response.status(Response.Status.BAD_REQUEST).build());
         }
         executor.submit(() -> {
-            asyncResponse.resume(getToolsLogAsync(id + "/" + type + "/" + host, path).build());
+            asyncResponse.resume(getToolsLogAsync(id + "/" + type + "/" + host, path, from, to, limit).build());
         });
     }
 
-    private Response.ResponseBuilder getToolsLogAsync(String id, String field) {
-        final JsonArray array = toolsDAO.findLog(id, field);
+    private Response.ResponseBuilder getToolsLogAsync(String id, String field, String  from, String  to, Integer limit) {
+        final JsonArray array = toolsDAO.findLog(id, field, from, to, limit);
         if (array == null) {
             return Response.status(Response.Status.INTERNAL_SERVER_ERROR);
         }
