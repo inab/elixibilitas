@@ -14,11 +14,11 @@ To simplify build process Elixibilitas uses [Apache Maven](https://maven.apache.
 Modules are logically separated by their functionality:
 - openebench-tools-model - Java [JSON-B](https://www.jcp.org/en/jsr/detail?id=367) model classes for the tools.
 - elixibilitas-metrics-model - Java [JSON-B](https://www.jcp.org/en/jsr/detail?id=367) model classes for quality metrics.
-- elixibilitas-tools-dao - MongoDB data access classes for "tools" collection management.
-- elixibilitas-metrics-dao - MongoDB data access classes for "metrics" collection management.
+- elixibilitas-dao - MongoDB data access classes for "tools" and "metrics" collection management.
 - openebench-tools-rest - RESTful API to access tools descriptions. 
 - elixibilitas-metrics-rest - RESTful API to access quality metrics. 
 - openebench-edam-rest - RESTful API to access [EDAM](http://edamontology.org) ontology descriptions.
+- elixibilitas-statistics-rest - RESTful API for the elixibilitas GUI.
 
 
 
@@ -94,9 +94,10 @@ https://elixir.bsc.es/tools/statistics/{tool_type} : number of tools of particul
 ```
 > example: [https://elixir.bsc.es/tools/statistics/cmd](https://elixir.bsc.es/tools/statistics/cmd) .
 
-All metrics changes are stored in a log collection and could be accessed:
+All changes are stored in a log collection and could be accessed:
 
 ```
-https://elixir.bsc.es/tools/metrics/log/{id}/{type}/{host}/{path}
+https://elixir.bsc.es/tools/log/{id}/{type}/{host}/{path}
+https://elixir.bsc.es/metrics/log/{id}/{type}/{host}/{path}
 ```
-> example: [https://elixir.bsc.es/tools/metrics/log/bio.tools:pmut/cmd/mmb.irbbarcelona.org/project/website/operational](https://elixir.bsc.es/tools/metrics/log/bio.tools:pmut/cmd/mmb.irbbarcelona.org/project/website/operational) .
+> example: [https://elixir.bsc.es/metrics/log/bio.tools:pmut/cmd/mmb.irbbarcelona.org/project/website/operational](https://elixir.bsc.es/metrics/log/bio.tools:pmut/cmd/mmb.irbbarcelona.org/project/website/operational) .
