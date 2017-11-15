@@ -118,27 +118,76 @@ public class MetricsDAO extends AbstractDAO implements Serializable {
         return null;
     }
     
-    public void put(String user, JsonObject json) {
+    public String put(String user, String id, String json) {
+        try {
+            MongoCollection<Document> col = database.getCollection(collection);
+
+            Document bson = Document.parse(json);
+
+            bson.append("_id", id);
+            bson.remove("@id");
+            bson.remove("@type");
+            
+            col.insertOne(bson);
+            
+            final String result = bson.toJson();
+            log.log(user, id, "{}" , result);
+            return result;
+        } catch(Exception ex) {
+            Logger.getLogger(MetricsDAO.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return null;
+
+    }
+    
+    public void update(String user, JsonObject json) {
         final String id = json.getString("@id");
-        put(user, id, json.toString());
+        update(user, id, json.toString());
     }
 
-    public void put(String user, String id, String json) {
-        patch(user, id, json);
-    }
-
-    public String put(String user, String id, Metrics metrics) {
+    public String update(String user, String id, Metrics metrics) {
         final Jsonb jsonb = JsonbBuilder.create(new JsonbConfig()
                     .withPropertyNamingStrategy(PropertyNamingStrategy.UPPER_CAMEL_CASE));
         final String json = jsonb.toJson(metrics);
         
-        return patch(user, id, json);
+        return update(user, id, json);
     }
     
-    public String patch(String user, String id, String json) {
-        final String src = put(id, json);
-        log.log(user, id, src, json);
-        return json;
+    /**
+     * Update the metrics document using mongodb 'upsert' operation.
+     * 
+     * @param user origin of the update
+     * @param id metrics id
+     * @param json Json metrics document
+     * 
+     * @return 
+     */
+    public String update(String user, String id, String json) {
+        try {
+            MongoCollection<Document> col = database.getCollection(collection);
+
+            FindOneAndUpdateOptions opt = new FindOneAndUpdateOptions().upsert(true)
+                    .projection(Projections.excludeId()).returnDocument(ReturnDocument.BEFORE);
+
+            Document bson = Document.parse(json);
+
+            bson.append("_id", id);
+            bson.remove("@id");
+            bson.remove("@type");
+            
+            final Document before = col.findOneAndUpdate(Filters.eq("_id", id),
+                                        new Document("$set", bson), opt);
+            final Document after = col.find(Filters.eq("_id", id)).projection(Projections.excludeId()).first();
+            
+            if (after != null) {
+                final String result = after.toJson();
+                log.log(user, id, before != null ? before.toJson() : null , result);
+                return result;
+            }
+        } catch(Exception ex) {
+            Logger.getLogger(MetricsDAO.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return null;
     }
     
     public String patch(String user, String id, JsonPatch patch) {
@@ -149,7 +198,15 @@ public class MetricsDAO extends AbstractDAO implements Serializable {
         return result;
     }
 
-    public String patch(String id, JsonPatch patch) {
+    /**
+     * Apply Json patch to the mongodb metrics document.
+     * 
+     * @param id metrics id
+     * @param patch Json patch to apply
+     * 
+     * @return resulted Json metrics document.
+     */
+    private String patch(String id, JsonPatch patch) {
         try  {
             MongoCollection<Document> col = database.getCollection(collection);
 
@@ -170,26 +227,6 @@ public class MetricsDAO extends AbstractDAO implements Serializable {
             }
         } catch (IllegalArgumentException ex) {
             Logger.getLogger(MetricsDAO.class.getName()).log(Level.SEVERE, null, ex);
-        } catch(Exception ex) {
-            Logger.getLogger(MetricsDAO.class.getName()).log(Level.SEVERE, null, ex);
-        }
-        return null;
-    }
-
-    private String put(String id, String json) {
-        try {
-            MongoCollection<Document> col = database.getCollection(collection);
-
-            FindOneAndUpdateOptions opt = new FindOneAndUpdateOptions().upsert(true)
-                    .projection(Projections.excludeId()).returnDocument(ReturnDocument.BEFORE);
-
-            Document bson = Document.parse(json);
-            bson.append("_id", id);
-            
-            Document doc = col.findOneAndUpdate(Filters.eq("_id", id),
-                    new Document("$set", bson), opt);
-
-            return doc != null ? doc.toJson() : null;
         } catch(Exception ex) {
             Logger.getLogger(MetricsDAO.class.getName()).log(Level.SEVERE, null, ex);
         }
