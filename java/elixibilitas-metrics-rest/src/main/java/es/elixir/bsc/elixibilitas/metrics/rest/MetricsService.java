@@ -27,6 +27,7 @@ package es.elixir.bsc.elixibilitas.metrics.rest;
 
 import com.mongodb.MongoClient;
 import es.elixir.bsc.elixibilitas.dao.MetricsDAO;
+import es.elixir.bsc.elixibilitas.metrics.rest.validator.JsonSchema;
 import io.swagger.oas.annotations.Operation;
 import io.swagger.oas.annotations.Parameter;
 import io.swagger.oas.annotations.info.Contact;
@@ -45,7 +46,6 @@ import java.io.StringReader;
 import java.io.Writer;
 import java.net.URI;
 import java.security.Principal;
-import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.stream.Stream;
 import javax.annotation.PostConstruct;
@@ -231,7 +231,8 @@ public class MetricsService {
     public void putMetrics(@PathParam("id") final String id, 
                            @RequestBody(description = "json metrics object",
                               content = @Content(schema = @Schema(ref="https://elixir.bsc.es/metrics/metrics.json")),
-                              required = true) final String json,
+                              required = true) 
+                           @JsonSchema(location="metrics.json") final String json,
                            @Context SecurityContext security,
                            @Suspended final AsyncResponse asyncResponse) {
         final Principal principal = security.getUserPrincipal();
@@ -243,7 +244,7 @@ public class MetricsService {
     }
 
     private Response.ResponseBuilder putMetricsAsync(String source, String id, String json) {
-        metricsDAO.patch(source, id, json);
+        metricsDAO.put(source, id, json);
         return Response.ok();
     }
 
@@ -284,7 +285,7 @@ public class MetricsService {
                             final String path = URI.create(id).getPath();
                             if (path.startsWith(prefix)) {
                                 id = path.substring(prefix.length());
-                                metricsDAO.put(user, id, object.toString());
+                                metricsDAO.update(user, id, object.toString());
                             }
                             
                         } catch (IllegalArgumentException ex) {}
@@ -319,25 +320,32 @@ public class MetricsService {
                              @Context SecurityContext security,
                              @Suspended final AsyncResponse asyncResponse) {
 
-        final JsonValue value;
-        try {
-            value = Json.createReader(new StringReader(json)).readValue();
-        } catch(Exception ex) {
-            asyncResponse.resume(Response.status(Response.Status.BAD_REQUEST.getStatusCode(), ex.getMessage()));
-            return;
-        }
-        
         final Principal principal = security.getUserPrincipal();
         final String user = principal != null ? principal.getName() : null;
         
         executor.submit(() -> {
-            asyncResponse.resume(patchMetricsAsync(user, id + '/' + type + '/' + host, path, value).build());
+            asyncResponse.resume(patchMetricsAsync(user, id + '/' + type + '/' + host, path, json).build());
         });
     }
     
-    private ResponseBuilder patchMetricsAsync(String user, String id, String path, JsonValue value) {
-        final JsonPatch patch = Json.createPatchBuilder().replace(path, value).build();
-        final String result = metricsDAO.patch(user, id, patch);
+    private ResponseBuilder patchMetricsAsync(String user, String id, String path, String json) {
+        
+        final String result;
+        
+        if (path == null || path.isEmpty()) {
+            result = metricsDAO.update(user, id, json);
+        } else {
+            final JsonValue value;
+            try {
+                value = Json.createReader(new StringReader(json)).readValue();
+            } catch(Exception ex) {
+                return Response.status(Response.Status.BAD_REQUEST.getStatusCode(), ex.getMessage());
+            }
+
+            final JsonPatch patch = Json.createPatchBuilder().replace(path, value).build();
+            result = metricsDAO.patch(user, id, patch);
+        }
+        
         return Response.status(result == null ? Status.NOT_MODIFIED : Status.OK);
     }
     

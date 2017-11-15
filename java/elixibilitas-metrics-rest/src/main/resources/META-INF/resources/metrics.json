@@ -38,13 +38,6 @@
             "type": "string",
             "format": "date-time"
           },
-          "history": {
-            "type": "array",
-            "items": {
-              "type": "string",
-              "format": "date-time"
-            }
-          },
           "copyright": {
             "$ref": "#/definitions/Copyright"
           },
@@ -196,7 +189,7 @@
   "properties": {
       "@id": {
            "type": "string",
-            "format": "uri"
+           "format": "uri"
       },
       "project": {
          "$ref": "#/definitions/Project"
