@@ -49,8 +49,8 @@ where:
 ```
 curl -v -X PATCH -u user:password -H 'Content-Type: application/json' /
 https://elixir.bsc.es/tool/{id}/description -d '"new description."'
-
 ```
+
 Quality Metrics accessed via:
 ```
 https://elixir.bsc.es/metrics/
@@ -62,8 +62,13 @@ https://elixir.bsc.es/metrics/{id}/{type}/{host}/{path}
 ```
 curl -v -X PATCH -u user:password -H 'Content-Type: application/json' /
 https://elixir.bsc.es/metrics/{id}/support/email -d 'true'
-
 ```
+or, what is the same:
+```
+curl -v -X PATCH -u user:password -H 'Content-Type: application/json' /
+https://elixir.bsc.es/metrics/{id} -d '{"support": {"email": true}}'
+```
+
 The API also provides EDAM descriptions for the tool:
 ```
 https://elixir.bsc.es/edam/tool/
