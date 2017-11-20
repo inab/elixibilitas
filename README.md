@@ -35,8 +35,10 @@ where:
 
 ---
 
-> Swagger: [https://elixir.bsc.es/monitor/metrics/openapi.json](https://elixir.bsc.es/monitor/metrics/openapi.json)<br/>
-> Metrics JSON Schema: [https://elixir.bsc.es/monitor/metrics/metrics.json](https://elixir.bsc.es/monitor/metrics/metrics.json)<br/><br/>
+> Swagger: [https://elixir.bsc.es/monitor/openapi.json](https://elixir.bsc.es/monitor/openapi.json)<br/>
+> Tool JSON Schema: [https://elixir.bsc.es/monitor/tool/tool.json](https://elixir.bsc.es/monitor/tool/tool.json)
+> Metrics JSON Schema: [https://elixir.bsc.es/monitor/metrics/metrics.json](https://elixir.bsc.es/monitor/metrics/metrics.json)
+<br/><br/>
 > Note that {id}/{type}/{host} uniquely identify the tool, while omitting the {type} or {host} returns an array of descriptions.<br/><br/>
 > example 1: [https://elixir.bsc.es/monitor/tool/bio.tools:pmut/web/mmb.irbbarcelona.org](https://elixir.bsc.es/monitor/tool/bio.tools:pmut/web/mmb.irbbarcelona.org) .<br/>
 > example 2: [https://elixir.bsc.es/monitor/tool/bio.tools:pmut/web/mmb.irbbarcelona.org/credits](https://elixir.bsc.es/monitor/tool/bio.tools:pmut/web/mmb.irbbarcelona.org/credits) .<br/>
