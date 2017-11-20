@@ -43,13 +43,13 @@ where:
 > curl patch tool data example: 
 ```
 curl -v -X PATCH -u user:password -H 'Content-Type: application/json' /
-https://elixir.bsc.es/tool/{id}/description -d '"new description."'
+https://elixir.bsc.es/monitor/tool/{id}/description -d '"new description."'
 ```
 
 Quality Metrics accessed via:
 ```
-https://elixir.bsc.es/metrics/
-https://elixir.bsc.es/metrics/{id}/{type}/{host}/{path}
+https://elixir.bsc.es/monitor/metrics/
+https://elixir.bsc.es/monitor/metrics/{id}/{type}/{host}/{path}
 ```
 > example1: [https://elixir.bsc.es/monitor/metrics/bio.tools:pmut/web/mmb.irbbarcelona.org](https://elixir.bsc.es/monitor/metrics/bio.tools:pmut/web/mmb.irbbarcelona.org) .<br/>
 > example2: [https://elixir.bsc.es/monitor/metrics/bio.tools:pmut/web/mmb.irbbarcelona.org/project/website](https://elixir.bsc.es/monitor/metrics/bio.tools:pmut/web/mmb.irbbarcelona.org/project/website) .<br/>
