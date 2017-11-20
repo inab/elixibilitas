@@ -28,16 +28,11 @@ package es.elixir.bsc.openebench.rest;
 import com.mongodb.MongoClient;
 import com.mongodb.MongoClientURI;
 import es.elixir.bsc.elixibilitas.dao.ToolsDAO;
-import io.swagger.v3.oas.annotations.OpenAPIDefinition;
 import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.info.Contact;
-import io.swagger.v3.oas.annotations.info.Info;
-import io.swagger.v3.oas.annotations.info.License;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.parameters.RequestBody;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
-import io.swagger.v3.oas.annotations.servers.Server;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.IOException;
@@ -50,7 +45,6 @@ import java.io.StringReader;
 import java.io.Writer;
 import java.net.URI;
 import java.security.Principal;
-import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Stream;
@@ -92,16 +86,7 @@ import javax.ws.rs.core.UriInfo;
  * @author Dmitry Repchevsky
  */
 
-@OpenAPIDefinition(info = @Info(title = "OpenEBench Tools services", 
-                                version = "0.1", 
-                                description = "OpenEBench Tools services",
-                                license = @License(name = "LGPL 2.1", 
-                                            url = "https://www.gnu.org/licenses/old-licenses/lgpl-2.1.html"),
-                                contact = @Contact(url = "https://elixir.bsc.es")
-                                ),
-                    //security = @SecurityRequirement(name = "openid-connect"), 
-                    servers = {@Server(url = "https://openebench.bsc.es/monitor/tool")})
-@Path("/monitor/tool/")
+@Path("/tool/")
 @ApplicationScoped
 public class ToolsServices {
 
@@ -166,7 +151,7 @@ public class ToolsServices {
     @Operation(summary = "Returns all tools descriptions.",
         responses = {
             @ApiResponse(content = @Content(mediaType = MediaType.APPLICATION_JSON,
-                                            schema = @Schema(ref="https://elixir.bsc.es/tool/tool.json")))
+                                            schema = @Schema(ref="https://elixir.bsc.es/monitor/tool/tool.json")))
         }
     )
     public void getTools(@Suspended final AsyncResponse asyncResponse) {
@@ -219,7 +204,7 @@ public class ToolsServices {
 //        },
         responses = {
             @ApiResponse(content = @Content(mediaType = MediaType.APPLICATION_JSON,
-                                            schema = @Schema(ref="https://elixir.bsc.es/tool/tool.json")
+                                            schema = @Schema(ref="https://elixir.bsc.es/monitor/tool/tool.json")
             )),
             @ApiResponse(responseCode = "404", description = "tool(s) not found")
         }
@@ -308,7 +293,7 @@ public class ToolsServices {
     @RolesAllowed("admin")
     public void putTool(@PathParam("id") final String id, 
                         @RequestBody(description = "json tool object",
-                            content = @Content(schema = @Schema(ref="https://elixir.bsc.es/tool/tool.json")),
+                            content = @Content(schema = @Schema(ref="https://elixir.bsc.es/monitor/tool/tool.json")),
                             required = true) final String json,
                         @Context javax.ws.rs.core.SecurityContext security,
                         @Suspended final AsyncResponse asyncResponse) {

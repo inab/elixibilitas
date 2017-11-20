@@ -1,5 +1,5 @@
 {
-  "id": "https://elixir.bsc.es/tool/tool.json",
+  "id": "https://elixir.bsc.es/monitor/tool/tool.json",
   "$schema": "http://json-schema.org/draft-04/hyper-schema#",
   "title": "Benchmarking Tools Schema",
   "definitions": {

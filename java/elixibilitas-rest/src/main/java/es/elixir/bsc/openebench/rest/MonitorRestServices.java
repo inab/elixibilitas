@@ -48,7 +48,6 @@ import javax.annotation.Resource;
 import javax.enterprise.concurrent.ManagedExecutorService;
 import javax.inject.Inject;
 import javax.json.Json;
-import javax.json.JsonArray;
 import javax.json.JsonObjectBuilder;
 import javax.servlet.ServletContext;
 import javax.ws.rs.GET;
@@ -79,8 +78,8 @@ import javax.ws.rs.core.UriInfo;
                                 contact = @Contact(url = "https://elixir.bsc.es")
                                 ),
                     //security = @SecurityRequirement(name = "openid-connect"), 
-                    servers = {@Server(url = "https://openebench.bsc.es/monitor/rest")})
-@Path("/monitor/rest/")
+                    servers = {@Server(url = "https://elixir.bsc.es/")})
+@Path("/rest/")
 public class MonitorRestServices {
     
     @Inject
@@ -123,7 +122,7 @@ public class MonitorRestServices {
 
         responses = {
             @ApiResponse(content = @Content(mediaType = MediaType.APPLICATION_JSON,
-                                            schema = @Schema(ref="https://elixir.bsc.es/tool/tool.json")))
+                                            schema = @Schema(ref="https://elixir.bsc.es/monitor/tool/tool.json")))
         }
     )
     public void search(@QueryParam("skip") final Integer skip,

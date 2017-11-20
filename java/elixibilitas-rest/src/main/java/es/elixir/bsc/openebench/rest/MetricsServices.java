@@ -29,18 +29,13 @@ import com.mongodb.MongoClient;
 import com.mongodb.MongoClientURI;
 import es.elixir.bsc.elixibilitas.dao.MetricsDAO;
 import es.elixir.bsc.openebench.rest.validator.JsonSchema;
-import io.swagger.v3.oas.annotations.OpenAPIDefinition;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.enums.ParameterIn;
-import io.swagger.v3.oas.annotations.info.Contact;
-import io.swagger.v3.oas.annotations.info.Info;
-import io.swagger.v3.oas.annotations.info.License;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.parameters.RequestBody;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
-import io.swagger.v3.oas.annotations.servers.Server;
 import java.io.BufferedWriter;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
@@ -91,16 +86,7 @@ import javax.ws.rs.core.UriInfo;
  * @author Dmitry Repchevsky
  */
 
-@OpenAPIDefinition(info = @Info(title = "OpenEBench Metrics services", 
-                                version = "0.1", 
-                                description = "OpenEBench Metrics services",
-                                license = @License(name = "LGPL 2.1", 
-                                            url = "https://www.gnu.org/licenses/old-licenses/lgpl-2.1.html"),
-                                contact = @Contact(url = "https://elixir.bsc.es")
-                                ),
-                    //security = @SecurityRequirement(name = "openid-connect"), 
-                    servers = {@Server(url = "https://openebench.bsc.es/monitor/metrics")})
-@Path("/monitor/metrics/")
+@Path("/metrics/")
 public class MetricsServices {
     
     @Inject
@@ -152,7 +138,7 @@ public class MetricsServices {
 //        },
         responses = {
             @ApiResponse(content = @Content(mediaType = MediaType.APPLICATION_JSON,
-                                            schema = @Schema(ref="https://elixir.bsc.es/metrics/metrics.json")),
+                                            schema = @Schema(ref="https://elixir.bsc.es/monitor/metrics/metrics.json")),
                          description = "Metrics JSON description"
             ),
             @ApiResponse(responseCode = "404", description = "metrics not found")
@@ -208,7 +194,7 @@ public class MetricsServices {
         },
         responses = {
             @ApiResponse(content = @Content(mediaType = MediaType.APPLICATION_JSON,
-                                            schema = @Schema(ref="https://elixir.bsc.es/metrics/metrics.json")),
+                                            schema = @Schema(ref="https://elixir.bsc.es/monitor/metrics/metrics.json")),
                          description = "JSON array of metrics"
             ),
             @ApiResponse(responseCode = "404", description = "metrics not found")
@@ -243,7 +229,7 @@ public class MetricsServices {
     @RolesAllowed("admin")
     public void putMetrics(@PathParam("id") final String id, 
                            @RequestBody(description = "json metrics object",
-                              content = @Content(schema = @Schema(ref="https://elixir.bsc.es/metrics/metrics.json")),
+                              content = @Content(schema = @Schema(ref="https://elixir.bsc.es/monitor/metrics/metrics.json")),
                               required = true) 
                            @JsonSchema(location="metrics.json") final String json,
                            @Context SecurityContext security,

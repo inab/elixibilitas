@@ -31,11 +31,6 @@ import es.elixir.bsc.elixibilitas.dao.ToolsDAO;
 import es.elixir.bsc.openebench.model.tools.Datatype;
 import es.elixir.bsc.openebench.model.tools.Semantics;
 import es.elixir.bsc.openebench.model.tools.Tool;
-import io.swagger.v3.oas.annotations.OpenAPIDefinition;
-import io.swagger.v3.oas.annotations.info.Contact;
-import io.swagger.v3.oas.annotations.info.Info;
-import io.swagger.v3.oas.annotations.info.License;
-import io.swagger.v3.oas.annotations.servers.Server;
 import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.InputStream;
@@ -46,7 +41,6 @@ import java.io.PipedWriter;
 import java.io.Writer;
 import java.net.MalformedURLException;
 import java.net.URI;
-import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.AbstractMap;
 import java.util.ArrayList;
@@ -109,17 +103,7 @@ import org.eclipse.rdf4j.sail.memory.MemoryStore;
  * @author Dmitry Repchevsky
  */
 
-@OpenAPIDefinition(info = @Info(title = "OpenEBench semantic services", 
-                                version = "0.1", 
-                                description = "OpenEBench semantic services",
-                                license = @License(name = "LGPL 2.1", 
-                                            url = "https://www.gnu.org/licenses/old-licenses/lgpl-2.1.html"),
-                                contact = @Contact(url = "https://elixir.bsc.es")
-                                ),
-                    //security = @SecurityRequirement(name = "openid-connect"), 
-                    servers = {@Server(url = "https://openebench.bsc.es/monitor/edam")})
-
-@Path("/monitor/edam/")
+@Path("/edam/")
 @ApplicationScoped
 public class EdamServices {
     

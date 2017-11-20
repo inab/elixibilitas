@@ -9,7 +9,6 @@ import com.mongodb.client.model.Projections;
 import com.mongodb.client.model.ReturnDocument;
 import java.io.StringReader;
 import java.io.StringWriter;
-import java.net.URI;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.json.Json;
@@ -62,7 +61,7 @@ public abstract class AbstractDAO<T> {
      * Inserts or replaces mongodb document in the collection
      * 
      * @param user origin of the update operation (i.e. "biotools")
-     * @param id id of the doument
+     * @param id id of the document
      * @param json Json document to insert
      * 
      * @return resulted Json document
