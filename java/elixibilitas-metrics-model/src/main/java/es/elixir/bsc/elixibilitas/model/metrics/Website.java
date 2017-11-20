@@ -35,6 +35,7 @@ import javax.json.bind.annotation.JsonbProperty;
 public class Website {
 
     private Integer operational;
+    private Integer accessTime;
     private ZonedDateTime lastSeen;
     private Copyright copyright;
     private Boolean license;
@@ -49,6 +50,15 @@ public class Website {
         this.operational = operational;
     }
 
+    @JsonbProperty("access_time")
+    public Integer getAccessTime() {
+        return accessTime;
+    }
+
+    public void setAccessTime(Integer accessTime) {
+        this.accessTime = accessTime;
+    }
+    
     @JsonbProperty("last_seen")
     public ZonedDateTime getLastSeen() {
         return lastSeen;

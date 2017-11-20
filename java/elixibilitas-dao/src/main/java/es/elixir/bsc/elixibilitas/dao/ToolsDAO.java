@@ -31,10 +31,6 @@ import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoCursor;
 import com.mongodb.client.MongoDatabase;
 import com.mongodb.client.model.Filters;
-import com.mongodb.client.model.FindOneAndReplaceOptions;
-import com.mongodb.client.model.FindOneAndUpdateOptions;
-import com.mongodb.client.model.Projections;
-import com.mongodb.client.model.ReturnDocument;
 import es.elixir.bsc.openebench.model.tools.CommandLineTool;
 import es.elixir.bsc.openebench.model.tools.DatabasePortal;
 import es.elixir.bsc.openebench.model.tools.DesktopApplication;
@@ -52,23 +48,15 @@ import es.elixir.bsc.openebench.model.tools.Workbench;
 import es.elixir.bsc.openebench.model.tools.Workflow;
 import java.io.IOException;
 import java.io.Serializable;
-import java.io.StringReader;
-import java.io.StringWriter;
 import java.io.Writer;
-import java.net.URI;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.json.Json;
-import javax.json.JsonObject;
-import javax.json.JsonPatch;
 import javax.json.bind.Jsonb;
 import javax.json.bind.JsonbBuilder;
-import javax.json.bind.JsonbConfig;
-import javax.json.bind.config.PropertyNamingStrategy;
 import org.bson.BsonWriter;
 import org.bson.Document;
 import org.bson.codecs.DocumentCodec;
@@ -81,13 +69,47 @@ import org.bson.json.JsonWriterSettings;
  * @author Dmitry Repchevsky
  */
 
-public class ToolsDAO extends AbstractDAO implements Serializable {
+public class ToolsDAO extends AbstractDAO<Document> implements Serializable {
     
     public final static String COLLECTION = "biotoolz";
-    public final static String AUTHORITY = "http://elixir.bsc.es/tool/";
     
-    public ToolsDAO(MongoDatabase database) {
-        super(database, COLLECTION);
+    public ToolsDAO(MongoDatabase database, String baseURI) {
+        super(baseURI, database, COLLECTION);
+    }
+
+    /**
+     * Create a primary key from the tool URI
+     * 
+     * @param id the tool identifier in a form "$id/$type/$authority"
+     * @return the primary key for the tool
+     */
+    @Override
+    protected Document createPK(String id) {
+        final String[] nodes = id.split("/");
+        if (nodes.length > 3) {
+            return new Document("id", nodes[1])
+                .append("type", nodes[2])
+                .append("host", nodes[3]);
+
+        }
+        return null;
+    }
+
+    @Override
+    protected String getURI(Document pk) {
+
+        StringBuilder sb = new StringBuilder(baseURI);
+        
+        sb.append(pk.get("id")).append('/');
+        sb.append(pk.get("type")).append('/');
+        sb.append(pk.get("host"));
+        
+        return sb.toString();
+    }
+
+    @Override
+    protected String getType(Document pk) {
+        return (String)pk.get("type");
     }
 
     public List<Tool> get() {
@@ -117,11 +139,13 @@ public class ToolsDAO extends AbstractDAO implements Serializable {
         final Document _id = (Document) doc.remove("_id");
         final String type = _id.getString("type");
 
-        doc.append("@id", createID(_id));
+        doc.append("@id", getURI(_id));
         doc.append("@type", type);
                         
-        final Jsonb jsonb = JsonbBuilder.create(new JsonbConfig()
-                    .withPropertyNamingStrategy(PropertyNamingStrategy.UPPER_CAMEL_CASE));
+//        final Jsonb jsonb = JsonbBuilder.create(new JsonbConfig()
+//                    .withPropertyNamingStrategy(PropertyNamingStrategy.UPPER_CAMEL_CASE));
+        
+        final Jsonb jsonb = JsonbBuilder.create();
         
         final String json = doc.toJson();
         
@@ -154,14 +178,14 @@ public class ToolsDAO extends AbstractDAO implements Serializable {
 
         final Document doc = docs.get(0);
         final Document _id = (Document) doc.remove("_id");
-        doc.append("@id", createID(_id));
+        doc.append("@id", getURI(_id));
         doc.append("@type", _id.getString("type"));
             
         return doc.toJson();        
     }
     
-    public String getJSONArray(String uri) {
-        final List<Document> docs = getBSON(uri);
+    public String getJSONArray(String id) {
+        final List<Document> docs = getBSON(id);
         if (docs.isEmpty()) {
             return null;
         }
@@ -174,7 +198,7 @@ public class ToolsDAO extends AbstractDAO implements Serializable {
         do {
             final Document doc = iter.next();
             final Document _id = (Document) doc.remove("_id");
-            doc.append("@id", createID(_id));
+            doc.append("@id", getURI(_id));
             doc.append("@type", _id.getString("type"));
                         
             sb.append(doc.toJson());
@@ -184,13 +208,13 @@ public class ToolsDAO extends AbstractDAO implements Serializable {
         return sb.toString();
     }
     
-    private List<Document> getBSON(String uri) {
+    private List<Document> getBSON(String id) {
         List<Document> list = new ArrayList<>();
         
         try {
             final MongoCollection<Document> col = database.getCollection(collection);
 
-            final Bson query = createFindQuery(uri);
+            final Bson query = createFindQuery(id);
             if (query != null) {
                 try (MongoCursor<Document> cursor = col.find(query).iterator()) {
                     while(cursor.hasNext()) {
@@ -204,159 +228,44 @@ public class ToolsDAO extends AbstractDAO implements Serializable {
         }
         return list;        
     }
-    
-    public void put(String user, JsonObject json) {
-        final String id = json.getString("@id");
-        patch(user, id, json.toString());
-    }
 
-    public void put(String user, String id, String json) {
-        patch(user, id, json);
-    }
-
-    public void put(String user, Tool tool) {
+    public String put(String user, Tool tool) {
         
-        final Jsonb jsonb = JsonbBuilder.create(new JsonbConfig()
-                    .withPropertyNamingStrategy(PropertyNamingStrategy.UPPER_CAMEL_CASE));
+//        final Jsonb jsonb = JsonbBuilder.create(new JsonbConfig()
+//                    .withPropertyNamingStrategy(PropertyNamingStrategy.UPPER_CAMEL_CASE));
+        final Jsonb jsonb = JsonbBuilder.create();
         final String json = jsonb.toJson(tool);
         
-        patch(user, tool.id.toString(), json);
+        return put(user, tool.id.toString().substring(baseURI.length()), json);
     }
 
-    public String patch(String user, String id, String json) {
-        final String src = put(id, json);
-        log.log(user, id.substring(AUTHORITY.length()), src, json);
 
-        return json;
+    public String update(String user, Tool tool, String id) {
+//        final Jsonb jsonb = JsonbBuilder.create(new JsonbConfig()
+//                    .withPropertyNamingStrategy(PropertyNamingStrategy.UPPER_CAMEL_CASE));
+        final Jsonb jsonb = JsonbBuilder.create();
+        final String json = jsonb.toJson(tool);
+        
+        return update(user, id, json);
     }
-    
-    public String patch(String user, String id, JsonPatch patch) {
-        final String result = patch(id, patch);
-        if (result != null) {
-            log.log(user, id, patch);
-        }
-        return result;
-    }
-    
-    public String patch(String id, JsonPatch patch) {
-        try  {
-            MongoCollection<Document> col = database.getCollection(collection);
 
-            Bson pk = createPK(id);
-            if (pk != null) {
-                final Document doc = col.find(Filters.eq("_id", pk)).first();
-                if (doc != null) {
-                    final JsonObject target = Json.createReader(new StringReader(doc.toJson())).readObject();
-                    final JsonObject patched = patch.apply(target);
-                    final StringWriter writer = new StringWriter();
-                    Json.createWriter(writer).writeObject(patched);
-
-                    FindOneAndReplaceOptions opt = new FindOneAndReplaceOptions().returnDocument(ReturnDocument.AFTER);
-                    Document result = col.findOneAndReplace(Filters.eq("_id", pk), Document.parse(writer.toString()), opt);
-
-                    final Document _id = (Document) result.remove("_id");
-                    result.append("@id", createID(_id));
-                    result.append("@type", _id.getString("type"));
-
-                    return result.toJson();
-                }
-            }
-        } catch (IllegalArgumentException ex) {
-            Logger.getLogger(ToolsDAO.class.getName()).log(Level.SEVERE, null, ex);
-        } catch(Exception ex) {
-            Logger.getLogger(ToolsDAO.class.getName()).log(Level.SEVERE, null, ex);
-        }
-        return null;
-    }
-    
-    private String put(String id, String json) {
-        BasicDBObject pk = createPK(id);
-        if (pk == null) {
-            return null;
-        }
-
-        try {
-            MongoCollection<Document> col = database.getCollection(COLLECTION);
-
-            Document bson = Document.parse(json);
-
-            // do not store @id and @type, but compound mongodb primary key
-            bson.append("_id", pk);
-            bson.remove("@id");
-            bson.remove("@type");
-
-            FindOneAndUpdateOptions opt = new FindOneAndUpdateOptions().upsert(true)
-                .projection(Projections.excludeId()).returnDocument(ReturnDocument.BEFORE);
-
-            Document doc = col.findOneAndUpdate(Filters.eq("_id", pk),
-                    new Document("$set", bson), opt);
-
-            if (doc == null) {
-                return null;
-            }
-
-            doc.append("@id", id);
-            doc.append("@type", pk.getString("type"));
-
-            return doc.toJson();
-        } catch (IllegalArgumentException ex) {
-            Logger.getLogger(ToolsDAO.class.getName()).log(Level.SEVERE, null, ex);
-        } catch(Exception ex) {
-            Logger.getLogger(ToolsDAO.class.getName()).log(Level.SEVERE, null, ex);
-        }
-        return null;
-    }
-    
     private Bson createFindQuery(String id) {
-        final URI uri = URI.create(id);
-        final String path = uri.getPath();
-        if (path != null) {
-            final String[] nodes = path.split("/");
-            if (nodes.length > 4) {
-                return Filters.eq("_id", 
-                    new BasicDBObject("id", nodes[2])
-                    .append("type", nodes[3])
-                    .append("host", nodes[4]));
+        final String[] nodes = id.split("/");
+        if (nodes.length > 2) {
+            return Filters.eq("_id", 
+                new BasicDBObject("id", nodes[0])
+                .append("type", nodes[1])
+                .append("host", nodes[2]));
 
-            }
-            if (nodes.length > 3) {
-                return Filters.and(Filters.eq("_id.id", nodes[2]), Filters.eq("_id.type", nodes[3]));
-            }
-            if (nodes.length > 2) {
-                return Filters.eq("_id.id", nodes[2]);
-            }
         }
-        return null;
-    }
-    
-    /**
-     * Create a primary key from the tool URI
-     * 
-     * @param uri
-     * @return the primary key for the tool
-     */
-    private BasicDBObject createPK(String uri) {
-        final String path = URI.create(uri).getPath();
-        if (path != null) {
-            final String[] nodes = path.split("/");
-            if (nodes.length > 4) {
-                return new BasicDBObject("id", nodes[2])
-                    .append("type", nodes[3])
-                    .append("host", nodes[4]);
-
-            }
+        if (nodes.length > 1) {
+            return Filters.and(Filters.eq("_id.id", nodes[0]), Filters.eq("_id.type", nodes[1]));
         }
+        if (nodes.length > 0) {
+            return Filters.eq("_id.id", nodes[0]);
+        }
+        
         return null;
-    }
-    
-    private String createID(Document _id) {
-        StringBuilder sb = new StringBuilder(AUTHORITY);
-        
-        sb.append(_id.getString("id")).append('/');
-        sb.append(_id.getString("type")).append('/');
-        sb.append(_id.getString("host"));
-        
-        return sb.toString();
     }
     
     /**
@@ -411,7 +320,7 @@ public class ToolsDAO extends AbstractDAO implements Serializable {
                             final Document doc = cursor.next();
 
                             Document _id = (Document) doc.remove("_id");
-                            doc.append("@id", createID(_id));
+                            doc.append("@id", getURI(_id));
                             doc.append("@type", _id.getString("type"));
 
                             doc.toJson(codec);
@@ -445,7 +354,7 @@ public class ToolsDAO extends AbstractDAO implements Serializable {
             while (cursor.hasNext()) {
 
                 final Document doc = cursor.next();
-                final String id = createID((Document) doc.remove("_id"));
+                final String id = getURI((Document) doc.remove("_id"));
 
                 Document semantics = doc.get("semantics", Document.class);
                 if (semantics != null) {                        

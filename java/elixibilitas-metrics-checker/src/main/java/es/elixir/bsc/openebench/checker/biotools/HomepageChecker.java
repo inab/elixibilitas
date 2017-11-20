@@ -90,26 +90,29 @@ public class HomepageChecker implements MetricsChecker {
 
     @Override
     public Boolean check(Tool tool, Metrics metrics) {
-        final Integer code = check(tool);
-        final boolean operational = isOperational(code);
+        final Integer[] result = check(tool);
+        final boolean operational = isOperational(result[0]);
         
         Project project = metrics.getProject();
         if (project != null) {
             Website website = project.getWebsite();
-            if (code != null) {
+            if (result[0] != null) {
                 if (website == null) {
                     project.setWebsite(website = new Website());
                 }
-                website.setOperational(code);
+                website.setOperational(result[0]);
+                website.setAccessTime(result[1]);
                 if (operational) {
                     website.setLastSeen(ZonedDateTime.now(ZoneId.of("Z")));
                 }
             } else if (website != null) {
                 website.setOperational(null);
+                website.setAccessTime(null);
             }
-        } else if (code != null) {
+        } else if (result[0] != null) {
             Website website = new Website();
-            website.setOperational(code);
+            website.setOperational(result[0]);
+            website.setAccessTime(result[1]);
             project = new Project();
             project.setWebsite(website);
             
@@ -124,13 +127,14 @@ public class HomepageChecker implements MetricsChecker {
                 code == HttpURLConnection.HTTP_NOT_MODIFIED;
     }
     
-    private static Integer check(Tool tool) {
+    private static Integer[] check(Tool tool) {
         
         URI homepage = tool.getHomepage();
         if(homepage == null) {
             return null;
         }
 
+        final long time = System.currentTimeMillis();
         try {
 
             int code;
@@ -143,7 +147,7 @@ public class HomepageChecker implements MetricsChecker {
 
                         switch (code) {
                             case HttpURLConnection.HTTP_OK: 
-                            case HttpURLConnection.HTTP_NOT_MODIFIED: return code;
+                            case HttpURLConnection.HTTP_NOT_MODIFIED: return new Integer[] {code, (int)(System.currentTimeMillis() - time)};
                             case HttpURLConnection.HTTP_MOVED_PERM:
                             case HttpURLConnection.HTTP_MOVED_TEMP:
                             case 307: // Temporary Redirect
@@ -152,14 +156,14 @@ public class HomepageChecker implements MetricsChecker {
                                 URI redirect = response.getLocation();
                                 if (redirect == null) {
                                     Logger.getLogger(HomepageChecker.class.getName()).log(Level.INFO, String.format("\n-----> %1$s %2$s redirect to null", tool.id.toString(), homepage));
-                                    return code;
+                                    return new Integer[] {code, null};
                                 }
 
                                 homepage = redirect.isAbsolute() ? redirect : homepage.resolve(redirect);
 
                                 continue;
                             default: Logger.getLogger(HomepageChecker.class.getName()).log(Level.INFO, String.format("\n-----> %1$s %2$s %3$s", tool.id.toString(), homepage, code));
-                                     return code;
+                                     return new Integer[] {code, null};
                         }
                     } finally {
                         response.close();
@@ -171,6 +175,7 @@ public class HomepageChecker implements MetricsChecker {
         } catch (Exception ex) {
             Logger.getLogger(HomepageChecker.class.getName()).log(Level.INFO, String.format("\n-----> %1$s %2$s error loading home page: %3$s", tool.id.toString(), homepage, ex.getMessage()));
         }
-        return HttpURLConnection.HTTP_CLIENT_TIMEOUT;
+
+        return new Integer[] {HttpURLConnection.HTTP_CLIENT_TIMEOUT, (int)(System.currentTimeMillis() - time)};
     }
 }

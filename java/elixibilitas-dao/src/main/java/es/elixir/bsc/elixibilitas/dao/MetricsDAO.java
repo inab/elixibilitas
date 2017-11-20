@@ -31,28 +31,18 @@ import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoCursor;
 import com.mongodb.client.MongoDatabase;
 import com.mongodb.client.model.Filters;
-import com.mongodb.client.model.FindOneAndReplaceOptions;
-import com.mongodb.client.model.FindOneAndUpdateOptions;
-import com.mongodb.client.model.Projections;
-import com.mongodb.client.model.ReturnDocument;
 import es.elixir.bsc.elixibilitas.model.metrics.Metrics;
 import java.io.IOException;
 import java.io.Serializable;
-import java.io.StringReader;
-import java.io.StringWriter;
 import java.io.Writer;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.json.Json;
-import javax.json.JsonObject;
-import javax.json.JsonPatch;
 import javax.json.bind.Jsonb;
 import javax.json.bind.JsonbBuilder;
-import javax.json.bind.JsonbConfig;
 import javax.json.bind.JsonbException;
-import javax.json.bind.config.PropertyNamingStrategy;
+import org.bson.BsonString;
 import org.bson.BsonWriter;
 import org.bson.Document;
 import org.bson.codecs.DocumentCodec;
@@ -66,13 +56,27 @@ import org.bson.json.JsonWriterSettings;
  * @author Dmitry Repchevsky
  */
 
-public class MetricsDAO extends AbstractDAO implements Serializable {
+public class MetricsDAO extends AbstractDAO<BsonString> implements Serializable {
     
     public final static String COLLECTION = "metrics2";
-    public final static String AUTHORITY = "http://elixir.bsc.es/metrics/";
     
-    public MetricsDAO(MongoDatabase database) {
-        super(database, COLLECTION);
+    public MetricsDAO(MongoDatabase database, String baseURI) {
+        super(baseURI, database, COLLECTION);
+    }
+
+    @Override
+    protected BsonString createPK(String id) {
+        return new BsonString(id);
+    }
+    
+    @Override
+    protected String getURI(BsonString pk) {
+        return baseURI + pk.getValue();
+    }
+
+    @Override
+    protected String getType(BsonString pk) {
+        return "metrics";
     }
 
     public List<Metrics> get() {
@@ -107,7 +111,7 @@ public class MetricsDAO extends AbstractDAO implements Serializable {
 
             Document doc = col.find(Filters.eq("_id", id)).first();
             if (doc != null) {
-                doc.append("@id", AUTHORITY + doc.remove("_id"));
+                doc.append("@id", baseURI + doc.remove("_id"));
                 doc.append("@type", "metrics");
 
                 return doc;
@@ -117,120 +121,15 @@ public class MetricsDAO extends AbstractDAO implements Serializable {
         }
         return null;
     }
-    
-    public String put(String user, String id, String json) {
-        try {
-            MongoCollection<Document> col = database.getCollection(collection);
-
-            Document bson = Document.parse(json);
-
-            bson.append("_id", id);
-            bson.remove("@id");
-            bson.remove("@type");
-            
-            col.insertOne(bson);
-            
-            final String result = bson.toJson();
-            log.log(user, id, "{}" , result);
-            return result;
-        } catch(Exception ex) {
-            Logger.getLogger(MetricsDAO.class.getName()).log(Level.SEVERE, null, ex);
-        }
-        return null;
-
-    }
-    
-    public void update(String user, JsonObject json) {
-        final String id = json.getString("@id");
-        update(user, id, json.toString());
-    }
 
     public String update(String user, String id, Metrics metrics) {
-        final Jsonb jsonb = JsonbBuilder.create(new JsonbConfig()
-                    .withPropertyNamingStrategy(PropertyNamingStrategy.UPPER_CAMEL_CASE));
+//        final Jsonb jsonb = JsonbBuilder.create(new JsonbConfig()
+//                    .withPropertyNamingStrategy(PropertyNamingStrategy.UPPER_CAMEL_CASE));
+
+        final Jsonb jsonb = JsonbBuilder.create();
         final String json = jsonb.toJson(metrics);
         
         return update(user, id, json);
-    }
-    
-    /**
-     * Update the metrics document using mongodb 'upsert' operation.
-     * 
-     * @param user origin of the update
-     * @param id metrics id
-     * @param json Json metrics document
-     * 
-     * @return 
-     */
-    public String update(String user, String id, String json) {
-        try {
-            MongoCollection<Document> col = database.getCollection(collection);
-
-            FindOneAndUpdateOptions opt = new FindOneAndUpdateOptions().upsert(true)
-                    .projection(Projections.excludeId()).returnDocument(ReturnDocument.BEFORE);
-
-            Document bson = Document.parse(json);
-
-            bson.append("_id", id);
-            bson.remove("@id");
-            bson.remove("@type");
-            
-            final Document before = col.findOneAndUpdate(Filters.eq("_id", id),
-                                        new Document("$set", bson), opt);
-            final Document after = col.find(Filters.eq("_id", id)).projection(Projections.excludeId()).first();
-            
-            if (after != null) {
-                final String result = after.toJson();
-                log.log(user, id, before != null ? before.toJson() : null , result);
-                return result;
-            }
-        } catch(Exception ex) {
-            Logger.getLogger(MetricsDAO.class.getName()).log(Level.SEVERE, null, ex);
-        }
-        return null;
-    }
-    
-    public String patch(String user, String id, JsonPatch patch) {
-        final String result = patch(id, patch);
-        if (result != null) {
-            log.log(user, id, patch);
-        }
-        return result;
-    }
-
-    /**
-     * Apply Json patch to the mongodb metrics document.
-     * 
-     * @param id metrics id
-     * @param patch Json patch to apply
-     * 
-     * @return resulted Json metrics document.
-     */
-    private String patch(String id, JsonPatch patch) {
-        try  {
-            MongoCollection<Document> col = database.getCollection(collection);
-
-            final Document doc = col.find(Filters.eq("_id", id)).first();
-            if (doc != null) {
-                final JsonObject target = Json.createReader(new StringReader(doc.toJson())).readObject();
-                final JsonObject patched = patch.apply(target);
-                final StringWriter writer = new StringWriter();
-                Json.createWriter(writer).writeObject(patched);
-
-                FindOneAndReplaceOptions opt = new FindOneAndReplaceOptions().returnDocument(ReturnDocument.AFTER);
-                Document result = col.findOneAndReplace(Filters.eq("_id", id), Document.parse(writer.toString()), opt);
-
-                doc.append("@id", doc.remove("_id"));
-                doc.append("@type", "metrics");
-
-                return result.toJson();
-            }
-        } catch (IllegalArgumentException ex) {
-            Logger.getLogger(MetricsDAO.class.getName()).log(Level.SEVERE, null, ex);
-        } catch(Exception ex) {
-            Logger.getLogger(MetricsDAO.class.getName()).log(Level.SEVERE, null, ex);
-        }
-        return null;
     }
     
     private static Metrics deserialize(Document doc) {
@@ -238,9 +137,11 @@ public class MetricsDAO extends AbstractDAO implements Serializable {
         doc.append("@id", doc.remove("_id"));
         doc.append("@type", "metrics");
                         
-        final Jsonb jsonb = JsonbBuilder.create(new JsonbConfig()
-                    .withPropertyNamingStrategy(PropertyNamingStrategy.UPPER_CAMEL_CASE));
-        
+//        final Jsonb jsonb = JsonbBuilder.create(new JsonbConfig()
+//                    .withPropertyNamingStrategy(PropertyNamingStrategy.UPPER_CAMEL_CASE));
+
+        final Jsonb jsonb = JsonbBuilder.create();
+
         final String json = doc.toJson();
         
         try {

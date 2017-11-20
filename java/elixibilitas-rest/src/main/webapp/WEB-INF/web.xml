@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<web-app version="3.0" 
+    xmlns="http://java.sun.com/xml/ns/javaee"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/web-app_3_0.xsd">
+
+    <context-param>
+        <param-name>mongodb.url</param-name>
+        <param-value>mongodb://localhost:27017/elixibilitas?maxPoolSize=32</param-value>
+    </context-param>
+
+    <context-param>
+        <param-name>ontology.uri</param-name>
+        <param-value>http://edamontology.org/EDAM.owl</param-value>
+    </context-param>
+
+    <mime-mapping>
+        <extension>owl</extension>
+        <mime-type>application/rdf+xml</mime-type>
+    </mime-mapping>
+
+    <security-constraint>
+        <web-resource-collection>
+            <url-pattern>/*</url-pattern>
+            <http-method>PUT</http-method>
+            <http-method>POST</http-method>
+            <http-method>PATCH</http-method>
+        </web-resource-collection>
+
+        <auth-constraint>
+            <role-name>*</role-name>
+        </auth-constraint>
+
+    </security-constraint>
+
+    <login-config>
+        <auth-method>KEYCLOAK</auth-method>
+        <realm-name>openebench</realm-name>
+    </login-config>
+
+    <security-role>
+        <role-name>admin</role-name>
+    </security-role>
+ 
+</web-app>
