@@ -22,10 +22,10 @@ The REST API is based on [JAX-RS](jcp.org/en/jsr/detail?id=370) API.
 
 The API provides an access to biological tools descriptions:
 ```
-https://elixir.bsc.es/monitor/tool/{id}
-https://elixir.bsc.es/monitor/tool/{id}/{type}
-https://elixir.bsc.es/monitor/tool/{id}/{type}/{host}
-https://elixir.bsc.es/monitor/tool/{id}/{type}/{host}/{path}
+https://openebench.bsc.es/monitor/tool/{id}
+https://openebench.bsc.es/monitor/tool/{id}/{type}
+https://openebench.bsc.es/monitor/tool/{id}/{type}/{host}
+https://openebench.bsc.es/monitor/tool/{id}/{type}/{host}/{path}
 ```
 where:
 - {id} is the prefixed tool id (i.e. "bio.tools:pmut")
@@ -35,71 +35,71 @@ where:
 
 ---
 
-> Swagger: [https://elixir.bsc.es/monitor/openapi.json](https://elixir.bsc.es/monitor/openapi.json)<br/>
-> Tool JSON Schema: [https://elixir.bsc.es/monitor/tool/tool.json](https://elixir.bsc.es/monitor/tool/tool.json)
-> Metrics JSON Schema: [https://elixir.bsc.es/monitor/metrics/metrics.json](https://elixir.bsc.es/monitor/metrics/metrics.json)
+> Swagger: [https://openebench.bsc.es/monitor/openapi.json](https://openebench.bsc.es/monitor/openapi.json)<br/>
+> Tool JSON Schema: [https://openebench.bsc.es/monitor/tool/tool.json](https://openebench.bsc.es/monitor/tool/tool.json)<br/>
+> Metrics JSON Schema: [https://openebench.bsc.es/monitor/metrics/metrics.json](https://openebench.bsc.es/monitor/metrics/metrics.json)
 <br/><br/>
 > Note that {id}/{type}/{host} uniquely identify the tool, while omitting the {type} or {host} returns an array of descriptions.<br/><br/>
-> example 1: [https://elixir.bsc.es/monitor/tool/bio.tools:pmut/web/mmb.irbbarcelona.org](https://elixir.bsc.es/monitor/tool/bio.tools:pmut/web/mmb.irbbarcelona.org) .<br/>
-> example 2: [https://elixir.bsc.es/monitor/tool/bio.tools:pmut/web/mmb.irbbarcelona.org/credits](https://elixir.bsc.es/monitor/tool/bio.tools:pmut/web/mmb.irbbarcelona.org/credits) .<br/>
+> example 1: [https://openebench.bsc.es/monitor/tool/bio.tools:pmut/web/mmb.irbbarcelona.org](https://openebench.bsc.es/monitor/tool/bio.tools:pmut/web/mmb.irbbarcelona.org) .<br/>
+> example 2: [https://openebench.bsc.es/monitor/tool/bio.tools:pmut/web/mmb.irbbarcelona.org/credits](https://openebench.bsc.es/monitor/tool/bio.tools:pmut/web/mmb.irbbarcelona.org/credits) .<br/>
 > curl patch tool data example: 
 ```
 curl -v -X PATCH -u user:password -H 'Content-Type: application/json' /
-https://elixir.bsc.es/monitor/tool/{id}/description -d '"new description."'
+https://openebench.bsc.es/monitor/tool/{id}/description -d '"new description."'
 ```
 
 Quality Metrics accessed via:
 ```
-https://elixir.bsc.es/monitor/metrics/
-https://elixir.bsc.es/monitor/metrics/{id}/{type}/{host}/{path}
+https://openebench.bsc.es/monitor/metrics/
+https://openebench.bsc.es/monitor/metrics/{id}/{type}/{host}/{path}
 ```
-> example1: [https://elixir.bsc.es/monitor/metrics/bio.tools:pmut/web/mmb.irbbarcelona.org](https://elixir.bsc.es/monitor/metrics/bio.tools:pmut/web/mmb.irbbarcelona.org) .<br/>
-> example2: [https://elixir.bsc.es/monitor/metrics/bio.tools:pmut/web/mmb.irbbarcelona.org/project/website](https://elixir.bsc.es/monitor/metrics/bio.tools:pmut/web/mmb.irbbarcelona.org/project/website) .<br/>
+> example1: [https://openebench.bsc.es/monitor/metrics/bio.tools:pmut/web/mmb.irbbarcelona.org](https://openebench.bsc.es/monitor/metrics/bio.tools:pmut/web/mmb.irbbarcelona.org) .<br/>
+> example2: [https://openebench.bsc.es/monitor/metrics/bio.tools:pmut/web/mmb.irbbarcelona.org/project/website](https://openebench.bsc.es/monitor/metrics/bio.tools:pmut/web/mmb.irbbarcelona.org/project/website) .<br/>
 > curl patch metrics data example: 
 ```
 curl -v -X PATCH -u user:password -H 'Content-Type: application/json' /
-https://elixir.bsc.es/monitor/metrics/{id}/support/email -d 'true'
+https://openebench.bsc.es/monitor/metrics/{id}/support/email -d 'true'
 ```
 or, what is the same:
 ```
 curl -v -X PATCH -u user:password -H 'Content-Type: application/json' /
-https://elixir.bsc.es/monitor/metrics/{id} -d '{"support": {"email": true}}'
+https://openebench.bsc.es/monitor/metrics/{id} -d '{"support": {"email": true}}'
 ```
 
 The API also provides EDAM descriptions for the tool:
 ```
-https://elixir.bsc.es/monitor/edam/tool/
-https://elixir.bsc.es/monitor/edam/tool/{id}/{type}/{host}
+https://openebench.bsc.es/monitor/edam/tool/
+https://openebench.bsc.es/monitor/edam/tool/{id}/{type}/{host}
 ```
-> example: [https://elixir.bsc.es/monitor/edam/tool/bio.tools:pmut/web/mmb.irbbarcelona.org](https://elixir.bsc.es/monitor/edam/tool/bio.tools:pmut/web/mmb.irbbarcelona.org) .
+> example: [https://openebench.bsc.es/monitor/edam/tool/bio.tools:pmut/web/mmb.irbbarcelona.org](https://openebench.bsc.es/monitor/edam/tool/bio.tools:pmut/web/mmb.irbbarcelona.org) .
 
 or descriptions of the EDAM term itself:
 ```
-https://elixir.bsc.es/monitor/edam/description?term={edam id}
+https://openebench.bsc.es/monitor/edam/description?term={edam id}
 ```
-> example: [https://elixir.bsc.es/monitor/edam/description?term=http://edamontology.org/format_3607](https://elixir.bsc.es/monitor/edam/description?term=http://edamontology.org/format_3607) .
+> example: [https://openebench.bsc.es/monitor/edam/description?term=http://edamontology.org/format_3607](https://openebench.bsc.es/monitor/edam/description?term=http://edamontology.org/format_3607) .
 
 There is also full text search over EDAM ontology.
 ```
 https://elixir.bsc.es/monitor/edam/search?text={text to search}
 ```
-> example: [https://elixir.bsc.es/monitor/edam/search?text=alignment](https://elixir.bsc.es/monitor/edam/search?text=alignment) .
+> example: [https://openebench.bsc.es/monitor/edam/search?text=alignment](https://openebench.bsc.es/monitor/edam/search?text=alignment) .
 
 There are simple stat info that can be obtained from the server:
 
->[https://elixir.bsc.es/monitor/rest/statistics](https://elixir.bsc.es/monitor/rest/statistics) : basic statistics.<br/>
->[https://elixir.bsc.es/monitor/rest/statistics/total](https://elixir.bsc.es/monitor/rest/statistics/total) : total number of tools.<br/>
->[https://elixir.bsc.es/monitor/rest/statistics/operational](https://elixir.bsc.es/monitor/rest/statistics/operational) : number of tools those homepage is accessible.
+>[https://openebench.bsc.es/monitor/rest/statistics](https://openebench.bsc.es/monitor/rest/statistics) : basic statistics.<br/>
+>[https://openebench.bsc.es/monitor/rest/statistics/total](https://openebench.bsc.es/monitor/rest/statistics/total) : total number of tools.<br/>
+>[https://openebench.bsc.es/monitor/rest/statistics/operational](https://openebench.bsc.es/monitor/rest/statistics/operational) : number of tools those homepage is accessible.
 
 ```
-https://elixir.bsc.es/monitor/rest/statistics/{tool_type} : number of tools of particular type ("web", "cmd", etc.)
+https://openebench.bsc.es/monitor/rest/statistics/{tool_type} : number of tools of particular type ("web", "cmd", etc.)
 ```
-> example: [https://elixir.bsc.es/monitor/rest/statistics/cmd](https://elixir.bsc.es/monitor/rest/statistics/cmd) .
+> example: [https://openebench.bsc.es/monitor/rest/statistics/cmd](https://openebench.bsc.es/monitor/rest/statistics/cmd) .
 
 All changes are stored in a log collection and could be accessed:
 
 ```
-https://elixir.bsc.es/monitor/tools/log/{id}/{type}/{host}/{path}
-https://elixir.bsc.es/monitor/metrics/log/{id}/{type}/{host}/{path}
+https://openebench.bsc.es/monitor/tools/log/{id}/{type}/{host}/{path}
+https://openebench.bsc.es/monitor/metrics/log/{id}/{type}/{host}/{path}
 ```
-> example: [https://elixir.bsc.es/monitor/metrics/log/bio.tools:pmut/cmd/mmb.irbbarcelona.org/project/website/operational](https://elixir.bsc.es/monitor/metrics/log/bio.tools:pmut/cmd/mmb.irbbarcelona.org/project/website/operational) .
+> example: [https://openebench.bsc.es/monitor/metrics/log/bio.tools:pmut/cmd/mmb.irbbarcelona.org/project/website/operational](https://openebench.bsc.es/monitor/metrics/log/bio.tools:pmut/cmd/mmb.irbbarcelona.org/project/website/operational) .
