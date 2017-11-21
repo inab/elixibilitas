@@ -93,31 +93,22 @@ public class HomepageChecker implements MetricsChecker {
         final Integer[] result = check(tool);
         final boolean operational = isOperational(result[0]);
         
+        Website website;
         Project project = metrics.getProject();
-        if (project != null) {
-            Website website = project.getWebsite();
-            if (result[0] != null) {
-                if (website == null) {
-                    project.setWebsite(website = new Website());
-                }
-                website.setOperational(result[0]);
-                website.setAccessTime(result[1]);
-                if (operational) {
-                    website.setLastSeen(ZonedDateTime.now(ZoneId.of("Z")));
-                }
-            } else if (website != null) {
-                website.setOperational(null);
-                website.setAccessTime(null);
-            }
-        } else if (result[0] != null) {
-            Website website = new Website();
-            website.setOperational(result[0]);
-            website.setAccessTime(result[1]);
+        if (project == null) {
+            website = new Website();
             project = new Project();
             project.setWebsite(website);
-            
             metrics.setProject(project);
+        } else {            
+            website = project.getWebsite();
+            if (website == null) {
+                project.setWebsite(website = new Website());
+            }
         }
+        website.setOperational(result[0]);
+        website.setAccessTime(result[1]);
+        website.setLastCheck(ZonedDateTime.now(ZoneId.of("Z")));
         
         return operational;
     }

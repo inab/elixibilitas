@@ -76,7 +76,7 @@ public class MetricsMonitorScheduler implements ServletContextListener {
         @Override
         public void run() {
             try (MongoClient mc = new MongoClient(new MongoClientURI(uri))) {
-//                new BatchMetricsChecker(executor).check(mc);
+                new BatchMetricsChecker(executor).check(mc);
             }
         }
     }

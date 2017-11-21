@@ -32,8 +32,8 @@ public class BatchMetricsChecker {
 
     public void check(MongoClient mc) {
         
-        final ToolsDAO toolsDAO = new ToolsDAO(mc.getDatabase("elixibilitas"), "https://elixir.bsc.es/monitor/tool/");
-        final MetricsDAO metricsDAO = new MetricsDAO(mc.getDatabase("elixibilitas"), "https://elixir.bsc.es/monitor/metrics/");
+        final ToolsDAO toolsDAO = new ToolsDAO(mc.getDatabase("elixibilitas"), "https://openebench.bsc.es/monitor/tool/");
+        final MetricsDAO metricsDAO = new MetricsDAO(mc.getDatabase("elixibilitas"), "https://openebench.bsc.es/monitor/metrics/");
         
         final List<Tool> tools = toolsDAO.get();
         final CountDownLatch latch = new CountDownLatch(tools.size());

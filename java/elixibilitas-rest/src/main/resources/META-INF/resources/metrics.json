@@ -1,5 +1,5 @@
 {
-  "id": "https://elixir.bsc.es/monitor/metrics/metrics.json",
+  "id": "https://openebench.bsc.es/monitor/metrics/metrics.json",
   "$schema": "http://json-schema.org/draft-04/hyper-schema#",
   "title": "OpenEBench Quality Metrics Schema",
   "definitions": {

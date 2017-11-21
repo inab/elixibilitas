@@ -1,16 +1,16 @@
 [
 {
-  "@id" : "http://elixir.bsc.es/monitor/tool",
+  "@id" : "http://openebench.bsc.es/monitor/tool",
   "@type" : "http://www.w3.org/2002/07/owl#Ontology",
 
   "http://www.w3.org/2002/07/owl#imports" : [ {
-    "@id" : "https://elixir.bsc.es/monitor/biotools.owl"
+    "@id" : "https://openebench.bsc.es/monitor/biotools.owl"
   } ]
 },
 {
   "@context": {
-    "@vocab": "https://elixir.bsc.es/monitor/tools#",
-    "@base": "https://elixir.bsc.es/monitor/tools#",
+    "@vocab": "https://openebench.bsc.es/monitor/tools#",
+    "@base": "https://openebench.bsc.es/monitor/tools#",
     "homepage": { "@type": "http://www.w3.org/2001/XMLSchema#anyURI"},
     "repositories": { "@type": "http://www.w3.org/2001/XMLSchema#anyURI"},
     "helpdesk": { "@type": "http://www.w3.org/2001/XMLSchema#anyURI"},

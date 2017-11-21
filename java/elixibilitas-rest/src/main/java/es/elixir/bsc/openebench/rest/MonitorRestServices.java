@@ -75,10 +75,10 @@ import javax.ws.rs.core.UriInfo;
                                 description = "OpenEBench REST API services",
                                 license = @License(name = "LGPL 2.1", 
                                             url = "https://www.gnu.org/licenses/old-licenses/lgpl-2.1.html"),
-                                contact = @Contact(url = "https://elixir.bsc.es")
+                                contact = @Contact(url = "https://openebench.bsc.es")
                                 ),
                     //security = @SecurityRequirement(name = "openid-connect"), 
-                    servers = {@Server(url = "https://elixir.bsc.es/")})
+                    servers = {@Server(url = "https://openebench.bsc.es/")})
 @Path("/rest/")
 public class MonitorRestServices {
     
@@ -122,7 +122,7 @@ public class MonitorRestServices {
 
         responses = {
             @ApiResponse(content = @Content(mediaType = MediaType.APPLICATION_JSON,
-                                            schema = @Schema(ref="https://elixir.bsc.es/monitor/tool/tool.json")))
+                                            schema = @Schema(ref="https://openebench.bsc.es/monitor/tool/tool.json")))
         }
     )
     public void search(@QueryParam("skip") final Integer skip,

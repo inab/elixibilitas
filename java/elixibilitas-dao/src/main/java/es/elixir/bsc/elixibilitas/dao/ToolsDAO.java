@@ -86,10 +86,10 @@ public class ToolsDAO extends AbstractDAO<Document> implements Serializable {
     @Override
     protected Document createPK(String id) {
         final String[] nodes = id.split("/");
-        if (nodes.length > 3) {
-            return new Document("id", nodes[1])
-                .append("type", nodes[2])
-                .append("host", nodes[3]);
+        if (nodes.length > 2) {
+            return new Document("id", nodes[0])
+                .append("type", nodes[1])
+                .append("host", nodes[2]);
 
         }
         return null;

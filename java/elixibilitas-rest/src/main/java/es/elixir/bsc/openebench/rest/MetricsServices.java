@@ -138,7 +138,7 @@ public class MetricsServices {
 //        },
         responses = {
             @ApiResponse(content = @Content(mediaType = MediaType.APPLICATION_JSON,
-                                            schema = @Schema(ref="https://elixir.bsc.es/monitor/metrics/metrics.json")),
+                                            schema = @Schema(ref="https://openebench.bsc.es/monitor/metrics/metrics.json")),
                          description = "Metrics JSON description"
             ),
             @ApiResponse(responseCode = "404", description = "metrics not found")
@@ -194,7 +194,7 @@ public class MetricsServices {
         },
         responses = {
             @ApiResponse(content = @Content(mediaType = MediaType.APPLICATION_JSON,
-                                            schema = @Schema(ref="https://elixir.bsc.es/monitor/metrics/metrics.json")),
+                                            schema = @Schema(ref="https://openebench.bsc.es/monitor/metrics/metrics.json")),
                          description = "JSON array of metrics"
             ),
             @ApiResponse(responseCode = "404", description = "metrics not found")
@@ -229,7 +229,7 @@ public class MetricsServices {
     @RolesAllowed("admin")
     public void putMetrics(@PathParam("id") final String id, 
                            @RequestBody(description = "json metrics object",
-                              content = @Content(schema = @Schema(ref="https://elixir.bsc.es/monitor/metrics/metrics.json")),
+                              content = @Content(schema = @Schema(ref="https://openebench.bsc.es/monitor/metrics/metrics.json")),
                               required = true) 
                            @JsonSchema(location="metrics.json") final String json,
                            @Context SecurityContext security,

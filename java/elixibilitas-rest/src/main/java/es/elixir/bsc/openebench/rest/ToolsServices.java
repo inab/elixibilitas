@@ -151,7 +151,7 @@ public class ToolsServices {
     @Operation(summary = "Returns all tools descriptions.",
         responses = {
             @ApiResponse(content = @Content(mediaType = MediaType.APPLICATION_JSON,
-                                            schema = @Schema(ref="https://elixir.bsc.es/monitor/tool/tool.json")))
+                                            schema = @Schema(ref="https://openebench.bsc.es/monitor/tool/tool.json")))
         }
     )
     public void getTools(@Suspended final AsyncResponse asyncResponse) {
@@ -204,7 +204,7 @@ public class ToolsServices {
 //        },
         responses = {
             @ApiResponse(content = @Content(mediaType = MediaType.APPLICATION_JSON,
-                                            schema = @Schema(ref="https://elixir.bsc.es/monitor/tool/tool.json")
+                                            schema = @Schema(ref="https://openebench.bsc.es/monitor/tool/tool.json")
             )),
             @ApiResponse(responseCode = "404", description = "tool(s) not found")
         }
@@ -293,7 +293,7 @@ public class ToolsServices {
     @RolesAllowed("admin")
     public void putTool(@PathParam("id") final String id, 
                         @RequestBody(description = "json tool object",
-                            content = @Content(schema = @Schema(ref="https://elixir.bsc.es/monitor/tool/tool.json")),
+                            content = @Content(schema = @Schema(ref="https://openebench.bsc.es/monitor/tool/tool.json")),
                             required = true) final String json,
                         @Context javax.ws.rs.core.SecurityContext security,
                         @Suspended final AsyncResponse asyncResponse) {
@@ -357,7 +357,7 @@ public class ToolsServices {
         description = "generates and applies JSON PATCH (RFC 6902):\n" +
                       "[{ 'op': 'replace', 'path': $path, 'value': $json }]\n" +
                       "curl -v -X PATCH -u user:pass -H 'Content-Type: application/json' " +
-                      "https://elixir.bsc.es/tool/{id}/description -d '\"new tool description\"'"
+                      "https://openebench.bsc.es/monitor/tool/{id}/description -d '\"new tool description\"'"
         
 //        parameters = {
 //            @Parameter(in = "path", name = "id", description = "prefixed tool id", required = true),

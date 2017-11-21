@@ -36,7 +36,7 @@ public class Website {
 
     private Integer operational;
     private Integer accessTime;
-    private ZonedDateTime lastSeen;
+    private ZonedDateTime lastCheck;
     private Copyright copyright;
     private Boolean license;
     private Boolean resources;
@@ -59,13 +59,13 @@ public class Website {
         this.accessTime = accessTime;
     }
     
-    @JsonbProperty("last_seen")
-    public ZonedDateTime getLastSeen() {
-        return lastSeen;
+    @JsonbProperty("last_check")
+    public ZonedDateTime getLastCheck() {
+        return lastCheck;
     }
 
-    public void setLastSeen(ZonedDateTime lastSeen) {
-        this.lastSeen = lastSeen;
+    public void setLastCheck(ZonedDateTime lastCheck) {
+        this.lastCheck = lastCheck;
     }
     
     @JsonbProperty("copyright")

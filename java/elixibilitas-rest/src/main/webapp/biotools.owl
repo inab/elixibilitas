@@ -5,19 +5,19 @@
     <!ENTITY xsd "http://www.w3.org/2001/XMLSchema#" >
     <!ENTITY rdfs "http://www.w3.org/2000/01/rdf-schema#" >
     <!ENTITY rdf "http://www.w3.org/1999/02/22-rdf-syntax-ns#" >
-    <!ENTITY t "http://elixir.bsc.es/biotools#" >
+    <!ENTITY t "http://openebench.bsc.es/biotools#" >
 ]>
 
-<rdf:RDF xml:base="https://elixir.bsc.es/tools"
-     xmlns="https://elixir.bsc.es/tools#"
-     xmlns:t="https://elixir.bsc.es/tools#"
+<rdf:RDF xml:base="https://openebench.bsc.es/tools"
+     xmlns="https://openebench.bsc.es/tools#"
+     xmlns:t="https://openebench.bsc.es/tools#"
      xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
      xmlns:owl="http://www.w3.org/2002/07/owl#"
      xmlns:xml="http://www.w3.org/XML/1998/namespace"
      xmlns:xsd="http://www.w3.org/2001/XMLSchema#"
      xmlns:rdfs="http://www.w3.org/2000/01/rdf-schema#">
 
-    <owl:Ontology rdf:about="https://elixir.bsc.es/tools">
+    <owl:Ontology rdf:about="https://openebench.bsc.es/tools">
         <rdf:langRange xml:lang="en">en</rdf:langRange>
     </owl:Ontology>
 

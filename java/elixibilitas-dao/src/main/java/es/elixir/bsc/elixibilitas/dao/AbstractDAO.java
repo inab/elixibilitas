@@ -77,11 +77,13 @@ public abstract class AbstractDAO<T> {
             bson.remove("@id");
             bson.remove("@type");
             
-            FindOneAndReplaceOptions opt = new FindOneAndReplaceOptions().upsert(false).
+            FindOneAndReplaceOptions opt = new FindOneAndReplaceOptions().upsert(true).
                     projection(Projections.excludeId()).returnDocument(ReturnDocument.BEFORE);
             
             Document doc = col.findOneAndReplace(Filters.eq("_id", pk), bson, opt);
-            if (doc != null) {
+            if (doc == null) {
+                doc = new Document();
+            } else {
                 // add @id and @type to both, "before" and "after", 
                 // so log have no these properties.
 
@@ -92,12 +94,13 @@ public abstract class AbstractDAO<T> {
                 doc.append("@type", type);
 
                 bson.append("@id", uri);
-                bson.append("@type", type);
-                
-                final String result = bson.toJson();
-                log.log(user, id, doc.toJson(), result);
-                return result;
+                bson.append("@type", type);                
             }
+                
+            final String result = bson.toJson();
+            log.log(user, id, doc.toJson(), result);
+            return result;
+
         } catch(Exception ex) {
             Logger.getLogger(AbstractDAO.class.getName()).log(Level.SEVERE, null, ex);
         }

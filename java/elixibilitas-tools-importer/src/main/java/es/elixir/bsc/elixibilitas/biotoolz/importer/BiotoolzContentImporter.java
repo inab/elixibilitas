@@ -99,7 +99,7 @@ public class BiotoolzContentImporter {
             page = next(tools, page);
             
             tools.forEach((tool) -> {
-                ToolsDAO toolsDAO = new ToolsDAO(mc.getDatabase("elixibilitas"), "https://elixir.bsc.es/monitor/tool");
+                ToolsDAO toolsDAO = new ToolsDAO(mc.getDatabase("elixibilitas"), "https://openebench.bsc.es/monitor/tool");
                 toolsDAO.put("biotools", tool);
             });
         } while (page > 0);
