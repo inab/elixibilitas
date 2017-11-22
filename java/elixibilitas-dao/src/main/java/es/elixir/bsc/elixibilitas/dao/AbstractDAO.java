@@ -83,20 +83,22 @@ public abstract class AbstractDAO<T> {
             Document doc = col.findOneAndReplace(Filters.eq("_id", pk), bson, opt);
             if (doc == null) {
                 doc = new Document();
-            } else {
-                // add @id and @type to both, "before" and "after", 
-                // so log have no these properties.
-
-                final String uri = getURI(pk);
-                final String type = getType(pk);
-
-                doc.append("@id", uri);
-                doc.append("@type", type);
-
-                bson.append("@id", uri);
-                bson.append("@type", type);                
             }
-                
+            
+            bson.remove("_id");
+
+            // add @id and @type to both, "before" and "after", 
+            // so log have no these properties.
+
+            final String uri = getURI(pk);
+            final String type = getType(pk);
+
+            doc.append("@id", uri);
+            doc.append("@type", type);
+
+            bson.append("@id", uri);
+            bson.append("@type", type);                
+
             final String result = bson.toJson();
             log.log(user, id, doc.toJson(), result);
             return result;

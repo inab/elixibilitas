@@ -37,7 +37,7 @@ import javax.ws.rs.core.Application;
  * @author Dmitry Repchevsky
  */
 
-@ApplicationPath("/monitor")
+@ApplicationPath("/")
 public class OpenEBenchMonitorApplication extends Application {
     @Override
     public Set<Class<?>> getClasses() {

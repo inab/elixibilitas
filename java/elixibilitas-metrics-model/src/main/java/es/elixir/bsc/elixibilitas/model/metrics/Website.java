@@ -35,7 +35,8 @@ import javax.json.bind.annotation.JsonbProperty;
 public class Website {
 
     private Integer operational;
-    private Integer accessTime;
+    private Boolean ssl;
+    private Long accessTime;
     private ZonedDateTime lastCheck;
     private Copyright copyright;
     private Boolean license;
@@ -50,12 +51,21 @@ public class Website {
         this.operational = operational;
     }
 
+    @JsonbProperty("ssl")
+    public Boolean getSSL() {
+        return ssl;
+    }
+
+    public void setSSL(Boolean ssl) {
+        this.ssl = ssl;
+    }
+
     @JsonbProperty("access_time")
-    public Integer getAccessTime() {
+    public Long getAccessTime() {
         return accessTime;
     }
 
-    public void setAccessTime(Integer accessTime) {
+    public void setAccessTime(Long accessTime) {
         this.accessTime = accessTime;
     }
     
