@@ -34,7 +34,7 @@
           "operational": {
             "type": "integer"
           },
-          "last_seen": {
+          "last_check": {
             "type": "string",
             "format": "date-time"
           },
