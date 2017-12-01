@@ -169,10 +169,10 @@ public class MetricsServices {
         if (path != null && path.length() > 0) {
             JsonPointer pointer = Json.createPointer(path);
             JsonStructure structure = Json.createReader(new StringReader(json)).read();
-            final JsonValue value = pointer.getValue(structure);
-            if (value == null) {
+            if (!pointer.containsValue(structure)) {
                 return Response.status(Response.Status.NOT_FOUND);
             }
+            final JsonValue value = pointer.getValue(structure);
             StreamingOutput stream = (OutputStream out) -> {
                 try (JsonWriter writer = Json.createWriter(out)) {
                     writer.write(value);
