@@ -25,6 +25,7 @@
 
 package es.elixir.bsc.elixibilitas.model.metrics;
 
+import java.time.ZonedDateTime;
 import javax.json.bind.annotation.JsonbProperty;
 
 /**
@@ -36,6 +37,17 @@ public class Metrics {
     private Project project;
     private Distribution distribution;
     private Support support;
+
+    private ZonedDateTime timestamp;
+    
+    @JsonbProperty("@timestamp")
+    public ZonedDateTime getTimestamp() {
+        return timestamp;
+    }
+
+    public void setTimestamp(ZonedDateTime timestamp) {
+        this.timestamp = timestamp;
+    }
 
     @JsonbProperty("project")
     public Project getProject() {

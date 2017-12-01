@@ -123,9 +123,6 @@ public class MetricsDAO extends AbstractDAO<BsonString> implements Serializable 
     }
 
     public String update(String user, String id, Metrics metrics) {
-//        final Jsonb jsonb = JsonbBuilder.create(new JsonbConfig()
-//                    .withPropertyNamingStrategy(PropertyNamingStrategy.UPPER_CAMEL_CASE));
-
         final Jsonb jsonb = JsonbBuilder.create();
         final String json = jsonb.toJson(metrics);
         
@@ -137,9 +134,6 @@ public class MetricsDAO extends AbstractDAO<BsonString> implements Serializable 
         doc.append("@id", doc.remove("_id"));
         doc.append("@type", "metrics");
                         
-//        final Jsonb jsonb = JsonbBuilder.create(new JsonbConfig()
-//                    .withPropertyNamingStrategy(PropertyNamingStrategy.UPPER_CAMEL_CASE));
-
         final Jsonb jsonb = JsonbBuilder.create();
 
         final String json = doc.toJson();
@@ -178,6 +172,7 @@ public class MetricsDAO extends AbstractDAO<BsonString> implements Serializable 
 
                 if (projections != null && projections.size() > 0) {
                     BasicDBObject bson = new BasicDBObject();
+                    bson.append("@timestamp", true);
                     for (String field : projections) {
                         bson.append(field, true);
                     }

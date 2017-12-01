@@ -26,6 +26,7 @@
 package es.elixir.bsc.openebench.model.tools;
 
 import java.net.URI;
+import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import javax.json.bind.annotation.JsonbCreator;
@@ -39,6 +40,7 @@ public class Tool extends LD {
     
     private String name;
     private String version;
+    private ZonedDateTime timestamp;
     
     private URI homepage;
     private List<URI> repositories;
@@ -80,6 +82,15 @@ public class Tool extends LD {
         this.version = version;
     }
 
+    @JsonbProperty("@timestamp")
+    public ZonedDateTime getTimestamp() {
+        return timestamp;
+    }
+
+    public void setTimestamp(ZonedDateTime timestamp) {
+        this.timestamp = timestamp;
+    }
+    
     @JsonbProperty("homepage")
     public URI getHomepage() {
         return homepage;

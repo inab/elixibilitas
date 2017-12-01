@@ -146,9 +146,6 @@ public class ToolsDAO extends AbstractDAO<Document> implements Serializable {
         doc.append("@id", getURI(_id));
         doc.append("@type", type);
                         
-//        final Jsonb jsonb = JsonbBuilder.create(new JsonbConfig()
-//                    .withPropertyNamingStrategy(PropertyNamingStrategy.UPPER_CAMEL_CASE));
-        
         final Jsonb jsonb = JsonbBuilder.create();
         
         final String json = doc.toJson();
@@ -234,9 +231,6 @@ public class ToolsDAO extends AbstractDAO<Document> implements Serializable {
     }
 
     public String put(String user, Tool tool) {
-        
-//        final Jsonb jsonb = JsonbBuilder.create(new JsonbConfig()
-//                    .withPropertyNamingStrategy(PropertyNamingStrategy.UPPER_CAMEL_CASE));
         final Jsonb jsonb = JsonbBuilder.create();
         final String json = jsonb.toJson(tool);
         
@@ -245,8 +239,6 @@ public class ToolsDAO extends AbstractDAO<Document> implements Serializable {
 
 
     public String update(String user, Tool tool, String id) {
-//        final Jsonb jsonb = JsonbBuilder.create(new JsonbConfig()
-//                    .withPropertyNamingStrategy(PropertyNamingStrategy.UPPER_CAMEL_CASE));
         final Jsonb jsonb = JsonbBuilder.create();
         final String json = jsonb.toJson(tool);
         
@@ -306,6 +298,7 @@ public class ToolsDAO extends AbstractDAO<Document> implements Serializable {
 
                 if (projections != null && projections.size() > 0) {
                     BasicDBObject bson = new BasicDBObject();
+                    bson.append("@timestamp", true);
                     for (String field : projections) {
                         bson.append(field, true);
                     }

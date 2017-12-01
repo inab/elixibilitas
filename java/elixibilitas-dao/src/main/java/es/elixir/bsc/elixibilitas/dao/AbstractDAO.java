@@ -9,6 +9,8 @@ import com.mongodb.client.model.Projections;
 import com.mongodb.client.model.ReturnDocument;
 import java.io.StringReader;
 import java.io.StringWriter;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.json.Json;
@@ -16,6 +18,7 @@ import javax.json.JsonArray;
 import javax.json.JsonObject;
 import javax.json.JsonPatch;
 import org.bson.Document;
+import org.bson.conversions.Bson;
 
 /**
  * @author Dmitry Repchevsky
@@ -74,6 +77,10 @@ public abstract class AbstractDAO<T> {
 
             final T pk = createPK(id);
             bson.append("_id", pk);
+            
+            final String timestamp = ZonedDateTime.now(ZoneId.of("Z")).toString();
+            bson.append("@timestamp", timestamp);
+
             bson.remove("@id");
             bson.remove("@type");
             
@@ -87,7 +94,7 @@ public abstract class AbstractDAO<T> {
             
             bson.remove("_id");
 
-            // add @id and @type to both, "before" and "after", 
+            // add @id, @type and @timestamp to both, "before" and "after", 
             // so log have no these properties.
 
             final String uri = getURI(pk);
@@ -95,6 +102,7 @@ public abstract class AbstractDAO<T> {
 
             doc.append("@id", uri);
             doc.append("@type", type);
+            doc.append("@timestamp", timestamp);
 
             bson.append("@id", uri);
             bson.append("@type", type);                
@@ -116,12 +124,13 @@ public abstract class AbstractDAO<T> {
 
     /**
      * Updates the document using mongodb 'upsert' operation.
+     * If 
      * 
      * @param user origin of the update operation
-     * @param id id of the document
-     * @param json Json document to update
+     * @param id ID of the document
+     * @param json JSON document to update
      * 
-     * @return 
+     * @return updated JSON document or null if no update were performed.
      */
     public String update(String user, String id, String json) {
         try {
@@ -129,9 +138,14 @@ public abstract class AbstractDAO<T> {
 
             Document bson = Document.parse(json);
 
+            final String timestamp = bson.get("@timestamp", String.class);
+            
             final T pk = createPK(id);
             bson.append("_id", pk);
 
+            final String newTimestamp = ZonedDateTime.now(ZoneId.of("Z")).toString();
+            bson.append("@timestamp", newTimestamp);
+            
             bson.remove("@id");
             bson.remove("@type");
             
@@ -140,8 +154,10 @@ public abstract class AbstractDAO<T> {
             FindOneAndUpdateOptions opt = new FindOneAndUpdateOptions().upsert(true)
                     .projection(Projections.excludeId()).returnDocument(ReturnDocument.AFTER);
             
-            final Document after = col.findOneAndUpdate(Filters.eq("_id", pk),
-                                        new Document("$set", bson), opt);
+            Bson query = timestamp == null ? Filters.eq("_id", pk) :
+                    Filters.and(Filters.eq("_id", pk), Filters.lte("@timestamp", timestamp));
+            
+            final Document after = col.findOneAndUpdate(query, new Document("$set", bson), opt);
 
             if (after != null) {
                 final String uri = getURI(pk);
@@ -153,7 +169,7 @@ public abstract class AbstractDAO<T> {
                 
                 before.append("@id", uri);
                 before.append("@type", type);
-
+                before.append("@timestamp", newTimestamp);
 
                 after.append("@id", uri);
                 after.append("@type", type);
