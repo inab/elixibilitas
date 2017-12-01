@@ -42,6 +42,8 @@ public class Tool extends LD {
     private String version;
     private ZonedDateTime timestamp;
     
+    private String xid;
+
     private URI homepage;
     private List<URI> repositories;
     private String description;
@@ -91,6 +93,15 @@ public class Tool extends LD {
         this.timestamp = timestamp;
     }
     
+    @JsonbProperty("@xid")
+    public String getExternalId() {
+        return xid;
+    }
+
+    public void setExternalId(String xid) {
+        this.xid = xid;
+    }
+
     @JsonbProperty("homepage")
     public URI getHomepage() {
         return homepage;
