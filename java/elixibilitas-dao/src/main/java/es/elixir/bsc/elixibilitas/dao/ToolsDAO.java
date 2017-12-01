@@ -26,11 +26,15 @@
 package es.elixir.bsc.elixibilitas.dao;
 
 import com.mongodb.BasicDBObject;
+import com.mongodb.client.AggregateIterable;
 import com.mongodb.client.FindIterable;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoCursor;
 import com.mongodb.client.MongoDatabase;
+import com.mongodb.client.model.Accumulators;
+import com.mongodb.client.model.Aggregates;
 import com.mongodb.client.model.Filters;
+import com.mongodb.client.model.Sorts;
 import es.elixir.bsc.openebench.model.tools.CommandLineTool;
 import es.elixir.bsc.openebench.model.tools.DatabasePortal;
 import es.elixir.bsc.openebench.model.tools.DesktopApplication;
@@ -293,27 +297,34 @@ public class ToolsDAO extends AbstractDAO<Document> implements Serializable {
 
                 writer.write("[");
                 
-                FindIterable<Document> iterator = text == null || text.isEmpty() ? col.find() :
-                        col.find(Filters.or(Filters.regex("description", text, "i"),
-                                            Filters.regex("name", text, "i")));
-
-                iterator = iterator.sort(new BasicDBObject("name", 1));
-                
-                if (skip != null) {
-                    iterator = iterator.skip(skip);
+                ArrayList<Bson> aggregation = new ArrayList();
+                if (text != null && !text.isEmpty()) {
+                    aggregation.add(Aggregates.match(Filters.or(Filters.regex("description", text, "i"),
+                                            Filters.regex("name", text, "i"))));
                 }
-                if (limit != null) {
-                    iterator.limit(limit);
-                }
+                aggregation.add(Aggregates.sort(Sorts.ascending("name")));
 
                 if (projections != null && projections.size() > 0) {
                     BasicDBObject bson = new BasicDBObject();
                     for (String field : projections) {
                         bson.append(field, true);
                     }
-                    iterator = iterator.projection(bson);
+                    aggregation.add(Aggregates.project(bson));
                 }
 
+                aggregation.add(Aggregates.group(new BasicDBObject("_id", "$_id.id"), Accumulators.push("tools", "$$ROOT")));
+                
+                if (skip != null) {
+                    aggregation.add(Aggregates.skip(skip));
+                }
+                if (limit != null) {
+                    aggregation.add(Aggregates.limit(limit));
+                }
+
+                aggregation.add(Aggregates.unwind("$tools"));
+                aggregation.add(Aggregates.replaceRoot("$tools"));
+                AggregateIterable<Document> iterator = col.aggregate(aggregation);
+                
                 try (MongoCursor<Document> cursor = iterator.iterator()) {
                     if (cursor.hasNext()) {
                         do {
