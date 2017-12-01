@@ -28,6 +28,8 @@ import org.bson.conversions.Bson;
 
 public abstract class AbstractDAO<T> {
     
+    public final static String LICENSE = "https://creativecommons.org/licenses/by/4.0/";
+            
     public final String baseURI;
     protected final MongoDatabase database;
     protected final String collection;
@@ -102,10 +104,12 @@ public abstract class AbstractDAO<T> {
 
             doc.append("@id", uri);
             doc.append("@type", type);
+            doc.append("@license", LICENSE);
             doc.append("@timestamp", timestamp);
 
             bson.append("@id", uri);
-            bson.append("@type", type);                
+            bson.append("@type", type);
+            bson.append("@license", LICENSE);
 
             final String result = bson.toJson();
             log.log(user, id, doc.toJson(), result);
@@ -169,10 +173,12 @@ public abstract class AbstractDAO<T> {
                 
                 before.append("@id", uri);
                 before.append("@type", type);
+                before.append("@license", LICENSE);
                 before.append("@timestamp", newTimestamp);
 
                 after.append("@id", uri);
                 after.append("@type", type);
+                after.append("@license", LICENSE);
 
                 final String result = after.toJson();
                 log.log(user, id, before.toJson(), result);
@@ -210,16 +216,23 @@ public abstract class AbstractDAO<T> {
             if (doc != null) {
                 final JsonObject target = Json.createReader(new StringReader(doc.toJson())).readObject();
                 final JsonObject patched = patch.apply(target);
+                
                 final StringWriter writer = new StringWriter();
                 Json.createWriter(writer).writeObject(patched);
 
+                Document patchedDoc = Document.parse(writer.toString());
+
+                final String timestamp = ZonedDateTime.now(ZoneId.of("Z")).toString();
+                patchedDoc.append("@timestamp", timestamp);
+                
                 FindOneAndReplaceOptions opt = new FindOneAndReplaceOptions()
                         .projection(Projections.excludeId())
                         .returnDocument(ReturnDocument.AFTER);
-                Document result = col.findOneAndReplace(Filters.eq("_id", pk), Document.parse(writer.toString()), opt);
+                Document result = col.findOneAndReplace(Filters.eq("_id", pk), patchedDoc, opt);
 
                 result.append("@id", getURI(pk));
                 result.append("@type", getType(pk));
+                result.append("@license", LICENSE);
 
                 return result.toJson();
             }

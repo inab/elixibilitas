@@ -31,6 +31,7 @@ import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoCursor;
 import com.mongodb.client.MongoDatabase;
 import com.mongodb.client.model.Filters;
+import static es.elixir.bsc.elixibilitas.dao.AbstractDAO.LICENSE;
 import es.elixir.bsc.elixibilitas.model.metrics.Metrics;
 import java.io.IOException;
 import java.io.Serializable;
@@ -113,7 +114,8 @@ public class MetricsDAO extends AbstractDAO<BsonString> implements Serializable 
             if (doc != null) {
                 doc.append("@id", baseURI + doc.remove("_id"));
                 doc.append("@type", "metrics");
-
+                doc.append("@license", LICENSE);
+                
                 return doc;
             }
         } catch(Exception ex) {
@@ -186,6 +188,7 @@ public class MetricsDAO extends AbstractDAO<BsonString> implements Serializable 
 
                             doc.append("@id", doc.remove("_id"));
                             doc.append("@type", "metrics");
+                            doc.append("@license", LICENSE);
 
                             doc.toJson(codec);
                             jwriter.flush();

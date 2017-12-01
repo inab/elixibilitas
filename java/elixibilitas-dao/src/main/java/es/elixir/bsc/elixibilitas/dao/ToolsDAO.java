@@ -220,6 +220,7 @@ public class ToolsDAO extends AbstractDAO<Document> implements Serializable {
                 try (MongoCursor<Document> cursor = col.find(query).iterator()) {
                     while(cursor.hasNext()) {
                         Document doc = cursor.next();
+                        doc.append("@license", LICENSE);
                         list.add(doc);
                     }
                 }
@@ -326,6 +327,7 @@ public class ToolsDAO extends AbstractDAO<Document> implements Serializable {
                             Document _id = (Document) doc.remove("_id");
                             doc.append("@id", getURI(_id));
                             doc.append("@type", _id.getString("type"));
+                            doc.append("@license", LICENSE);
 
                             doc.toJson(codec);
                             jwriter.flush();
