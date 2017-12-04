@@ -30,47 +30,46 @@ import javax.json.bind.annotation.JsonbProperty;
 /**
  * @author Dmitry Repchevsky
  */
+public class Summary {
+    private Boolean description;
+    private Boolean concept;
+    private Boolean rationale;
+    private Boolean architecture;
 
-public class Sourcecode {
-
-    private Boolean copyright;
-    private Boolean license;
-    private Boolean readme;
-    private Repository repository;
-    
-    @JsonbProperty("copyright")
-    public Boolean getCopyright() {
-        return copyright;
+    @JsonbProperty("description")
+    public Boolean getDescription() {
+        return description;
     }
 
-    public void setCopyright(Boolean copyright) {
-        this.copyright = copyright;
-    }
-    
-    @JsonbProperty("license")
-    public Boolean getLicense() {
-        return license;
+    public void setDescription(Boolean description) {
+        this.description = description;
     }
 
-    public void setLicense(Boolean license) {
-        this.license = license;
-    }
-    
-    @JsonbProperty("readme")
-    public Boolean getReadme() {
-        return readme;
+    @JsonbProperty("concept")
+    public Boolean getConcept() {
+        return concept;
     }
 
-    public void setReadme(Boolean readme) {
-        this.readme = readme;
+    public void setConcept(Boolean concept) {
+        this.concept = concept;
     }
 
-    @JsonbProperty("repository")
-    public Repository getRepository() {
-        return repository;
+    @JsonbProperty("rationale")
+    public Boolean getRationale() {
+        return rationale;
     }
 
-    public void setRepository(Repository repository) {
-        this.repository = repository;
+    public void setRationale(Boolean rationale) {
+        this.rationale = rationale;
     }
+
+    @JsonbProperty("architecture")
+    public Boolean getArchitecture() {
+        return architecture;
+    }
+
+    public void setArchitecture(Boolean architecture) {
+        this.architecture = architecture;
+    }
+
 }
