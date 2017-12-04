@@ -34,14 +34,11 @@ import javax.json.bind.annotation.JsonbProperty;
 public class Project {
 
     private Identity identity;
+    private Summary summary;
     private Website website;
     private Build build;
     private License license;
     private Documentation documentation;
-    private Boolean description;
-    private Boolean concept;
-    private Boolean rationale;
-    private Boolean architecture;
     private Integer publications;
     private Boolean readme;
 
@@ -52,6 +49,15 @@ public class Project {
 
     public void setIdentity(Identity identity) {
         this.identity = identity;
+    }
+
+    @JsonbProperty("summary")
+    public Summary getSummary() {
+        return summary;
+    }
+
+    public void setSummary(Summary summary) {
+        this.summary = summary;
     }
 
     @JsonbProperty("website")
@@ -88,42 +94,6 @@ public class Project {
 
     public void setDocumentation(Documentation documentation) {
         this.documentation = documentation;
-    }
-
-    @JsonbProperty("description")
-    public Boolean getDescription() {
-        return description;
-    }
-
-    public void setDescription(Boolean description) {
-        this.description = description;
-    }
-
-    @JsonbProperty("concept")
-    public Boolean getConcept() {
-        return concept;
-    }
-
-    public void setConcept(Boolean concept) {
-        this.concept = concept;
-    }
-
-    @JsonbProperty("rationale")
-    public Boolean getRationale() {
-        return rationale;
-    }
-
-    public void setRationale(Boolean rationale) {
-        this.rationale = rationale;
-    }
-
-    @JsonbProperty("architecture")
-    public Boolean getArchitecture() {
-        return architecture;
-    }
-
-    public void setArchitecture(Boolean architecture) {
-        this.architecture = architecture;
     }
 
     @JsonbProperty("publications")
