@@ -5,48 +5,25 @@
     <!ENTITY xsd "http://www.w3.org/2001/XMLSchema#" >
     <!ENTITY rdfs "http://www.w3.org/2000/01/rdf-schema#" >
     <!ENTITY rdf "http://www.w3.org/1999/02/22-rdf-syntax-ns#" >
-    <!ENTITY t "http://openebench.bsc.es/biotools#" >
+    <!ENTITY t "http://openebench.bsc.es/monitor/biotools#" >
 ]>
 
-<rdf:RDF xml:base="https://openebench.bsc.es/tools"
-     xmlns="https://openebench.bsc.es/tools#"
-     xmlns:t="https://openebench.bsc.es/tools#"
+<rdf:RDF xml:base="https://openebench.bsc.es/monitor/tools"
+     xmlns="https://openebench.bsc.es/monitor/tools#"
+     xmlns:t="https://openebench.bsc.es/monitor/tools#"
      xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
      xmlns:owl="http://www.w3.org/2002/07/owl#"
      xmlns:xml="http://www.w3.org/XML/1998/namespace"
      xmlns:xsd="http://www.w3.org/2001/XMLSchema#"
      xmlns:rdfs="http://www.w3.org/2000/01/rdf-schema#">
 
-    <owl:Ontology rdf:about="https://openebench.bsc.es/tools">
+    <owl:Ontology rdf:about="https://openebench.bsc.es/monitor/tools">
         <rdf:langRange xml:lang="en">en</rdf:langRange>
     </owl:Ontology>
 
     <owl:ObjectProperty rdf:about="#tools">
         <rdfs:range rdf:resource="#Tool"/>
     </owl:ObjectProperty>
-
-<!-- # Tool properties -->
-
-    <owl:DatatypeProperty rdf:about="#homepage">
-        <rdfs:domain rdf:resource="#Tool"/>
-        <rdfs:range rdf:resource="&xsd;anyURI"/>
-    </owl:DatatypeProperty>
-
-    <owl:DatatypeProperty rdf:about="#repositories">
-        <rdfs:domain rdf:resource="#Tool"/>
-        <rdfs:range rdf:resource="&xsd;anyURI"/>
-    </owl:DatatypeProperty>
-
-    <owl:DatatypeProperty rdf:about="#description">
-        <rdfs:domain rdf:resource="#Tool"/>
-        <rdfs:range rdf:resource="&xsd;string"/>
-    </owl:DatatypeProperty>
-
-    <owl:ObjectProperty rdf:about="#distributions">
-        <rdfs:domain rdf:resource="#Tool"/>
-        <rdfs:range rdf:resource="#Distributions"/>
-    </owl:ObjectProperty>
-
 
     <owl:Class rdf:about="#Tool">
         <owl:equivalentClass>
@@ -58,65 +35,18 @@
                     </owl:Restriction>
                     <owl:Restriction>
                         <owl:onProperty rdf:resource="#homepage"/>
-                        <owl:maxQualifiedCardinality rdf:datatype="&xsd;nonNegativeInteger">1</owl:maxQualifiedCardinality>
+                        <owl:qualifiedCardinality rdf:datatype="&xsd;nonNegativeInteger">1</owl:qualifiedCardinality>
                         <owl:onDataRange rdf:resource="&xsd;anyURI"/>
                     </owl:Restriction>
-
-                    <owl:Restriction>
-                        <owl:onProperty rdf:resource="#repositories"/>
-                        <owl:allValuesFrom rdf:resource="&xsd;anyURI"/>
-                    </owl:Restriction>
-
                     <owl:Restriction>
                         <owl:onProperty rdf:resource="#description"/>
                         <owl:allValuesFrom rdf:resource="&xsd;string"/>
                     </owl:Restriction>
                     <owl:Restriction>
                         <owl:onProperty rdf:resource="#description"/>
-                        <owl:maxQualifiedCardinality rdf:datatype="&xsd;nonNegativeInteger">1</owl:maxQualifiedCardinality>
+                        <owl:qualifiedCardinality rdf:datatype="&xsd;nonNegativeInteger">1</owl:qualifiedCardinality>
                         <owl:onDataRange rdf:resource="&xsd;string"/>
                     </owl:Restriction>
-
-                    <owl:Restriction>
-                        <owl:onProperty rdf:resource="#license"/>
-                        <owl:allValuesFrom rdf:resource="&xsd;string"/>
-                    </owl:Restriction>
-                    <owl:Restriction>
-                        <owl:onProperty rdf:resource="#license"/>
-                        <owl:maxQualifiedCardinality rdf:datatype="&xsd;nonNegativeInteger">1</owl:maxQualifiedCardinality>
-                        <owl:onDataRange rdf:resource="&xsd;string"/>
-                    </owl:Restriction>
-
-                    <owl:Restriction>
-                        <owl:onProperty rdf:resource="#maturity"/>
-                        <owl:allValuesFrom rdf:resource="&xsd;string"/>
-                    </owl:Restriction>
-                    <owl:Restriction>
-                        <owl:onProperty rdf:resource="#maturity"/>
-                        <owl:maxQualifiedCardinality rdf:datatype="&xsd;nonNegativeInteger">1</owl:maxQualifiedCardinality>
-                        <owl:onDataRange rdf:resource="&xsd;string"/>
-                    </owl:Restriction>
-
-                    <owl:Restriction>
-                        <owl:onProperty rdf:resource="#cost"/>
-                        <owl:allValuesFrom rdf:resource="&xsd;string"/>
-                    </owl:Restriction>
-                    <owl:Restriction>
-                        <owl:onProperty rdf:resource="#cost"/>
-                        <owl:maxQualifiedCardinality rdf:datatype="&xsd;nonNegativeInteger">1</owl:maxQualifiedCardinality>
-                        <owl:onDataRange rdf:resource="&xsd;string"/>
-                    </owl:Restriction>
-
-                    <owl:Restriction>
-                        <owl:onProperty rdf:resource="#support"/>
-                        <owl:allValuesFrom rdf:resource="#Support"/>
-                    </owl:Restriction>
-                    <owl:Restriction>
-                        <owl:onProperty rdf:resource="#support"/>
-                        <owl:maxQualifiedCardinality rdf:datatype="http://www.w3.org/2001/XMLSchema#nonNegativeInteger">1</owl:maxQualifiedCardinality>
-                        <owl:onClass rdf:resource="#Support"/>
-                    </owl:Restriction>
-
                     <owl:Restriction>
                         <owl:onProperty rdf:resource="#community"/>
                         <owl:allValuesFrom rdf:resource="#Community"/>
@@ -126,17 +56,6 @@
                         <owl:maxQualifiedCardinality rdf:datatype="http://www.w3.org/2001/XMLSchema#nonNegativeInteger">1</owl:maxQualifiedCardinality>
                         <owl:onClass rdf:resource="#Community"/>
                     </owl:Restriction>
-
-                    <owl:Restriction>
-                        <owl:onProperty rdf:resource="#distributions"/>
-                        <owl:allValuesFrom rdf:resource="#Distributions"/>
-                    </owl:Restriction>
-                    <owl:Restriction>
-                        <owl:onProperty rdf:resource="#distributions"/>
-                        <owl:maxQualifiedCardinality rdf:datatype="http://www.w3.org/2001/XMLSchema#nonNegativeInteger">1</owl:maxQualifiedCardinality>
-                        <owl:onClass rdf:resource="#Distributions"/>
-                    </owl:Restriction>
-
                     <owl:Restriction>
                         <owl:onProperty rdf:resource="#documentation"/>
                         <owl:allValuesFrom rdf:resource="#Documentation"/>
@@ -146,32 +65,10 @@
                         <owl:maxQualifiedCardinality rdf:datatype="http://www.w3.org/2001/XMLSchema#nonNegativeInteger">1</owl:maxQualifiedCardinality>
                         <owl:onClass rdf:resource="#Documentation"/>
                     </owl:Restriction>
-
                     <owl:Restriction>
-                        <owl:onProperty rdf:resource="#semantics"/>
-                        <owl:allValuesFrom rdf:resource="#Semantics"/>
-                    </owl:Restriction>
-                    <owl:Restriction>
-                        <owl:onProperty rdf:resource="#semantics"/>
-                        <owl:maxQualifiedCardinality rdf:datatype="http://www.w3.org/2001/XMLSchema#nonNegativeInteger">1</owl:maxQualifiedCardinality>
-                        <owl:onClass rdf:resource="#Semantics"/>
-                    </owl:Restriction>
-
-                    <owl:Restriction>
-                        <owl:onProperty rdf:resource="#publications"/>
+                        <owl:onProperty rdf:resource="#publication"/>
                         <owl:allValuesFrom rdf:resource="#Publication"/>
                     </owl:Restriction>
-
-                    <owl:Restriction>
-                        <owl:onProperty rdf:resource="#contacts"/>
-                        <owl:allValuesFrom rdf:resource="#Contact"/>
-                    </owl:Restriction>
-
-                    <owl:Restriction>
-                        <owl:onProperty rdf:resource="#credits"/>
-                        <owl:allValuesFrom rdf:resource="#Credit"/>
-                    </owl:Restriction>
-
                 </owl:intersectionOf>
             </owl:Class>
         </owl:equivalentClass>
@@ -183,101 +80,33 @@
         <rdfs:comment>A tool with a text-based (command-line) interface.</rdfs:comment>
     </owl:Class>
 
-    <owl:Class rdf:about="#db">
-        <rdfs:label rdf:datatype="&xsd;string">Database portal</rdfs:label>
+    <owl:Class rdf:about="#web">
+        <rdfs:label rdf:datatype="&xsd;string">Command-line tool</rdfs:label>
         <rdfs:subClassOf rdf:resource="#Tool"/>
-        <rdfs:comment>A Web application, suite or workbench providing a portal to a biological database.</rdfs:comment>
-    </owl:Class>
-
-    <owl:Class rdf:about="#app">
-        <rdfs:label rdf:datatype="&xsd;string">Desktop application</rdfs:label>
-        <rdfs:subClassOf rdf:resource="#Tool"/>
-        <rdfs:comment>A tool with a graphical user interface that runs on your desktop environment, e.g. on a PC or mobile device.</rdfs:comment>
+        <rdfs:comment>A tool with a text-based (command-line) interface.</rdfs:comment>
     </owl:Class>
 
     <owl:Class rdf:about="#lib">
-        <rdfs:label rdf:datatype="&xsd;string">Library</rdfs:label>
+        <rdfs:label rdf:datatype="&xsd;string">Command-line tool</rdfs:label>
         <rdfs:subClassOf rdf:resource="#Tool"/>
-        <rdfs:comment>A collection of components that are used to construct other tools.  bio.tools scope includes component libraries performing high-level bioinformatics functions but excludes lower-level programming libraries.</rdfs:comment>
+        <rdfs:comment>A tool with a text-based (command-line) interface.</rdfs:comment>
     </owl:Class>
 
-    <owl:Class rdf:about="#web">
-        <rdfs:label rdf:datatype="&xsd;string">Web application</rdfs:label>
+    <owl:Class rdf:about="#db">
+        <rdfs:label rdf:datatype="&xsd;string">Command-line tool</rdfs:label>
         <rdfs:subClassOf rdf:resource="#Tool"/>
-        <rdfs:comment>A tool with a graphical user interface that runs in your Web browser.</rdfs:comment>
+        <rdfs:comment>A tool with a text-based (command-line) interface.</rdfs:comment>
     </owl:Class>
 
-    <owl:Class rdf:about="#rest">
-        <rdfs:label rdf:datatype="&xsd;string">Web API</rdfs:label>
-        <rdfs:subClassOf rdf:resource="#Tool"/>
-        <rdfs:comment>An application programming interface (API) consisting of endpoints to a request-response message system accessible via HTTP.  Includes everything from simple data-access URLs to RESTful APIs.</rdfs:comment>
-    </owl:Class>
-
-    <owl:Class rdf:about="#soap">
-        <rdfs:label rdf:datatype="&xsd;string">Web service</rdfs:label>
-        <rdfs:subClassOf rdf:resource="#Tool"/>
-        <rdfs:comment>An API described in a machine readable form (typically WSDL) providing programmatic access via SOAP over HTTP.</rdfs:comment>
-    </owl:Class>
-
-    <owl:DatatypeProperty rdf:about="#helpdesk">
-        <rdfs:domain rdf:resource="#Support"/>
+    <owl:DatatypeProperty rdf:about="#homepage">
+        <rdfs:domain rdf:resource="#Tool"/>
         <rdfs:range rdf:resource="&xsd;anyURI"/>
     </owl:DatatypeProperty>
 
-    <owl:DatatypeProperty rdf:about="#issue_tracker">
-        <rdfs:domain rdf:resource="#Support"/>
-        <rdfs:range rdf:resource="&xsd;anyURI"/>
-    </owl:DatatypeProperty>
-
-    <owl:DatatypeProperty rdf:about="#mailing_list">
-        <rdfs:domain rdf:resource="#Support"/>
-        <rdfs:range rdf:resource="&xsd;anyURI"/>
-    </owl:DatatypeProperty>
-
-    <owl:DatatypeProperty rdf:about="#license">
+    <owl:DatatypeProperty rdf:about="#description">
         <rdfs:domain rdf:resource="#Tool"/>
         <rdfs:range rdf:resource="&xsd;string"/>
     </owl:DatatypeProperty>
-
-    <owl:DatatypeProperty rdf:about="#maturity">
-        <rdfs:domain rdf:resource="#Tool"/>
-        <rdfs:range rdf:resource="&xsd;string"/>
-    </owl:DatatypeProperty>
-
-    <owl:DatatypeProperty rdf:about="#cost">
-        <rdfs:domain rdf:resource="#Tool"/>
-        <rdfs:range rdf:resource="&xsd;string"/>
-    </owl:DatatypeProperty>
-
-    <owl:DatatypeProperty rdf:about="#doc_link">
-        <rdfs:domain rdf:resource="#Documentation"/>
-        <rdfs:range rdf:resource="&xsd;anyURI"/>
-    </owl:DatatypeProperty>
-
-    <owl:DatatypeProperty rdf:about="#url">
-        <rdfs:range rdf:resource="&xsd;anyURI"/>
-    </owl:DatatypeProperty>
-
-    <owl:DatatypeProperty rdf:about="#name">
-        <rdfs:range rdf:resource="&xsd;string"/>
-    </owl:DatatypeProperty>
-
-    <owl:DatatypeProperty rdf:about="#comment">
-        <rdfs:range rdf:resource="&xsd;string"/>
-    </owl:DatatypeProperty>
-
-    <owl:DatatypeProperty rdf:about="#email">
-        <rdfs:range rdf:resource="&xsd;string"/>
-    </owl:DatatypeProperty>
-
-    <owl:DatatypeProperty rdf:about="#phone">
-        <rdfs:range rdf:resource="&xsd;string"/>
-    </owl:DatatypeProperty>
-
-    <owl:ObjectProperty rdf:about="#support">
-        <rdfs:domain rdf:resource="#Tool"/>
-        <rdfs:range rdf:resource="#Support"/>
-    </owl:ObjectProperty>
 
     <owl:ObjectProperty rdf:about="#community">
         <rdfs:domain rdf:resource="#Tool"/>
@@ -289,10 +118,10 @@
         <rdfs:range rdf:resource="#Documentation"/>
     </owl:ObjectProperty>
 
-    <owl:ObjectProperty rdf:about="#semantics">
-        <rdfs:domain rdf:resource="#Tool"/>
-        <rdfs:range rdf:resource="#Semantics"/>
-    </owl:ObjectProperty>
+    <owl:DatatypeProperty rdf:about="#doc_link">
+        <rdfs:domain rdf:resource="#Documentation"/>
+        <rdfs:range rdf:resource="&xsd;anyURI"/>
+    </owl:DatatypeProperty>
 
     <owl:DatatypeProperty rdf:about="#general">
        <rdfs:subPropertyOf rdf:resource="#doc_link"/>
@@ -331,132 +160,26 @@
         </owl:equivalentClass>
     </owl:Class>
 
-    <owl:Class rdf:about="#Support">
-        <owl:equivalentClass>
-            <owl:Class>
-                <owl:intersectionOf rdf:parseType="Collection">
-                    <owl:Restriction>
-                        <owl:onProperty rdf:resource="#helpdesk"/>
-                        <owl:allValuesFrom rdf:resource="&xsd;anyURI"/>
-                    </owl:Restriction>
-                    <owl:Restriction>
-                        <owl:onProperty rdf:resource="#helpdesk"/>
-                        <owl:maxQualifiedCardinality rdf:datatype="&xsd;nonNegativeInteger">1</owl:maxQualifiedCardinality>
-                        <owl:onDataRange rdf:resource="&xsd;anyURI"/>
-                    </owl:Restriction>
-
-                    <owl:Restriction>
-                        <owl:onProperty rdf:resource="#issue_tracker"/>
-                        <owl:allValuesFrom rdf:resource="&xsd;anyURI"/>
-                    </owl:Restriction>
-                    <owl:Restriction>
-                        <owl:onProperty rdf:resource="#issue_tracker"/>
-                        <owl:maxQualifiedCardinality rdf:datatype="&xsd;nonNegativeInteger">1</owl:maxQualifiedCardinality>
-                        <owl:onDataRange rdf:resource="&xsd;anyURI"/>
-                    </owl:Restriction>
- 
-                    <owl:Restriction>
-                        <owl:onProperty rdf:resource="#mailing_list"/>
-                        <owl:allValuesFrom rdf:resource="&xsd;anyURI"/>
-                    </owl:Restriction>
-                    <owl:Restriction>
-                        <owl:onProperty rdf:resource="#mailing_list"/>
-                        <owl:maxQualifiedCardinality rdf:datatype="&xsd;nonNegativeInteger">1</owl:maxQualifiedCardinality>
-                        <owl:onDataRange rdf:resource="&xsd;anyURI"/>
-                    </owl:Restriction>
-
-                </owl:intersectionOf>
-            </owl:Class>
-        </owl:equivalentClass>
-    </owl:Class>
-
-<!-- Community properties -->
-
-    <owl:DatatypeProperty rdf:about="#social_media">
-        <rdfs:domain rdf:resource="#Community"/>
-        <rdfs:range rdf:resource="&xsd;anyURI"/>
-    </owl:DatatypeProperty>
-
     <owl:Class rdf:about="#Community">
         <owl:equivalentClass>
             <owl:Class>
                 <owl:intersectionOf rdf:parseType="Collection">
                     <owl:Restriction>
-                        <owl:onProperty rdf:resource="#social_media"/>
+                        <owl:onProperty rdf:resource="#helpdesk"/>
+                        <owl:allValuesFrom rdf:resource="&xsd;anyURI"/>
+                    </owl:Restriction>
+                    <owl:Restriction>
+                        <owl:onProperty rdf:resource="#issue_tracker"/>
+                        <owl:allValuesFrom rdf:resource="&xsd;anyURI"/>
+                    </owl:Restriction>
+                    <owl:Restriction>
+                        <owl:onProperty rdf:resource="#mailing_list"/>
                         <owl:allValuesFrom rdf:resource="&xsd;anyURI"/>
                     </owl:Restriction>
                 </owl:intersectionOf>
             </owl:Class>
         </owl:equivalentClass>
     </owl:Class>
-
-<!-- Distributions properties -->
-
-    <owl:DatatypeProperty rdf:about="#binaries">
-        <rdfs:domain rdf:resource="#Distributions"/>
-        <rdfs:range rdf:resource="&xsd;anyURI"/>
-    </owl:DatatypeProperty>
-
-    <owl:DatatypeProperty rdf:about="#binary_packages">
-        <rdfs:domain rdf:resource="#Distributions"/>
-        <rdfs:range rdf:resource="&xsd;anyURI"/>
-    </owl:DatatypeProperty>
-
-    <owl:DatatypeProperty rdf:about="#sourcecode">
-        <rdfs:domain rdf:resource="#Distributions"/>
-        <rdfs:range rdf:resource="&xsd;anyURI"/>
-    </owl:DatatypeProperty>
-
-    <owl:DatatypeProperty rdf:about="#source_packages">
-        <rdfs:domain rdf:resource="#Distributions"/>
-        <rdfs:range rdf:resource="&xsd;anyURI"/>
-    </owl:DatatypeProperty>
-
-    <owl:Class rdf:about="#Distributions">
-        <owl:equivalentClass>
-            <owl:Class>
-                <owl:intersectionOf rdf:parseType="Collection">
-                    <owl:Restriction>
-                        <owl:onProperty rdf:resource="#binaries"/>
-                        <owl:allValuesFrom rdf:resource="&xsd;anyURI"/>
-                    </owl:Restriction>
-
-                    <owl:Restriction>
-                        <owl:onProperty rdf:resource="#binary_packages"/>
-                        <owl:allValuesFrom rdf:resource="&xsd;anyURI"/>
-                    </owl:Restriction>
-
-                    <owl:Restriction>
-                        <owl:onProperty rdf:resource="#sourcecode"/>
-                        <owl:allValuesFrom rdf:resource="&xsd;anyURI"/>
-                    </owl:Restriction>
-
-                    <owl:Restriction>
-                        <owl:onProperty rdf:resource="#source_packages"/>
-                        <owl:allValuesFrom rdf:resource="&xsd;anyURI"/>
-                    </owl:Restriction>
-
-                </owl:intersectionOf>
-            </owl:Class>
-        </owl:equivalentClass>
-    </owl:Class>
-
-<!-- Publication properties -->
-
-    <owl:DatatypeProperty rdf:about="#doi">
-        <rdfs:domain rdf:resource="#Publication"/>
-        <rdfs:range rdf:resource="&xsd;string"/>
-    </owl:DatatypeProperty>
-
-    <owl:DatatypeProperty rdf:about="#pmcid">
-        <rdfs:domain rdf:resource="#Publication"/>
-        <rdfs:range rdf:resource="&xsd;string"/>
-    </owl:DatatypeProperty>
-
-    <owl:DatatypeProperty rdf:about="#pmid">
-        <rdfs:domain rdf:resource="#Publication"/>
-        <rdfs:range rdf:resource="&xsd;string"/>
-    </owl:DatatypeProperty>
 
     <owl:Class rdf:about="#Publication">
         <owl:equivalentClass>
@@ -467,156 +190,17 @@
                         <owl:allValuesFrom rdf:resource="&xsd;string"/>
                     </owl:Restriction>
                     <owl:Restriction>
-                        <owl:onProperty rdf:resource="#doi"/>
-                        <owl:maxQualifiedCardinality rdf:datatype="&xsd;nonNegativeInteger">1</owl:maxQualifiedCardinality>
-                        <owl:onDataRange rdf:resource="&xsd;string"/>
-                    </owl:Restriction>
-
-                    <owl:Restriction>
                         <owl:onProperty rdf:resource="#pmcid"/>
                         <owl:allValuesFrom rdf:resource="&xsd;string"/>
                     </owl:Restriction>
                     <owl:Restriction>
-                        <owl:onProperty rdf:resource="#pmcid"/>
-                        <owl:maxQualifiedCardinality rdf:datatype="&xsd;nonNegativeInteger">1</owl:maxQualifiedCardinality>
-                        <owl:onDataRange rdf:resource="&xsd;string"/>
-                    </owl:Restriction>
-
-                    <owl:Restriction>
                         <owl:onProperty rdf:resource="#pmid"/>
                         <owl:allValuesFrom rdf:resource="&xsd;string"/>
                     </owl:Restriction>
-                    <owl:Restriction>
-                        <owl:onProperty rdf:resource="#pmid"/>
-                        <owl:maxQualifiedCardinality rdf:datatype="&xsd;nonNegativeInteger">1</owl:maxQualifiedCardinality>
-                        <owl:onDataRange rdf:resource="&xsd;string"/>
-                    </owl:Restriction>
-
                 </owl:intersectionOf>
             </owl:Class>
         </owl:equivalentClass>
     </owl:Class>
-
-    <owl:Class rdf:about="#Contact">
-        <owl:equivalentClass>
-            <owl:Class>
-                <owl:intersectionOf rdf:parseType="Collection">
-                    <owl:Restriction>
-                        <owl:onProperty rdf:resource="#url"/>
-                        <owl:allValuesFrom rdf:resource="&xsd;anyURI"/>
-                    </owl:Restriction>
-                    <owl:Restriction>
-                        <owl:onProperty rdf:resource="#url"/>
-                        <owl:maxQualifiedCardinality rdf:datatype="&xsd;nonNegativeInteger">1</owl:maxQualifiedCardinality>
-                        <owl:onDataRange rdf:resource="&xsd;anyURI"/>
-                    </owl:Restriction>
-
-                    <owl:Restriction>
-                        <owl:onProperty rdf:resource="#email"/>
-                        <owl:allValuesFrom rdf:resource="&xsd;string"/>
-                    </owl:Restriction>
-                    <owl:Restriction>
-                        <owl:onProperty rdf:resource="#email"/>
-                        <owl:maxQualifiedCardinality rdf:datatype="&xsd;nonNegativeInteger">1</owl:maxQualifiedCardinality>
-                        <owl:onDataRange rdf:resource="&xsd;string"/>
-                    </owl:Restriction>
-
-                    <owl:Restriction>
-                        <owl:onProperty rdf:resource="#name"/>
-                        <owl:allValuesFrom rdf:resource="&xsd;string"/>
-                    </owl:Restriction>
-                    <owl:Restriction>
-                        <owl:onProperty rdf:resource="#name"/>
-                        <owl:maxQualifiedCardinality rdf:datatype="&xsd;nonNegativeInteger">1</owl:maxQualifiedCardinality>
-                        <owl:onDataRange rdf:resource="&xsd;string"/>
-                    </owl:Restriction>
-
-                    <owl:Restriction>
-                        <owl:onProperty rdf:resource="#phone"/>
-                        <owl:allValuesFrom rdf:resource="&xsd;string"/>
-                    </owl:Restriction>
-                    <owl:Restriction>
-                        <owl:onProperty rdf:resource="#phone"/>
-                        <owl:maxQualifiedCardinality rdf:datatype="&xsd;nonNegativeInteger">1</owl:maxQualifiedCardinality>
-                        <owl:onDataRange rdf:resource="&xsd;string"/>
-                    </owl:Restriction>
-
-                </owl:intersectionOf>
-            </owl:Class>
-        </owl:equivalentClass>
-    </owl:Class>
-
- 
-    <owl:Class rdf:about="#Credit">
-        <owl:equivalentClass>
-            <owl:Class>
-                <owl:intersectionOf rdf:parseType="Collection">
-                    <owl:Restriction>
-                        <owl:onProperty rdf:resource="#url"/>
-                        <owl:allValuesFrom rdf:resource="&xsd;anyURI"/>
-                    </owl:Restriction>
-                    <owl:Restriction>
-                        <owl:onProperty rdf:resource="#url"/>
-                        <owl:maxQualifiedCardinality rdf:datatype="&xsd;nonNegativeInteger">1</owl:maxQualifiedCardinality>
-                        <owl:onDataRange rdf:resource="&xsd;anyURI"/>
-                    </owl:Restriction>
-
-                    <owl:Restriction>
-                        <owl:onProperty rdf:resource="#name"/>
-                        <owl:allValuesFrom rdf:resource="&xsd;string"/>
-                    </owl:Restriction>
-                    <owl:Restriction>
-                        <owl:onProperty rdf:resource="#name"/>
-                        <owl:maxQualifiedCardinality rdf:datatype="&xsd;nonNegativeInteger">1</owl:maxQualifiedCardinality>
-                        <owl:onDataRange rdf:resource="&xsd;string"/>
-                    </owl:Restriction>
-
-                    <owl:Restriction>
-                        <owl:onProperty rdf:resource="#email"/>
-                        <owl:allValuesFrom rdf:resource="&xsd;string"/>
-                    </owl:Restriction>
-                    <owl:Restriction>
-                        <owl:onProperty rdf:resource="#email"/>
-                        <owl:maxQualifiedCardinality rdf:datatype="&xsd;nonNegativeInteger">1</owl:maxQualifiedCardinality>
-                        <owl:onDataRange rdf:resource="&xsd;string"/>
-                    </owl:Restriction>
-
-                    <owl:Restriction>
-                        <owl:onProperty rdf:resource="#comment"/>
-                        <owl:allValuesFrom rdf:resource="&xsd;string"/>
-                    </owl:Restriction>
-                    <owl:Restriction>
-                        <owl:onProperty rdf:resource="#comment"/>
-                        <owl:maxQualifiedCardinality rdf:datatype="&xsd;nonNegativeInteger">1</owl:maxQualifiedCardinality>
-                        <owl:onDataRange rdf:resource="&xsd;string"/>
-                    </owl:Restriction>
-
-                    <owl:Restriction>
-                        <owl:onProperty rdf:resource="#phone"/>
-                        <owl:allValuesFrom rdf:resource="&xsd;string"/>
-                    </owl:Restriction>
-                    <owl:Restriction>
-                        <owl:onProperty rdf:resource="#phone"/>
-                        <owl:maxQualifiedCardinality rdf:datatype="&xsd;nonNegativeInteger">1</owl:maxQualifiedCardinality>
-                        <owl:onDataRange rdf:resource="&xsd;string"/>
-                    </owl:Restriction>
-
-                </owl:intersectionOf>
-            </owl:Class>
-        </owl:equivalentClass>
-    </owl:Class>
-
-<!-- Semantics properties -->
-
-    <owl:DatatypeProperty rdf:about="#topics">
-        <rdfs:domain rdf:resource="#Semantics"/>
-        <rdfs:range rdf:resource="&xsd;anyURI"/>
-    </owl:DatatypeProperty>
-
-    <owl:DatatypeProperty rdf:about="#operations">
-        <rdfs:domain rdf:resource="#Semantics"/>
-        <rdfs:range rdf:resource="&xsd;anyURI"/>
-    </owl:DatatypeProperty>
 
     <owl:Class rdf:about="#Semantics">
         <owl:equivalentClass>
@@ -626,52 +210,16 @@
                         <owl:onProperty rdf:resource="#topics"/>
                         <owl:allValuesFrom rdf:resource="&xsd;anyURI"/>
                     </owl:Restriction>
-
                     <owl:Restriction>
-                        <owl:onProperty rdf:resource="#operations"/>
-                        <owl:allValuesFrom rdf:resource="&xsd;anyURI"/>
-                    </owl:Restriction>
-
-                    <owl:Restriction>
-                        <owl:onProperty rdf:resource="#inputs"/>
-                        <owl:allValuesFrom rdf:resource="#Datatype"/>
-                    </owl:Restriction>
-
-                    <owl:Restriction>
-                        <owl:onProperty rdf:resource="#outputs"/>
-                        <owl:allValuesFrom rdf:resource="#Datatype"/>
-                    </owl:Restriction>
-                </owl:intersectionOf>
-            </owl:Class>
-        </owl:equivalentClass>
-    </owl:Class>
-
-    <owl:DatatypeProperty rdf:about="#formats">
-        <rdfs:domain rdf:resource="#Datatype"/>
-        <rdfs:range rdf:resource="&xsd;anyURI"/>
-    </owl:DatatypeProperty>
-
-    <owl:DatatypeProperty rdf:about="#datatype">
-        <rdfs:domain rdf:resource="#Datatype"/>
-        <rdfs:range rdf:resource="&xsd;anyURI"/>
-    </owl:DatatypeProperty>
-
-    <owl:Class rdf:about="#Datatype">
-        <owl:equivalentClass>
-            <owl:Class>
-                <owl:intersectionOf rdf:parseType="Collection">
-                    <owl:Restriction>
-                        <owl:onProperty rdf:resource="#datatype"/>
+                        <owl:onProperty rdf:resource="#operation"/>
                         <owl:allValuesFrom rdf:resource="&xsd;anyURI"/>
                     </owl:Restriction>
                     <owl:Restriction>
-                        <owl:onProperty rdf:resource="#datatype"/>
-                        <owl:qualifiedCardinality rdf:datatype="&xsd;nonNegativeInteger">1</owl:qualifiedCardinality>
-                        <owl:onDataRange rdf:resource="&xsd;anyURI"/>
+                        <owl:onProperty rdf:resource="#input"/>
+                        <owl:allValuesFrom rdf:resource="&xsd;anyURI"/>
                     </owl:Restriction>
-
                     <owl:Restriction>
-                        <owl:onProperty rdf:resource="#formats"/>
+                        <owl:onProperty rdf:resource="#output"/>
                         <owl:allValuesFrom rdf:resource="&xsd;anyURI"/>
                     </owl:Restriction>
                 </owl:intersectionOf>
