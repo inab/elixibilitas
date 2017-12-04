@@ -2,6 +2,7 @@ package es.elixir.bsc.openebench.checker.biotools;
 
 import es.elixir.bsc.elixibilitas.model.metrics.Metrics;
 import es.elixir.bsc.elixibilitas.model.metrics.Project;
+import es.elixir.bsc.elixibilitas.model.metrics.Summary;
 import es.elixir.bsc.openebench.model.tools.Tool;
 import es.elixir.bsc.openebench.checker.MetricsChecker;
 
@@ -16,13 +17,18 @@ public class DescriptionChecker implements MetricsChecker {
         Boolean bool = check(tool);
         
         Project project = metrics.getProject();
-        if (project != null) {
-            project.setDescription(bool);
-        } else if (bool != null) {
+        Summary summary;
+        if (project == null) {
             project = new Project();
-            project.setDescription(bool);
+            project.setSummary(summary = new Summary());
             metrics.setProject(project);
+        } else {
+            summary = project.getSummary();
+            if (summary == null) {
+                project.setSummary(summary = new Summary());
+            }
         }
+        summary.setDescription(bool);
         
         return bool;
     }
