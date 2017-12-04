@@ -75,7 +75,7 @@ import org.bson.json.JsonWriterSettings;
 
 public class ToolsDAO extends AbstractDAO<Document> implements Serializable {
     
-    public final static String COLLECTION = "biotoolz";
+    public final static String COLLECTION = "tools";
     
     public ToolsDAO(MongoDatabase database, String baseURI) {
         super(baseURI, database, COLLECTION);
@@ -328,6 +328,77 @@ public class ToolsDAO extends AbstractDAO<Document> implements Serializable {
                             doc.append("@id", getURI(_id));
                             doc.append("@type", _id.getString("type"));
                             doc.append("@license", LICENSE);
+
+                            doc.toJson(codec);
+                            jwriter.flush();
+                        } while (cursor.hasNext() && writer.append(",\n") != null);
+                    }
+                }
+                writer.write("]\n");
+            }
+
+        } catch(IOException ex) {
+            Logger.getLogger(ToolsDAO.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }
+
+    public void write2(Writer writer, Integer skip, Integer limit, String text, List<String> projections) {
+        try {
+            final MongoCollection<Document> col = database.getCollection(collection);
+            try (JsonWriter jwriter = new JsonWriter(writer, new JsonWriterSettings(true))) {
+
+                final DocumentCodec codec = new DocumentCodec() {
+                    @Override
+                    public void encode(BsonWriter writer,
+                       Document document,
+                       EncoderContext encoderContext) {
+                            super.encode(jwriter, document, encoderContext);
+                    }
+                };
+
+                writer.write("[");
+                
+                ArrayList<Bson> aggregation = new ArrayList();
+                if (text != null && !text.isEmpty()) {
+                    aggregation.add(Aggregates.match(Filters.or(Filters.regex("description", text, "i"),
+                                            Filters.regex("name", text, "i"))));
+                }
+                aggregation.add(Aggregates.sort(Sorts.ascending("name")));
+
+                if (projections != null && projections.size() > 0) {
+                    BasicDBObject bson = new BasicDBObject();
+                    bson.append("@timestamp", true);
+                    for (String field : projections) {
+                        bson.append(field, true);
+                    }
+                    aggregation.add(Aggregates.project(bson));
+                }
+
+                aggregation.add(Aggregates.group(new BasicDBObject("_id", "$_id.id"), Accumulators.push("tools", "$$ROOT")));
+                
+                if (skip != null) {
+                    aggregation.add(Aggregates.skip(skip));
+                }
+                if (limit != null) {
+                    aggregation.add(Aggregates.limit(limit));
+                }
+
+//                aggregation.add(Aggregates.unwind("$tools"));
+//                aggregation.add(Aggregates.replaceRoot("$tools"));
+                AggregateIterable<Document> iterator = col.aggregate(aggregation);
+                
+                try (MongoCursor<Document> cursor = iterator.iterator()) {
+                    if (cursor.hasNext()) {
+                        do {
+                            final Document doc = cursor.next();
+
+                            List<Document> tools = doc.get("tools", List.class);
+                            for (Document tool : tools) {
+                                Document _id = (Document) tool.remove("_id");
+                                tool.append("@id", getURI(_id));
+                                tool.append("@type", _id.getString("type"));
+                                tool.append("@license", LICENSE);
+                            }
 
                             doc.toJson(codec);
                             jwriter.flush();

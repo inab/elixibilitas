@@ -59,7 +59,7 @@ import org.bson.json.JsonWriterSettings;
 
 public class MetricsDAO extends AbstractDAO<BsonString> implements Serializable {
     
-    public final static String COLLECTION = "metrics2";
+    public final static String COLLECTION = "metrics";
     
     public MetricsDAO(MongoDatabase database, String baseURI) {
         super(baseURI, database, COLLECTION);
