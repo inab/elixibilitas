@@ -84,16 +84,20 @@ public class ToolsDAO extends AbstractDAO<Document> implements Serializable {
     /**
      * Create a primary key from the tool URI
      * 
-     * @param id the tool identifier in a form "$id/$type/$authority"
+     * @param id the tool identifier in a form "$nmsp:$id/$type/$authority"
      * @return the primary key for the tool
      */
     @Override
     protected Document createPK(String id) {
         final String[] nodes = id.split("/");
         if (nodes.length > 2) {
-            return new Document("id", nodes[0])
-                .append("type", nodes[1])
-                .append("host", nodes[2]);
+            final String[] _id = nodes[0].split(":");
+            if (_id.length > 1) {
+                return new Document("id", _id[1])
+                    .append("nmsp", _id[0])
+                    .append("type", nodes[1])
+                    .append("host", nodes[2]);
+            }
 
         }
         return null;
@@ -104,6 +108,7 @@ public class ToolsDAO extends AbstractDAO<Document> implements Serializable {
 
         StringBuilder sb = new StringBuilder(baseURI);
         
+        sb.append(pk.get("nmsp")).append(':');
         sb.append(pk.get("id")).append('/');
         sb.append(pk.get("type")).append('/');
         sb.append(pk.get("host"));
@@ -248,18 +253,32 @@ public class ToolsDAO extends AbstractDAO<Document> implements Serializable {
 
     private Bson createFindQuery(String id) {
         final String[] nodes = id.split("/");
-        if (nodes.length > 2) {
-            return Filters.eq("_id", 
-                new BasicDBObject("id", nodes[0])
-                .append("type", nodes[1])
-                .append("host", nodes[2]));
-
-        }
-        if (nodes.length > 1) {
-            return Filters.and(Filters.eq("_id.id", nodes[0]), Filters.eq("_id.type", nodes[1]));
-        }
         if (nodes.length > 0) {
-            return Filters.eq("_id.id", nodes[0]);
+            final String[] _id = nodes[0].split(":");
+            if (_id.length > 1) {
+                if (nodes.length > 2) {
+                    return Filters.eq("_id",
+                        new BasicDBObject("id", _id[1])
+                        .append("nmsp", _id[0])
+                        .append("type", nodes[1])
+                        .append("host", nodes[2]));
+                }
+                if (nodes.length > 1) {
+                    return Filters.and(Filters.eq("_id.id", _id[1]),
+                            Filters.eq("_id.nmps", _id[0]),
+                            Filters.eq("_id.type", nodes[1]));
+                }
+                return Filters.and(Filters.eq("_id.id", _id[1]), Filters.eq("_id.nmsp", _id[0]));
+           } else if (nodes.length > 2) {
+                return Filters.and(Filters.eq("_id.id", _id[0]),
+                        Filters.eq("_id.type", nodes[1]),
+                        Filters.eq("_id.host", nodes[2]));
+            } else if (nodes.length > 1) {
+                return Filters.and(Filters.eq("_id.id", _id[0]),
+                        Filters.eq("_id.host", nodes[2]));                
+            } else {
+                return Filters.eq("_id.id", _id[0]);
+            }
         }
         
         return null;
@@ -342,7 +361,7 @@ public class ToolsDAO extends AbstractDAO<Document> implements Serializable {
         }
     }
 
-    public void write2(Writer writer, Integer skip, Integer limit, String text, List<String> projections) {
+    public void write2(Writer writer, String id, Integer skip, Integer limit, String text, List<String> projections) {
         try {
             final MongoCollection<Document> col = database.getCollection(collection);
             try (JsonWriter jwriter = new JsonWriter(writer, new JsonWriterSettings(true))) {
@@ -358,11 +377,17 @@ public class ToolsDAO extends AbstractDAO<Document> implements Serializable {
 
                 writer.write("[");
                 
+                
                 ArrayList<Bson> aggregation = new ArrayList();
                 if (text != null && !text.isEmpty()) {
                     aggregation.add(Aggregates.match(Filters.or(Filters.regex("description", text, "i"),
                                             Filters.regex("name", text, "i"))));
                 }
+                
+                if (id != null && !id.isEmpty()) {
+                    aggregation.add(Aggregates.match(Filters.eq("_id.id", id)));
+                }
+                
                 aggregation.add(Aggregates.sort(Sorts.ascending("name")));
 
                 if (projections != null && projections.size() > 0) {
