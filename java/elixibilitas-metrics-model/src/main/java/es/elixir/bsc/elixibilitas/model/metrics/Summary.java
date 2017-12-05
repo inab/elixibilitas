@@ -35,6 +35,8 @@ public class Summary {
     private Boolean concept;
     private Boolean rationale;
     private Boolean architecture;
+    private Boolean usecases;
+    private Boolean caseStudies;
 
     @JsonbProperty("description")
     public Boolean getDescription() {
@@ -72,4 +74,21 @@ public class Summary {
         this.architecture = architecture;
     }
 
+    @JsonbProperty("usecases")
+    public Boolean getUsecases() {
+        return usecases;
+    }
+
+    public void setUsecases(Boolean usecases) {
+        this.usecases = usecases;
+    }
+    
+    @JsonbProperty("case_studies")
+    public Boolean getCaseStudies() {
+        return caseStudies;
+    }
+
+    public void setCaseStudies(Boolean caseStudies) {
+        this.caseStudies = caseStudies;
+    }
 }

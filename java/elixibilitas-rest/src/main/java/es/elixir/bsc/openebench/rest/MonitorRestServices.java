@@ -125,24 +125,69 @@ public class MonitorRestServices {
                                             schema = @Schema(ref="https://openebench.bsc.es/monitor/tool/tool.json")))
         }
     )
-    public void search(@QueryParam("skip") final Integer skip,
+    public void search(@QueryParam("id") final String id,
+                       @QueryParam("skip") final Integer skip,
                        @QueryParam("limit") final Integer limit,
                        @QueryParam("projection") final List<String> projections,
                        @QueryParam("text") final String text,
                               @Suspended final AsyncResponse asyncResponse) {
         executor.submit(() -> {
-            asyncResponse.resume(searchAsync(skip, limit, projections, text).build());
+            asyncResponse.resume(searchAsync(id, skip, limit, projections, text).build());
         });
     }
     
-    private Response.ResponseBuilder searchAsync(final Integer skip, 
+    private Response.ResponseBuilder searchAsync(
+                              final String id,
+                              final Integer skip, 
                               final Integer limit, 
                               final List<String> projections, 
                               final String text) {
 
         StreamingOutput stream = (OutputStream out) -> {
             try (Writer writer = new BufferedWriter(new OutputStreamWriter(out, "UTF-8"))) {
-                toolsDAO.write(writer, skip, limit, text, projections);
+                toolsDAO.write(writer, id, skip, limit, text, projections);
+            }
+        };
+                
+        return Response.ok(stream);
+    }
+
+    @GET
+    @Path("/search2")
+    @Produces(MediaType.APPLICATION_JSON)
+    @Operation(summary = "Returns all tools descriptions.",
+//        parameters = {
+//            @Parameter(in = "query", name = "skip", description = "skip n tools", required = false),
+//            @Parameter(in = "query", name = "limit", description = "return n tools", required = false),
+//            @Parameter(in = "query", name = "projection", description = "fields to return", required = false),
+//            @Parameter(in = "query", name = "text", description = "text to search", required = false)
+//        },
+
+        responses = {
+            @ApiResponse(content = @Content(mediaType = MediaType.APPLICATION_JSON,
+                                            schema = @Schema(ref="https://openebench.bsc.es/monitor/tool/tool.json")))
+        }
+    )
+    public void search2(@QueryParam("id") final String id,
+                       @QueryParam("skip") final Integer skip,
+                       @QueryParam("limit") final Integer limit,
+                       @QueryParam("projection") final List<String> projections,
+                       @QueryParam("text") final String text,
+                              @Suspended final AsyncResponse asyncResponse) {
+        executor.submit(() -> {
+            asyncResponse.resume(searchAsync2(id, skip, limit, projections, text).build());
+        });
+    }
+    
+    private Response.ResponseBuilder searchAsync2(final String id, 
+                              final Integer skip, 
+                              final Integer limit, 
+                              final List<String> projections, 
+                              final String text) {
+
+        StreamingOutput stream = (OutputStream out) -> {
+            try (Writer writer = new BufferedWriter(new OutputStreamWriter(out, "UTF-8"))) {
+                toolsDAO.write2(writer, id, skip, limit, text, projections);
             }
         };
                 

@@ -63,6 +63,7 @@ import javax.json.stream.JsonParser;
 import javax.servlet.ServletContext;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
+import javax.ws.rs.HeaderParam;
 import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
@@ -227,18 +228,21 @@ public class MetricsServices {
         }
     )
     @RolesAllowed("admin")
-    public void putMetrics(@PathParam("id") final String id, 
+    public void putMetrics(@HeaderParam("datasource") final String datasource,
+                           @PathParam("id") final String id, 
                            @RequestBody(description = "json metrics object",
                               content = @Content(schema = @Schema(ref="https://openebench.bsc.es/monitor/metrics/metrics.json")),
                               required = true) 
                            @JsonSchema(location="metrics.json") final String json,
                            @Context SecurityContext security,
                            @Suspended final AsyncResponse asyncResponse) {
+
         final Principal principal = security.getUserPrincipal();
         final String user = principal != null ? principal.getName() : null;
         
         executor.submit(() -> {
-            asyncResponse.resume(putMetricsAsync(user, id, json).build());
+            asyncResponse.resume(
+                    putMetricsAsync(datasource == null || datasource.isEmpty() ? user : datasource, id, json).build());
         });
     }
 
@@ -254,7 +258,8 @@ public class MetricsServices {
         summary = "Updates metrics in the database."
     )
     @RolesAllowed("admin")
-    public void patchMetrics(@RequestBody(description = "batch update of metrics properties",
+    public void patchMetrics(@HeaderParam("datasource") final String datasource,
+                             @RequestBody(description = "batch update of metrics properties",
                                 required = true) final Reader reader,
                              @Context final UriInfo uriInfo,
                              @Context SecurityContext security,
@@ -265,7 +270,8 @@ public class MetricsServices {
         final String user = principal != null ? principal.getName() : null;
         
         executor.submit(() -> {
-            asyncResponse.resume(patchMetricsAsync(prefix, user, reader).build());
+            asyncResponse.resume(
+                    patchMetricsAsync(prefix, datasource == null || datasource.isEmpty() ? user : datasource, reader).build());
         });
     }
     
@@ -310,7 +316,8 @@ public class MetricsServices {
 //        }
     )
     @RolesAllowed("admin")
-    public void patchMetrics(@PathParam("id") final String id,
+    public void patchMetrics(@HeaderParam("datasource") final String datasource,
+                             @PathParam("id") final String id,
                              @PathParam("type") final String type,
                              @PathParam("host") final String host,
                              @PathParam("path") final String path,
@@ -323,7 +330,7 @@ public class MetricsServices {
         final String user = principal != null ? principal.getName() : null;
         
         executor.submit(() -> {
-            asyncResponse.resume(patchMetricsAsync(user, id + '/' + type + '/' + host, path, json).build());
+            asyncResponse.resume(patchMetricsAsync(datasource == null || datasource.isEmpty() ? user : datasource, id + '/' + type + '/' + host, path, json).build());
         });
     }
     

@@ -65,6 +65,7 @@ import javax.json.stream.JsonParser;
 import javax.servlet.ServletContext;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
+import javax.ws.rs.HeaderParam;
 import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
@@ -163,7 +164,7 @@ public class ToolsServices {
     private ResponseBuilder getToolsAsync() {
         StreamingOutput stream = (OutputStream out) -> {
             try (Writer writer = new BufferedWriter(new OutputStreamWriter(out, "UTF-8"))) {
-                toolsDAO.write(writer, null, null, null, null);
+                toolsDAO.write(writer, null, null, null, null, null);
             }
         };
                 
@@ -291,18 +292,21 @@ public class ToolsServices {
 //        }
     )
     @RolesAllowed("admin")
-    public void putTool(@PathParam("id") final String id, 
+    public void putTool(@HeaderParam("datasource") final String datasource,
+                        @PathParam("id") final String id, 
                         @RequestBody(description = "json tool object",
                             content = @Content(schema = @Schema(ref="https://openebench.bsc.es/monitor/tool/tool.json")),
                             required = true) final String json,
                         @Context javax.ws.rs.core.SecurityContext security,
                         @Suspended final AsyncResponse asyncResponse) {
         
+
         final Principal principal = security.getUserPrincipal();
         final String user = principal != null ? principal.getName() : null;
-        
+
         executor.submit(() -> {
-            asyncResponse.resume(putToolAsync(user, id, json).build());
+            asyncResponse.resume(
+                    putToolAsync(datasource == null || datasource.isEmpty() ? user : datasource, id, json).build());
         });
     }
     
@@ -318,7 +322,8 @@ public class ToolsServices {
         summary = "Updates tools in the database."
     )
     @RolesAllowed("admin")
-    public void patchTools(@RequestBody(description = "batch update of tools properties",
+    public void patchTools(@HeaderParam("datasource") final String datasource,
+                           @RequestBody(description = "batch update of tools properties",
                                 required = true) final Reader reader,
                            @Context SecurityContext security,
                            @Suspended final AsyncResponse asyncResponse) {
@@ -328,7 +333,8 @@ public class ToolsServices {
         final String user = principal != null ? principal.getName() : null;
         
         executor.submit(() -> {
-            asyncResponse.resume(patchToolsAsync(user, reader).build());
+            asyncResponse.resume(
+                    patchToolsAsync(datasource == null || datasource.isEmpty() ? user : datasource, reader).build());
         });
     }
 
@@ -367,7 +373,8 @@ public class ToolsServices {
 //        }
     )
     @RolesAllowed("admin")
-    public void patchTool(@PathParam("id") final String id,
+    public void patchTool(@HeaderParam("datasource") final String datasource,
+                          @PathParam("id") final String id,
                           @PathParam("type") final String type,
                           @PathParam("host") final String host,
                           @PathParam("path") final String path,
@@ -390,7 +397,8 @@ public class ToolsServices {
         
         final URI uri = uriInfo.getRequestUri();
         executor.submit(() -> {
-            asyncResponse.resume(patchToolAsync(user, uri.toString(), path, value).build());
+            asyncResponse.resume(
+                    patchToolAsync(datasource == null || datasource.isEmpty() ? user : datasource, uri.toString(), path, value).build());
         });
     }
 

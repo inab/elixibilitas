@@ -100,7 +100,7 @@ public class BiotoolzContentImporter {
             
             tools.forEach((tool) -> {
                 ToolsDAO toolsDAO = new ToolsDAO(mc.getDatabase("elixibilitas"), "https://openebench.bsc.es/monitor/tool");
-                toolsDAO.put("biotools", tool);
+                toolsDAO.put("bio.tools", tool);
             });
         } while (page > 0);
     }
@@ -154,9 +154,17 @@ public class BiotoolzContentImporter {
    
     private void addTool(List<Tool> tools, JsonObject jtool) {
         
-        String id = jtool.getString("id", null);
+        final String id = jtool.getString("id", null);
+        final String version = jtool.getString("version", null);
+        
+        StringBuilder idTemplate = new StringBuilder("https://openebench.bsc.es/monitor/tool").append("bio.tools:").append(id);
+        
+        if (version != null) {
+            idTemplate.append(':').append(version);
+        }
 
-        StringBuilder idTemplate = new StringBuilder("https://openebench.bsc.es/monitor/tool").append("bio.tools:").append(id).append("/%s");
+        idTemplate.append("/%s");
+        
         final String jhomepage = jtool.getString("homepage", null);
         URI homepage = null;
         if (jhomepage != null) {
@@ -169,7 +177,7 @@ public class BiotoolzContentImporter {
         }
 
         final String name = jtool.getString("name", null);
-        final String version = jtool.getString("version", null);
+        
         
         JsonArray jtoolTypes = jtool.getJsonArray("toolType");
         for (int i = 0, n = jtoolTypes.size(); i < n; i++) {
