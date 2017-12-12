@@ -40,8 +40,8 @@ where:
 > Metrics JSON Schema: [https://openebench.bsc.es/monitor/metrics/metrics.json](https://openebench.bsc.es/monitor/metrics/metrics.json)
 <br/><br/>
 > Note that {id}/{type}/{host} uniquely identify the tool, while omitting the {type} or {host} returns an array of descriptions.<br/><br/>
-> example 1: [https://openebench.bsc.es/monitor/tool/bio.tools:pmut/web/mmb.irbbarcelona.org](https://openebench.bsc.es/monitor/tool/bio.tools:pmut/web/mmb.irbbarcelona.org) .<br/>
-> example 2: [https://openebench.bsc.es/monitor/tool/bio.tools:pmut/web/mmb.irbbarcelona.org/credits](https://openebench.bsc.es/monitor/tool/bio.tools:pmut/web/mmb.irbbarcelona.org/credits) .<br/>
+> example 1: [https://openebench.bsc.es/monitor/tool/bio.tools:pmut:2017/web/mmb.irbbarcelona.org](https://openebench.bsc.es/monitor/tool/bio.tools:pmut:2017/web/mmb.irbbarcelona.org) .<br/>
+> example 2: [https://openebench.bsc.es/monitor/tool/bio.tools:pmut:2017/web/mmb.irbbarcelona.org/credits](https://openebench.bsc.es/monitor/tool/bio.tools:pmut:2017/web/mmb.irbbarcelona.org/credits) .<br/>
 > curl patch tool data example: 
 ```
 curl -v -X PATCH -u user:password -H 'Content-Type: application/json' /
@@ -53,8 +53,8 @@ Quality Metrics accessed via:
 https://openebench.bsc.es/monitor/metrics/
 https://openebench.bsc.es/monitor/metrics/{id}/{type}/{host}/{path}
 ```
-> example1: [https://openebench.bsc.es/monitor/metrics/bio.tools:pmut/web/mmb.irbbarcelona.org](https://openebench.bsc.es/monitor/metrics/bio.tools:pmut/web/mmb.irbbarcelona.org) .<br/>
-> example2: [https://openebench.bsc.es/monitor/metrics/bio.tools:pmut/web/mmb.irbbarcelona.org/project/website](https://openebench.bsc.es/monitor/metrics/bio.tools:pmut/web/mmb.irbbarcelona.org/project/website) .<br/>
+> example1: [https://openebench.bsc.es/monitor/metrics/bio.tools:pmut:2017/web/mmb.irbbarcelona.org](https://openebench.bsc.es/monitor/metrics/bio.tools:pmut:2017/web/mmb.irbbarcelona.org) .<br/>
+> example2: [https://openebench.bsc.es/monitor/metrics/bio.tools:pmut:2017/web/mmb.irbbarcelona.org/project/website](https://openebench.bsc.es/monitor/metrics/bio.tools:pmut:2017/web/mmb.irbbarcelona.org/project/website) .<br/>
 > curl patch metrics data example: 
 ```
 curl -v -X PATCH -u user:password -H 'Content-Type: application/json' /
@@ -71,7 +71,7 @@ The API also provides EDAM descriptions for the tool:
 https://openebench.bsc.es/monitor/edam/tool/
 https://openebench.bsc.es/monitor/edam/tool/{id}/{type}/{host}
 ```
-> example: [https://openebench.bsc.es/monitor/edam/tool/bio.tools:pmut/web/mmb.irbbarcelona.org](https://openebench.bsc.es/monitor/edam/tool/bio.tools:pmut/web/mmb.irbbarcelona.org) .
+> example: [https://openebench.bsc.es/monitor/edam/tool/bio.tools:pmut:2017/web/mmb.irbbarcelona.org](https://openebench.bsc.es/monitor/edam/tool/bio.tools:pmut:2017/web/mmb.irbbarcelona.org) .
 
 or descriptions of the EDAM term itself:
 ```
@@ -102,4 +102,4 @@ All changes are stored in a log collection and could be accessed:
 https://openebench.bsc.es/monitor/tools/log/{id}/{type}/{host}/{path}
 https://openebench.bsc.es/monitor/metrics/log/{id}/{type}/{host}/{path}
 ```
-> example: [https://openebench.bsc.es/monitor/metrics/log/bio.tools:pmut/cmd/mmb.irbbarcelona.org/project/website/operational](https://openebench.bsc.es/monitor/metrics/log/bio.tools:pmut/cmd/mmb.irbbarcelona.org/project/website/operational) .
+> example: [https://openebench.bsc.es/monitor/metrics/log/bio.tools:pmut:2017/cmd/mmb.irbbarcelona.org/project/website/operational](https://openebench.bsc.es/monitor/metrics/log/bio.tools:pmut:2017/cmd/mmb.irbbarcelona.org/project/website/operational) .
