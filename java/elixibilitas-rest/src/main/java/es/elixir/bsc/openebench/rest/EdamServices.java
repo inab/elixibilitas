@@ -103,7 +103,7 @@ import org.eclipse.rdf4j.sail.memory.MemoryStore;
  * @author Dmitry Repchevsky
  */
 
-@Path("/edam/")
+@Path("/rest/edam/")
 @ApplicationScoped
 public class EdamServices {
     
@@ -298,7 +298,17 @@ public class EdamServices {
                 
         return Response.ok(stream);
     }
-     
+
+    @GET
+    @Path("/tool/")
+    @Produces(MediaType.APPLICATION_JSON)
+    public void getToolsSemantics(@Context final UriInfo uriInfo, 
+                                  @Suspended final AsyncResponse asyncResponse) {
+        executor.submit(() -> {
+            asyncResponse.resume(getToolsSemanticsAsync().build());
+        });
+    }
+
     @GET
     @Path("/tool/{id: .*}")
     @Produces(MediaType.APPLICATION_JSON)

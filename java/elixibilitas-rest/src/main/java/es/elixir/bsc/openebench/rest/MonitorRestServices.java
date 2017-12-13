@@ -153,7 +153,7 @@ public class MonitorRestServices {
     }
 
     @GET
-    @Path("/search2")
+    @Path("/aggregate")
     @Produces(MediaType.APPLICATION_JSON)
     @Operation(summary = "Returns all tools descriptions.",
 //        parameters = {
@@ -168,18 +168,18 @@ public class MonitorRestServices {
                                             schema = @Schema(ref="https://openebench.bsc.es/monitor/tool/tool.json")))
         }
     )
-    public void search2(@QueryParam("id") final String id,
-                       @QueryParam("skip") final Integer skip,
-                       @QueryParam("limit") final Integer limit,
-                       @QueryParam("projection") final List<String> projections,
-                       @QueryParam("text") final String text,
+    public void aggregate(@QueryParam("id") final String id,
+                         @QueryParam("skip") final Integer skip,
+                         @QueryParam("limit") final Integer limit,
+                         @QueryParam("projection") final List<String> projections,
+                         @QueryParam("text") final String text,
                               @Suspended final AsyncResponse asyncResponse) {
         executor.submit(() -> {
-            asyncResponse.resume(searchAsync2(id, skip, limit, projections, text).build());
+            asyncResponse.resume(aggregateAsync(id, skip, limit, projections, text).build());
         });
     }
     
-    private Response.ResponseBuilder searchAsync2(final String id, 
+    private Response.ResponseBuilder aggregateAsync(final String id, 
                               final Integer skip, 
                               final Integer limit, 
                               final List<String> projections, 
@@ -187,7 +187,7 @@ public class MonitorRestServices {
 
         StreamingOutput stream = (OutputStream out) -> {
             try (Writer writer = new BufferedWriter(new OutputStreamWriter(out, "UTF-8"))) {
-                toolsDAO.write2(writer, id, skip, limit, text, projections);
+                toolsDAO.aggregate(writer, id, skip, limit, text, projections);
             }
         };
                 
@@ -226,6 +226,22 @@ public class MonitorRestServices {
         addMetricsStatistics(builder, "suite");
 
         return Response.ok(builder.build());
+    }
+
+    @GET
+    @Path("/statistics/count/{field}")
+    @Produces(MediaType.APPLICATION_JSON)
+    public void getStatisticsRepo(@PathParam("field") String field,
+                                  @QueryParam("text") String text,
+                                  @Suspended final AsyncResponse asyncResponse) {
+            
+        executor.submit(() -> {
+            asyncResponse.resume(getStatisticsRepo(field, text).build());
+        });
+    }
+    
+    private Response.ResponseBuilder getStatisticsRepo(final String field, final String text) {
+        return Response.ok(toolsDAO.count(field, text));
     }
 
     @GET

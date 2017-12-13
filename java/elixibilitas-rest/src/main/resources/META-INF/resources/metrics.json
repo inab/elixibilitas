@@ -37,7 +37,13 @@
           },
           "architecture": {
             "type": "boolean"
-          }   
+          },
+          "usecases": {
+            "type": "boolean"
+          },
+          "case_studies": {
+            "type": "boolean"
+          }
         }
       },
       "Copyright" : {
@@ -90,7 +96,14 @@
         "properties": {
           "api": {
             "type": "boolean"
+          },
+          "howto": {
+            "type": "boolean"
+          },
+          "tutorial": {
+            "type": "boolean"
           }
+
         }
       },
       "Project": {
