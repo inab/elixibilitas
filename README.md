@@ -68,22 +68,22 @@ https://openebench.bsc.es/monitor/metrics/{id} -d '{"support": {"email": true}}'
 
 The API also provides EDAM descriptions for the tool:
 ```
-https://openebench.bsc.es/monitor/edam/tool/
-https://openebench.bsc.es/monitor/edam/tool/{id}/{type}/{host}
+https://openebench.bsc.es/monitor/rest/edam/tool/
+https://openebench.bsc.es/monitor/rest/edam/tool/{id}/{type}/{host}
 ```
-> example: [https://openebench.bsc.es/monitor/edam/tool/bio.tools:pmut:2017/web/mmb.irbbarcelona.org](https://openebench.bsc.es/monitor/edam/tool/bio.tools:pmut:2017/web/mmb.irbbarcelona.org) .
+> example: [https://openebench.bsc.es/monitor/rest/edam/tool/bio.tools:pmut:2017/web/mmb.irbbarcelona.org](https://openebench.bsc.es/monitor/rest/edam/tool/bio.tools:pmut:2017/web/mmb.irbbarcelona.org) .
 
 or descriptions of the EDAM term itself:
 ```
-https://openebench.bsc.es/monitor/edam/description?term={edam id}
+https://openebench.bsc.es/monitor/rest/edam/description?term={edam id}
 ```
-> example: [https://openebench.bsc.es/monitor/edam/description?term=http://edamontology.org/format_3607](https://openebench.bsc.es/monitor/edam/description?term=http://edamontology.org/format_3607) .
+> example: [https://openebench.bsc.es/monitor/rest/edam/description?term=http://edamontology.org/format_3607](https://openebench.bsc.es/monitor/rest/edam/description?term=http://edamontology.org/format_3607) .
 
 There is also full text search over EDAM ontology.
 ```
-https://elixir.bsc.es/monitor/edam/search?text={text to search}
+https://elixir.bsc.es/monitor/rest/edam/search?text={text to search}
 ```
-> example: [https://openebench.bsc.es/monitor/edam/search?text=alignment](https://openebench.bsc.es/monitor/edam/search?text=alignment) .
+> example: [https://openebench.bsc.es/monitor/rest/edam/search?text=alignment](https://openebench.bsc.es/monitor/rest/edam/search?text=alignment) .
 
 There are simple stat info that can be obtained from the server:
 
