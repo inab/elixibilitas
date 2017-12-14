@@ -59,8 +59,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.regex.Pattern;
 import javax.json.bind.Jsonb;
 import javax.json.bind.JsonbBuilder;
+import org.bson.BsonArray;
 import org.bson.BsonWriter;
 import org.bson.Document;
 import org.bson.codecs.DocumentCodec;
@@ -406,7 +408,7 @@ public class ToolsDAO extends AbstractDAO<Document> implements Serializable {
         }
     }
 
-    public void write2(Writer writer, String id, Integer skip, Integer limit, String text, List<String> projections) {
+    public void aggregate(Writer writer, String id, Integer skip, Integer limit, String text, List<String> projections) {
         try {
             final MongoCollection<Document> col = database.getCollection(collection);
             try (JsonWriter jwriter = new JsonWriter(writer, new JsonWriterSettings(true))) {
@@ -592,5 +594,13 @@ public class ToolsDAO extends AbstractDAO<Document> implements Serializable {
             return true;
         }
         return false;
-    }    
+    }
+    
+    public long count(String field, String text) {
+        final MongoCollection<Document> col = database.getCollection(COLLECTION);
+        return col.count(Filters.and(
+                Filters.exists(field, true), 
+                Filters.ne(field, new BsonArray()),
+                Filters.regex(field, Pattern.compile(text == null ? "" : text))));
+    }
 }
