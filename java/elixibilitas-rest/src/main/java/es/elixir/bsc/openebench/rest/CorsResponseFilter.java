@@ -18,6 +18,6 @@ public class CorsResponseFilter implements ContainerResponseFilter {
     public void filter(ContainerRequestContext requestContext, ContainerResponseContext responseContext)
         throws IOException {
         responseContext.getHeaders().add("Access-Control-Allow-Origin","*");
-        responseContext.getHeaders().add("Access-Control-Allow-Methods", "GET, POST, DELETE, PUT");
+        responseContext.getHeaders().add("Access-Control-Allow-Methods", "GET, POST, DELETE, PUT, PATCH");
     }
 } 
