@@ -361,8 +361,6 @@ public class ToolsDAO extends AbstractDAO<Document> implements Serializable {
                     }
                 }
 
-                aggregation.add(Aggregates.sort(Sorts.ascending("name")));
-
                 if (projections != null && projections.size() > 0) {
                     BasicDBObject bson = new BasicDBObject();
                     bson.append("@timestamp", true);
@@ -373,6 +371,8 @@ public class ToolsDAO extends AbstractDAO<Document> implements Serializable {
                 }
 
                 aggregation.add(Aggregates.group(new BasicDBObject("_id", "$_id.id"), Accumulators.push("tools", "$$ROOT")));
+
+                aggregation.add(Aggregates.sort(Sorts.ascending("tools.name")));
                 
                 if (skip != null) {
                     aggregation.add(Aggregates.skip(skip));
@@ -423,8 +423,7 @@ public class ToolsDAO extends AbstractDAO<Document> implements Serializable {
                 };
 
                 writer.write("[");
-                
-                
+
                 ArrayList<Bson> aggregation = new ArrayList();
                 if (text != null && !text.isEmpty()) {
                     aggregation.add(Aggregates.match(Filters.or(Filters.regex("description", text, "i"),
@@ -454,8 +453,6 @@ public class ToolsDAO extends AbstractDAO<Document> implements Serializable {
                                 Filters.eq("_id.id", nodes[0])));
                     }
                 }
-                
-                aggregation.add(Aggregates.sort(Sorts.ascending("name")));
 
                 if (projections != null && projections.size() > 0) {
                     BasicDBObject bson = new BasicDBObject();
@@ -467,6 +464,8 @@ public class ToolsDAO extends AbstractDAO<Document> implements Serializable {
                 }
 
                 aggregation.add(Aggregates.group(new BasicDBObject("_id", "$_id.id"), Accumulators.push("tools", "$$ROOT")));
+                
+                aggregation.add(Aggregates.sort(Sorts.ascending("tools.name")));
                 
                 if (skip != null) {
                     aggregation.add(Aggregates.skip(skip));
