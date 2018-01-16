@@ -57,6 +57,7 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.TreeMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
@@ -310,6 +311,7 @@ public class ToolsDAO extends AbstractDAO<Document> implements Serializable {
      * Find tools and write them into the reader.
      * 
      * @param writer writer to write metrics into.
+     * @param id
      * @param skip mongodb skip parameter (aka from).
      * @param limit mongodb limit parameter (limits number of tools to be written).
      * @param text text to search.
@@ -463,9 +465,9 @@ public class ToolsDAO extends AbstractDAO<Document> implements Serializable {
                     aggregation.add(Aggregates.project(bson));
                 }
 
-                aggregation.add(Aggregates.group(new BasicDBObject("_id", "$_id.id"), Accumulators.push("tools", "$$ROOT")));
+                aggregation.add(Aggregates.group(new BasicDBObject("_id", "$_id.id"), Accumulators.push("entries", "$$ROOT")));
                 
-                aggregation.add(Aggregates.sort(Sorts.ascending("tools.name")));
+                aggregation.add(Aggregates.sort(Sorts.ascending("entries.name")));
                 
                 if (skip != null) {
                     aggregation.add(Aggregates.skip(skip));
@@ -481,18 +483,49 @@ public class ToolsDAO extends AbstractDAO<Document> implements Serializable {
                 try (MongoCursor<Document> cursor = iterator.iterator()) {
                     if (cursor.hasNext()) {
                         do {
+                            
                             final Document doc = cursor.next();
 
-                            List<Document> tools = doc.get("tools", List.class);
+                            
+                            writer.append("{\"id\": \"");
+                            final String tid = doc.get("_id", Document.class).get("_id", String.class);
+                            writer.append(tid);
+                            writer.append("\",\n\"entities\": [");
+                            
+                            Map<String, List<Document>> map = new TreeMap<>();
+                            
+                            List<Document> tools = doc.get("entries", List.class);
                             for (Document tool : tools) {
                                 Document _id = (Document) tool.remove("_id");
                                 tool.append("@id", getURI(_id));
                                 tool.append("@type", _id.getString("type"));
                                 tool.append("@license", LICENSE);
+                                
+                                final String type = getType(_id);
+                                List<Document> list = map.get(type);
+                                if (list == null) {
+                                    map.put(type, list = new ArrayList<>());
+                                }
+                                list.add(tool);
                             }
 
-                            doc.toJson(codec);
-                            jwriter.flush();
+                            // we must have at least one entity (otherwise entire group would be empty)
+                            Iterator<Map.Entry<String, List<Document>>> groups = map.entrySet().iterator();
+                            do {
+                                final Map.Entry<String, List<Document>> entry = groups.next();
+                                writer.append("{ \"type\": \"");
+                                writer.append(entry.getKey());
+                                writer.append("\",\n\"tools\":[");
+                            
+                                final Iterator<Document> iter = entry.getValue().iterator();
+                                do {
+                                    iter.next().toJson(codec);
+                                    jwriter.flush();
+                                } while (iter.hasNext() && writer.append(",\n") != null);
+                                writer.append("]\n}");
+                            } while (groups.hasNext() && writer.append(",\n") != null);
+                            writer.append("]\n}");
+                            
                         } while (cursor.hasNext() && writer.append(",\n") != null);
                     }
                 }
