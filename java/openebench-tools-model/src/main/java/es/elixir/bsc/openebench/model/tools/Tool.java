@@ -43,6 +43,7 @@ public class Tool extends LD {
     private ZonedDateTime timestamp;
     
     private String xid;
+    private List<String> altIDs;
 
     private URI homepage;
     private List<URI> repositories;
@@ -100,6 +101,19 @@ public class Tool extends LD {
 
     public void setExternalId(String xid) {
         this.xid = xid;
+    }
+
+    @JsonbProperty("alt_ids")
+    public List<String> getAlternativeIDs() {
+        if (altIDs == null) {
+            altIDs = new ArrayList<>();
+        }
+        return altIDs;
+    }
+    
+    @JsonbProperty("alt_ids")
+    public void setAlternativeIDs(List<String> altIDs) {
+        this.altIDs = altIDs;
     }
 
     @JsonbProperty("homepage")

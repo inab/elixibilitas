@@ -225,7 +225,15 @@
             "type": "string"
       },
       "xid": {
+            "description": "original (external) identifier used by the datasource",
             "type": "string"
+      },
+      "alt_ids": {
+            "description": "alternative tool identifiers",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
       },
       "homepage": {
             "type": "string",
