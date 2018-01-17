@@ -34,6 +34,7 @@ import javax.json.bind.annotation.JsonbProperty;
 public class Build {
 
     private Boolean instructions;
+    private Boolean dependencies;
     private Boolean automated;
 
     @JsonbProperty("instructions")
@@ -45,6 +46,15 @@ public class Build {
         this.instructions = instructions;
     }
     
+    @JsonbProperty("dependencies")
+    public Boolean getDependencies() {
+        return dependencies;
+    }
+
+    public void setDependencies(Boolean dependencies) {
+        this.dependencies = dependencies;
+    }
+
     @JsonbProperty("automated")
     public Boolean getAutomated() {
         return automated;

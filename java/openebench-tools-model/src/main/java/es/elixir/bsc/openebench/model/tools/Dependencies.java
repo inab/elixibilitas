@@ -26,42 +26,42 @@
 package es.elixir.bsc.openebench.model.tools;
 
 import java.net.URI;
+import java.util.ArrayList;
+import java.util.List;
 import javax.json.bind.annotation.JsonbProperty;
 
 /**
  * @author Dmitry Repchevsky
  */
 
-public class Support {
+public class Dependencies {
+    private List<URI> build;
+    private List<URI> runtime;
+    
+    @JsonbProperty("build")
+    public List<URI> getBuildDependencies() {
+        if (build == null) {
+            build = new ArrayList<>();
+        }
+        return build;
+    }
+    
+    @JsonbProperty("build")
+    public void setBuildDependencies(List<URI> build) {
+        this.build = build;
+    }
+    
+    @JsonbProperty("runtime")
+    public List<URI> getRuntimeDependencies() {
+        if (runtime == null) {
+            runtime = new ArrayList<>();
+        }
+        return runtime;
+    }
+    
+    @JsonbProperty("runtime")
+    public void setRuntimeDependencies(List<URI> runtime) {
+        this.runtime = runtime;
+    }
 
-    private URI helpdesk;
-    private URI issueTracker;
-    private URI mailingList;
-    
-    @JsonbProperty("helpdesk")
-    public URI getHelpdesk() {
-        return helpdesk;
-    }
-    
-    public void setHelpdesk(URI helpdesk) {
-        this.helpdesk = helpdesk;
-    }
-   
-    @JsonbProperty("issue_tracker")
-    public URI getIssueTracker() {
-        return issueTracker;
-    }
-    
-    public void setIssueTracker(URI issueTracker) {
-        this.issueTracker = issueTracker;
-    }
-
-    @JsonbProperty("mailing_list")
-    public URI getMailingList() {
-        return mailingList;
-    }
-    
-    public void setMailingList(URI mailingList) {
-        this.mailingList = mailingList;
-    }
 }

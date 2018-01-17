@@ -31,12 +31,22 @@ import javax.json.bind.annotation.JsonbProperty;
  * @author Dmitry Repchevsky
  */
 public class Summary {
+    private Boolean brief;
     private Boolean description;
     private Boolean concept;
     private Boolean rationale;
     private Boolean architecture;
     private Boolean usecases;
     private Boolean caseStudies;
+
+    @JsonbProperty("brief")
+    public Boolean getBrief() {
+        return brief;
+    }
+
+    public void setBrief(Boolean brief) {
+        this.brief = brief;
+    }
 
     @JsonbProperty("description")
     public Boolean getDescription() {

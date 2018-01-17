@@ -47,12 +47,14 @@ public class Tool extends LD {
 
     private URI homepage;
     private List<URI> repositories;
+    private String brief;
     private String description;
     
     private String license;
     private String maturity;
     private String cost;
     
+    private Dependencies dependencies;
     private Support support;
     private Community community;
     private Distributions distributions;
@@ -138,6 +140,15 @@ public class Tool extends LD {
         this.repositories = repositories;
     }
 
+    @JsonbProperty("brief")
+    public String getShortDescription() {
+        return brief;
+    }
+
+    public void setShortDescription(String brief) {
+        this.brief = brief;
+    }
+
     @JsonbProperty("description")
     public String getDescription() {
         return description;
@@ -172,6 +183,15 @@ public class Tool extends LD {
 
     public void setCost(String cost) {
         this.cost = cost;
+    }
+
+    @JsonbProperty("build")
+    public Dependencies getDependencies() {
+        return dependencies;
+    }
+
+    public void setDependencies(Dependencies dependencies) {
+        this.dependencies = dependencies;
     }
 
     @JsonbProperty("support")
