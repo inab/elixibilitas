@@ -32,7 +32,17 @@ import javax.json.bind.annotation.JsonbProperty;
  */
 
 public class Deployment {
+    private Boolean instructions;
     private Boolean dependencies;
+
+    @JsonbProperty("instructions")
+    public Boolean getInstructions() {
+        return instructions;
+    }
+
+    public void setInstructions(Boolean instructions) {
+        this.instructions = instructions;
+    }
 
     @JsonbProperty("dependencies")
     public Boolean getDependencies() {

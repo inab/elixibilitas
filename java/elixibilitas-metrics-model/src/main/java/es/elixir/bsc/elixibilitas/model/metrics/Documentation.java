@@ -34,8 +34,10 @@ import javax.json.bind.annotation.JsonbProperty;
 public class Documentation {
     
     private Boolean api;
+    private Boolean apiVersioned;
     private Boolean howto;
     private Boolean tutorial;
+    private Boolean citation;
     
     @JsonbProperty("api")
     public Boolean getAPI() {
@@ -46,6 +48,15 @@ public class Documentation {
         this.api = api;
     }
     
+    @JsonbProperty("api_versioned")
+    public Boolean getAPIVersioned() {
+        return apiVersioned;
+    }
+
+    public void setAPIVersioned(Boolean apiVersioned) {
+        this.apiVersioned = apiVersioned;
+    }
+
     @JsonbProperty("howto")
     public Boolean getHowTo() {
         return howto;
@@ -62,5 +73,14 @@ public class Documentation {
 
     public void setTutorial(Boolean tutorial) {
         this.tutorial = tutorial;
+    }
+    
+    @JsonbProperty("citation")
+    public Boolean getCitationInstructions() {
+        return citation;
+    }
+
+    public void setCitationInstructions(Boolean citation) {
+        this.citation = citation;
     }
 }

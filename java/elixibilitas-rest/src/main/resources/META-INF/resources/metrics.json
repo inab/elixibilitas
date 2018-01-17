@@ -67,6 +67,10 @@
           "copyright": {
             "$ref": "#/definitions/Copyright"
           },
+          "acknowledgement": {
+            "description": "web site states who developed/develops the software, funders etc.",
+            "type": "boolean"
+          },
           "license": {
             "type": "boolean"
           },
@@ -94,6 +98,10 @@
       "Deployment": {
         "type": "object",
         "properties": {
+          "instructions": {
+            "description": "whether instructions for installing the software are provided",
+            "type": "boolean"
+          },
           "dependencies": {
             "description": "whether the list of all third-party runtime dependencies is provided",
             "type": "boolean"
@@ -115,6 +123,10 @@
         "type": "object",
         "properties": {
           "api": {
+            "type": "boolean"
+          },
+          "api_versioned": {
+            "description": "whether the API documentation is held under version control system",
             "type": "boolean"
           },
           "howto": {

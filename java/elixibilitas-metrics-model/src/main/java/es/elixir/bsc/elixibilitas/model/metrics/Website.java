@@ -39,6 +39,7 @@ public class Website {
     private Long accessTime;
     private ZonedDateTime lastCheck;
     private Copyright copyright;
+    private Boolean acknowledgement;
     private Boolean license;
     private Boolean resources;
     
@@ -86,7 +87,7 @@ public class Website {
     public void setCopyright(Copyright copyright) {
         this.copyright = copyright;
     }
-    
+
     @JsonbProperty("license")
     public Boolean getLicense() {
         return license;
@@ -94,6 +95,15 @@ public class Website {
 
     public void setLicense(Boolean license) {
         this.license = license;
+    }
+    
+    @JsonbProperty("acknowledgement")
+    public Boolean getAcknowledgement() {
+        return acknowledgement;
+    }
+
+    public void setAcknowledgement(Boolean acknowledgement) {
+        this.acknowledgement = acknowledgement;
     }
 
     @JsonbProperty("resources")
