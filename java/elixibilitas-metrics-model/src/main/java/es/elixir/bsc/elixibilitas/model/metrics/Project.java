@@ -37,6 +37,7 @@ public class Project {
     private Summary summary;
     private Website website;
     private Build build;
+    private Deployment deployment;
     private License license;
     private Documentation documentation;
     private Integer publications;
@@ -76,6 +77,15 @@ public class Project {
 
     public void setBuild(Build build) {
         this.build = build;
+    }
+
+    @JsonbProperty("deployment")
+    public Deployment getDeployment() {
+        return deployment;
+    }
+
+    public void setDeployment(Deployment deployment) {
+        this.deployment = deployment;
     }
     
     @JsonbProperty("license")

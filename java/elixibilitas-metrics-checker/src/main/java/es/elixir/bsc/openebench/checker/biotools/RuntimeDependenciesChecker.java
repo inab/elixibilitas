@@ -25,7 +25,7 @@
 
 package es.elixir.bsc.openebench.checker.biotools;
 
-import es.elixir.bsc.elixibilitas.model.metrics.Build;
+import es.elixir.bsc.elixibilitas.model.metrics.Deployment;
 import es.elixir.bsc.elixibilitas.model.metrics.Metrics;
 import es.elixir.bsc.elixibilitas.model.metrics.Project;
 import es.elixir.bsc.openebench.checker.MetricsChecker;
@@ -38,23 +38,23 @@ import java.util.List;
  * @author Dmitry Repchevsky
  */
 
-public class BuildDependenciesChecker implements MetricsChecker {
+public class RuntimeDependenciesChecker implements MetricsChecker {
     @Override
     public Boolean check(Tool tool, Metrics metrics) {
         Boolean bool = check(tool);
         Project project = metrics.getProject();
-        Build build;
+        Deployment deployment;
         if (project == null) {
             project = new Project();
-            project.setBuild(build = new Build());
+            project.setDeployment(deployment = new Deployment());
             metrics.setProject(project);
         } else {
-            build = project.getBuild();
-            if (build == null) {
-                project.setBuild(build = new Build());
+            deployment = project.getDeployment();
+            if (deployment == null) {
+                project.setDeployment(deployment = new Deployment());
             }
         }
-        build.setDependencies(bool);
+        deployment.setDependencies(bool);
         return bool;
     }
     
@@ -64,7 +64,8 @@ public class BuildDependenciesChecker implements MetricsChecker {
             return null;
         }
         
-        final List<URI> list = dependencies.getBuildDependencies();
+        final List<URI> list = dependencies.getRuntimeDependencies();
         return list != null && list.size() > 0;
     }
+
 }

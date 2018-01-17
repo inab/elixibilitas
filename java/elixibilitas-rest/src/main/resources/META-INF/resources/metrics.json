@@ -91,6 +91,15 @@
           }
         }
       },
+      "Deployment": {
+        "type": "object",
+        "properties": {
+          "dependencies": {
+            "description": "whether the list of all third-party runtime dependencies is provided",
+            "type": "boolean"
+          }
+        }            
+      },
       "License": {
         "type": "object",
         "properties": {
@@ -132,6 +141,10 @@
           "build": {
             "$ref": "#/definitions/Build"
           },
+          "deployment": {
+            "$ref": "#/definitions/Deployment"
+          },
+
           "license": {
             "$ref": "#/definitions/License"
           },
