@@ -26,6 +26,9 @@
       "Summary" : {
         "type": "object",
         "properties": {
+          "brief": {
+            "type": "boolean"
+          },
           "description": {
             "type": "boolean"
           },
@@ -76,6 +79,14 @@
         "type": "object",
         "properties": {
           "instructions": {
+            "description": "whether instructions for building the software are provided",
+            "type": "boolean"
+          },
+          "dependencies": {
+            "description": "whether the list of all third-party dependencies for proper project build is provided",
+            "type": "boolean"
+          },
+          "automated": {
             "type": "boolean"
           }
         }

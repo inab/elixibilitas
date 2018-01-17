@@ -3,6 +3,25 @@
   "$schema": "http://json-schema.org/draft-04/hyper-schema#",
   "title": "Benchmarking Tools Schema",
   "definitions": {
+      "Dependencies": {
+        "type": "object",
+        "properties": {
+          "build": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "format": "uri"
+            }
+          },
+          "runtime": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "format": "uri"
+            }
+          }
+        }
+      },
       "Support": {
         "type": "object",
         "properties": {
@@ -246,6 +265,10 @@
               "format": "uri"
             }
       },
+      "brief": {
+            "description": "short and concise textual description of the tool",
+            "type": "string"
+      },
       "description": {
             "type": "string"
       },
@@ -257,6 +280,9 @@
       },
       "cost": {
             "type": "string"
+      },
+      "dependencies": {
+            "$ref": "#/definitions/Dependencies"
       },
       "support": {
             "$ref": "#/definitions/Support"
