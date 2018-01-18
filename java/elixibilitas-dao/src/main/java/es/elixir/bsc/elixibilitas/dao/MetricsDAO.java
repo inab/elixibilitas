@@ -134,9 +134,9 @@ public class MetricsDAO extends AbstractDAO<BsonString> implements Serializable 
         return update(user, id, json);
     }
     
-    private static Metrics deserialize(Document doc) {
+    private Metrics deserialize(Document doc) {
 
-        doc.append("@id", doc.remove("_id"));
+        doc.append("@id", baseURI + doc.remove("_id"));
         doc.append("@type", "metrics");
                         
         final Jsonb jsonb = JsonbBuilder.create(
@@ -190,7 +190,7 @@ public class MetricsDAO extends AbstractDAO<BsonString> implements Serializable 
                         do {
                             final Document doc = cursor.next();
 
-                            doc.append("@id", doc.remove("_id"));
+                            doc.append("@id", baseURI + doc.remove("_id"));
                             doc.append("@type", "metrics");
                             doc.append("@license", LICENSE);
 
