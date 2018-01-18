@@ -42,7 +42,9 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.json.bind.Jsonb;
 import javax.json.bind.JsonbBuilder;
+import javax.json.bind.JsonbConfig;
 import javax.json.bind.JsonbException;
+import javax.json.bind.config.PropertyNamingStrategy;
 import org.bson.BsonString;
 import org.bson.BsonWriter;
 import org.bson.Document;
@@ -125,7 +127,8 @@ public class MetricsDAO extends AbstractDAO<BsonString> implements Serializable 
     }
 
     public String update(String user, String id, Metrics metrics) {
-        final Jsonb jsonb = JsonbBuilder.create();
+        final Jsonb jsonb = JsonbBuilder.create(
+                new JsonbConfig().withPropertyNamingStrategy(PropertyNamingStrategy.UPPER_CAMEL_CASE));
         final String json = jsonb.toJson(metrics);
         
         return update(user, id, json);
@@ -136,7 +139,8 @@ public class MetricsDAO extends AbstractDAO<BsonString> implements Serializable 
         doc.append("@id", doc.remove("_id"));
         doc.append("@type", "metrics");
                         
-        final Jsonb jsonb = JsonbBuilder.create();
+        final Jsonb jsonb = JsonbBuilder.create(
+                new JsonbConfig().withPropertyNamingStrategy(PropertyNamingStrategy.UPPER_CAMEL_CASE));
 
         final String json = doc.toJson();
         

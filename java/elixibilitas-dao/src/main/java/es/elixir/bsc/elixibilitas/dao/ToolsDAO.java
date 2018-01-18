@@ -63,6 +63,8 @@ import java.util.logging.Logger;
 import java.util.regex.Pattern;
 import javax.json.bind.Jsonb;
 import javax.json.bind.JsonbBuilder;
+import javax.json.bind.JsonbConfig;
+import javax.json.bind.config.PropertyNamingStrategy;
 import org.bson.BsonArray;
 import org.bson.BsonWriter;
 import org.bson.Document;
@@ -168,7 +170,8 @@ public class ToolsDAO extends AbstractDAO<Document> implements Serializable {
         doc.append("@id", getURI(_id));
         doc.append("@type", type);
                         
-        final Jsonb jsonb = JsonbBuilder.create();
+        final Jsonb jsonb = JsonbBuilder.create(
+                new JsonbConfig().withPropertyNamingStrategy(PropertyNamingStrategy.UPPER_CAMEL_CASE));
         
         final String json = doc.toJson();
         
@@ -254,7 +257,8 @@ public class ToolsDAO extends AbstractDAO<Document> implements Serializable {
     }
 
     public String put(String user, Tool tool) {
-        final Jsonb jsonb = JsonbBuilder.create();
+        final Jsonb jsonb = JsonbBuilder.create(
+                new JsonbConfig().withPropertyNamingStrategy(PropertyNamingStrategy.UPPER_CAMEL_CASE));
         final String json = jsonb.toJson(tool);
         
         return put(user, tool.id.toString().substring(baseURI.length()), json);
@@ -262,7 +266,8 @@ public class ToolsDAO extends AbstractDAO<Document> implements Serializable {
 
 
     public String update(String user, Tool tool, String id) {
-        final Jsonb jsonb = JsonbBuilder.create();
+        final Jsonb jsonb = JsonbBuilder.create(
+                new JsonbConfig().withPropertyNamingStrategy(PropertyNamingStrategy.UPPER_CAMEL_CASE));
         final String json = jsonb.toJson(tool);
         
         return update(user, id, json);
