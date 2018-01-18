@@ -10,3 +10,5 @@ es.elixir.bsc.openebench.checker.biotools.RepositoryChecker
 es.elixir.bsc.openebench.checker.biotools.SourcecodeChecker
 es.elixir.bsc.openebench.checker.biotools.BuildDependenciesChecker
 es.elixir.bsc.openebench.checker.biotools.RuntimeDependenciesChecker
+es.elixir.bsc.openebench.checker.biotools.TutorialChecker
+es.elixir.bsc.openebench.checker.biotools.CitationDocumentationChecker

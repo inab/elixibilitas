@@ -96,6 +96,17 @@
             "type": "string",
             "format": "uri"
           },
+          "tutorial": {
+            "description": "whether there is a tutorial associated",
+            "type": "string",
+            "format": "uri"
+          },
+          "build_instructions": {
+            "description": "whether instructions for building the software are provided",
+            "type": "string",
+            "format": "uri"
+          },
+
           "api": {
             "type": "string",
             "format": "uri"
