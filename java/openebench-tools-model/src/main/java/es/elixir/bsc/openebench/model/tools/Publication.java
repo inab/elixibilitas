@@ -42,6 +42,7 @@ public class Publication {
         return doi;
     }
     
+    @JsonbProperty("doi")
     public void setDOI(String doi) {
         this.doi = doi;
     }
@@ -51,6 +52,7 @@ public class Publication {
         return pmcid;
     }
     
+    @JsonbProperty("pmcid")
     public void setPMCID(String pmcid) {
         this.pmcid = pmcid;
     }
@@ -60,6 +62,7 @@ public class Publication {
         return pmid;
     }
     
+    @JsonbProperty("pmid")
     public void setPMID(String pmid) {
         this.pmid = pmid;
     }

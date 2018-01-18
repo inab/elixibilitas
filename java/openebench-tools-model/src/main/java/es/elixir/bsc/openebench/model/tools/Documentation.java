@@ -62,6 +62,7 @@ public class Documentation {
         return general;
     }
 
+    @JsonbProperty("general")
     public void setGeneralDocumentation(URI general) {
         this.general = general;
     }
@@ -71,6 +72,7 @@ public class Documentation {
         return manual;
     }
 
+    @JsonbProperty("manual")
     public void setManual(URI manual) {
         this.manual = manual;
     }
@@ -80,6 +82,7 @@ public class Documentation {
         return api;
     }
 
+    @JsonbProperty("api")
     public void setAPIDocumentation(URI api) {
         this.api = api;
     }
@@ -89,6 +92,7 @@ public class Documentation {
         return termsOfUse;
     }
 
+    @JsonbProperty("terms_of_use")
     public void setTermsOfUse(URI termsOfUse) {
         this.termsOfUse = termsOfUse;
     }
@@ -98,6 +102,7 @@ public class Documentation {
         return trainingMaterial;
     }
 
+    @JsonbProperty("training_material")
     public void setTrainingMaterial(URI trainingMaterial) {
         this.trainingMaterial = trainingMaterial;
     }
@@ -107,6 +112,7 @@ public class Documentation {
         return citationInstructions;
     }
 
+    @JsonbProperty("citation_instructions")
     public void setCitationInstructions(URI citationInstructions) {
         this.citationInstructions = citationInstructions;
     }

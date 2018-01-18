@@ -35,7 +35,10 @@ public class Sourcecode {
 
     private Boolean copyright;
     private Boolean license;
+    private Boolean headers;
     private Boolean readme;
+    private Boolean free;
+    private Boolean publicAccess;
     private Repository repository;
     
     @JsonbProperty("copyright")
@@ -55,6 +58,16 @@ public class Sourcecode {
     public void setLicense(Boolean license) {
         this.license = license;
     }
+
+    @JsonbProperty("license_headers")
+    public Boolean getLicenseHeaders() {
+        return headers;
+    }
+
+    @JsonbProperty("license_headers")
+    public void setLicenseHeaders(Boolean headers) {
+        this.headers = headers;
+    }
     
     @JsonbProperty("readme")
     public Boolean getReadme() {
@@ -65,6 +78,25 @@ public class Sourcecode {
         this.readme = readme;
     }
 
+    @JsonbProperty("free")
+    public Boolean getFree() {
+        return free;
+    }
+
+    public void setFree(Boolean free) {
+        this.free = free;
+    }
+
+    @JsonbProperty("public")
+    public Boolean getPublicAccess() {
+        return publicAccess;
+    }
+
+    @JsonbProperty("public")
+    public void setPublicAccess(Boolean publicAccess) {
+        this.publicAccess = publicAccess;
+    }
+    
     @JsonbProperty("repository")
     public Repository getRepository() {
         return repository;

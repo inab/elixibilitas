@@ -145,6 +145,7 @@ public class Tool extends LD {
         return brief;
     }
 
+    @JsonbProperty("brief")
     public void setShortDescription(String brief) {
         this.brief = brief;
     }
@@ -185,7 +186,7 @@ public class Tool extends LD {
         this.cost = cost;
     }
 
-    @JsonbProperty("build")
+    @JsonbProperty("dependencies")
     public Dependencies getDependencies() {
         return dependencies;
     }

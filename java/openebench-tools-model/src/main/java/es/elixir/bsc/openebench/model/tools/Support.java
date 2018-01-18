@@ -52,6 +52,7 @@ public class Support {
         return issueTracker;
     }
     
+    @JsonbProperty("issue_tracker")
     public void setIssueTracker(URI issueTracker) {
         this.issueTracker = issueTracker;
     }
@@ -61,6 +62,7 @@ public class Support {
         return mailingList;
     }
     
+    @JsonbProperty("mailing_list")
     public void setMailingList(URI mailingList) {
         this.mailingList = mailingList;
     }

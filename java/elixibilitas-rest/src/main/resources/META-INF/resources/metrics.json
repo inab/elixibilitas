@@ -194,9 +194,25 @@
         "type": "object",
         "properties": {
           "copyright": {
+            "description": "each source code file has a copyright statement",
             "type": "boolean"
           },
           "license": {
+            "type": "boolean"
+          },
+          "license_headers": {
+            "description": "each source code file has a license header",
+            "type": "boolean"
+          },
+          "readme": {
+            "type": "boolean"
+          },
+          "free": {
+            "description": "source distributions are freely available",
+            "type": "boolean"
+          },
+          "public": {
+            "description": "sourcecode is available without the need for any registration",
             "type": "boolean"
           },
           "repository": {
