@@ -23,56 +23,42 @@
  *****************************************************************************
  */
 
-package es.elixir.bsc.openebench.model.tools;
+package es.elixir.bsc.openebench.checker.biotools;
 
+import es.elixir.bsc.elixibilitas.model.metrics.Distribution;
+import es.elixir.bsc.elixibilitas.model.metrics.Metrics;
+import es.elixir.bsc.openebench.checker.MetricsChecker;
+import es.elixir.bsc.openebench.model.tools.Tool;
 import java.net.URI;
-import java.util.ArrayList;
 import java.util.List;
-import javax.json.bind.annotation.JsonbProperty;
 
 /**
  * @author Dmitry Repchevsky
  */
 
-public class Dependencies {
-    private String buildSystem;
-    private List<URI> build;
-    private List<URI> runtime;
-    
-    @JsonbProperty("build_system")
-    public String getBuildSystem() {
-        return buildSystem;
-    }
-    
-    @JsonbProperty("build_system")
-    public void setBuildSystem(String buildSystem) {
-        this.buildSystem = buildSystem;
-    }
-    
-    @JsonbProperty("build")
-    public List<URI> getBuildDependencies() {
-        if (build == null) {
-            build = new ArrayList<>();
-        }
-        return build;
-    }
-    
-    @JsonbProperty("build")
-    public void setBuildDependencies(List<URI> build) {
-        this.build = build;
-    }
-    
-    @JsonbProperty("runtime")
-    public List<URI> getRuntimeDependencies() {
-        if (runtime == null) {
-            runtime = new ArrayList<>();
-        }
-        return runtime;
-    }
-    
-    @JsonbProperty("runtime")
-    public void setRuntimeDependencies(List<URI> runtime) {
-        this.runtime = runtime;
-    }
+public class VREDistributionChecker implements MetricsChecker {
 
+    @Override
+    public Boolean check(Tool tool, Metrics metrics) {
+        Boolean bool = check(tool);
+        if (Boolean.TRUE.equals(bool)) {
+            Distribution distribution = metrics.getDistribution();
+            if (distribution == null) {
+                metrics.setDistribution(distribution = new Distribution());
+                distribution.setVRE(bool);
+            }
+            distribution.setVRE(bool);
+        }
+        return bool;
+    }
+    
+    private static Boolean check(Tool tool) {
+        
+        es.elixir.bsc.openebench.model.tools.Distributions distributions = tool.getDistributions();
+        if (distributions != null) {
+            final List<URI> vres = distributions.getVirtualResearchEnvironment();
+            return !vres.isEmpty();
+        }
+        return false;
+    }
 }

@@ -134,8 +134,10 @@
           },
           "tutorial": {
             "type": "boolean"
+          },
+          "citation": {
+            "type": "boolean"
           }
-
         }
       },
       "Project": {
@@ -231,6 +233,12 @@
           },
           "sourcecode": {
             "$ref": "#/definitions/Sourcecode"
+          },
+          "vre": {
+            "type": "boolean"
+          },
+          "packages": {
+            "type": "boolean"
           }
         }
       },

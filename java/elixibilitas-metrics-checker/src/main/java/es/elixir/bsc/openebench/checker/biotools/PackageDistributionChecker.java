@@ -25,11 +25,10 @@
 
 package es.elixir.bsc.openebench.checker.biotools;
 
-import es.elixir.bsc.elixibilitas.model.metrics.Binaries;
 import es.elixir.bsc.elixibilitas.model.metrics.Distribution;
 import es.elixir.bsc.elixibilitas.model.metrics.Metrics;
-import es.elixir.bsc.openebench.model.tools.Tool;
 import es.elixir.bsc.openebench.checker.MetricsChecker;
+import es.elixir.bsc.openebench.model.tools.Tool;
 import java.net.URI;
 import java.util.List;
 
@@ -37,7 +36,7 @@ import java.util.List;
  * @author Dmitry Repchevsky
  */
 
-public class BinaryDistributionChecker implements MetricsChecker {
+public class PackageDistributionChecker implements MetricsChecker {
 
     @Override
     public Boolean check(Tool tool, Metrics metrics) {
@@ -46,10 +45,9 @@ public class BinaryDistributionChecker implements MetricsChecker {
             Distribution distribution = metrics.getDistribution();
             if (distribution == null) {
                 metrics.setDistribution(distribution = new Distribution());
-                distribution.setBinaries(new Binaries());
-            } else if (distribution.getSourcecode() == null) {
-                distribution.setBinaries(new Binaries());
+                distribution.setBinaryPackages(bool);
             }
+            distribution.setVRE(bool);
         }
         return bool;
     }
@@ -58,10 +56,8 @@ public class BinaryDistributionChecker implements MetricsChecker {
         
         es.elixir.bsc.openebench.model.tools.Distributions distributions = tool.getDistributions();
         if (distributions != null) {
-            List<URI> binaries = distributions.getBinaryDistributions();
-            List<URI> packages = distributions.getBinaryPackagesDistributions();
-
-            return !(binaries.isEmpty() && packages.isEmpty());
+            final List<URI> packages = distributions.getBinaryPackagesDistributions();
+            return !packages.isEmpty();
         }
         return false;
     }

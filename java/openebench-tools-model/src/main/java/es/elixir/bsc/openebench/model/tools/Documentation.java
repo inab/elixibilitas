@@ -38,7 +38,9 @@ public class Documentation {
     
     private List<URI> docLinks;
     private URI general;
+    private URI build;
     private URI manual;
+    private URI tutorial;
     private URI api;
     private URI termsOfUse;
     private URI trainingMaterial;
@@ -65,6 +67,26 @@ public class Documentation {
     @JsonbProperty("general")
     public void setGeneralDocumentation(URI general) {
         this.general = general;
+    }
+
+    @JsonbProperty("tutorial")
+    public URI getTutorial() {
+        return tutorial;
+    }
+
+    @JsonbProperty("build_instructions")
+    public void setBuildInstructions(URI build) {
+        this.build = build;
+    }
+
+    @JsonbProperty("build_instructions")
+    public URI getBuildInstructions() {
+        return build;
+    }
+
+    @JsonbProperty("tutorial")
+    public void setTutorial(URI tutorial) {
+        this.tutorial = tutorial;
     }
 
     @JsonbProperty("manual")

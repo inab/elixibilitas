@@ -1,6 +1,6 @@
 /**
  * *****************************************************************************
- * Copyright (C) 2017 ELIXIR ES, Spanish National Bioinformatics Institute (INB)
+ * Copyright (C) 2018 ELIXIR ES, Spanish National Bioinformatics Institute (INB)
  * and Barcelona Supercomputing Center (BSC)
  *
  * Modifications to the initial code base are copyright of their respective
@@ -25,44 +25,43 @@
 
 package es.elixir.bsc.openebench.checker.biotools;
 
-import es.elixir.bsc.elixibilitas.model.metrics.Binaries;
-import es.elixir.bsc.elixibilitas.model.metrics.Distribution;
+import es.elixir.bsc.elixibilitas.model.metrics.Build;
 import es.elixir.bsc.elixibilitas.model.metrics.Metrics;
-import es.elixir.bsc.openebench.model.tools.Tool;
+import es.elixir.bsc.elixibilitas.model.metrics.Project;
 import es.elixir.bsc.openebench.checker.MetricsChecker;
-import java.net.URI;
-import java.util.List;
+import es.elixir.bsc.openebench.model.tools.Dependencies;
+import es.elixir.bsc.openebench.model.tools.Tool;
 
 /**
  * @author Dmitry Repchevsky
  */
 
-public class BinaryDistributionChecker implements MetricsChecker {
-
+public class BuildSystemChecker implements MetricsChecker {
     @Override
     public Boolean check(Tool tool, Metrics metrics) {
         Boolean bool = check(tool);
-        if (Boolean.TRUE.equals(bool)) {
-            Distribution distribution = metrics.getDistribution();
-            if (distribution == null) {
-                metrics.setDistribution(distribution = new Distribution());
-                distribution.setBinaries(new Binaries());
-            } else if (distribution.getSourcecode() == null) {
-                distribution.setBinaries(new Binaries());
+        Project project = metrics.getProject();
+        Build build;
+        if (project == null) {
+            metrics.setProject(project = new Project());
+            project.setBuild(build = new Build());
+        } else {
+            build = project.getBuild();
+            if (build == null) {
+                project.setBuild(build = new Build());
             }
         }
+        build.setAutomated(bool);
         return bool;
     }
     
     private static Boolean check(Tool tool) {
-        
-        es.elixir.bsc.openebench.model.tools.Distributions distributions = tool.getDistributions();
-        if (distributions != null) {
-            List<URI> binaries = distributions.getBinaryDistributions();
-            List<URI> packages = distributions.getBinaryPackagesDistributions();
-
-            return !(binaries.isEmpty() && packages.isEmpty());
+        Dependencies dependencies = tool.getDependencies();
+        if (dependencies == null) {
+            return null;
         }
-        return false;
+        
+        final String buildSystem = dependencies.getBuildSystem();
+        return buildSystem != null && buildSystem.length() > 0;
     }
 }

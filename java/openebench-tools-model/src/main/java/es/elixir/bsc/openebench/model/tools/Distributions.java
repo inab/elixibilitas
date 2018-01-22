@@ -37,13 +37,15 @@ import javax.json.bind.annotation.JsonbProperty;
 public class Distributions {
     
     private List<URI> binaries;
-    private List<URI> binary_packages;
+    private List<URI> binaryPackages;
 
     private List<URI> sourcecode;
-    private List<URI> source_packages;
+    private List<URI> sourcePackages;
 
+    private List<URI> vre;
+    
     private List<Container> containers;
-    private List<VMImage> vm_images;
+    private List<VMImage> vmImages;
     
     @JsonbProperty("binaries")
     public List<URI> getBinaryDistributions() {
@@ -60,15 +62,15 @@ public class Distributions {
     
     @JsonbProperty("binary_packages")
     public List<URI> getBinaryPackagesDistributions() {
-        if (binary_packages == null) {
-            binary_packages = new ArrayList<>();
+        if (binaryPackages == null) {
+            binaryPackages = new ArrayList<>();
         }
-        return binary_packages;
+        return binaryPackages;
     }
 
     @JsonbProperty("binary_packages")
-    public void setBinaryPackagesDistributions(List<URI> binary_packages) {
-        this.binary_packages = binary_packages;
+    public void setBinaryPackagesDistributions(List<URI> binaryPackages) {
+        this.binaryPackages = binaryPackages;
     }
 
     @JsonbProperty("sourcecode")
@@ -79,6 +81,19 @@ public class Distributions {
         return sourcecode;
     }
 
+    @JsonbProperty("vre")
+    public void setVirtualResearchEnvironment(List<URI> vre) {
+        this.vre = vre;
+    }
+    
+    @JsonbProperty("vre")
+    public List<URI> getVirtualResearchEnvironment() {
+        if (vre == null) {
+            vre = new ArrayList<>();
+        }
+        return vre;
+    }
+
     @JsonbProperty("sourcecode")
     public void setSourcecodeDistributions(List<URI> sourcecode) {
         this.sourcecode = sourcecode;
@@ -86,15 +101,15 @@ public class Distributions {
     
     @JsonbProperty("source_packages")
     public List<URI> getSourcePackagesDistributions() {
-        if (source_packages == null) {
-            source_packages = new ArrayList<>();
+        if (sourcePackages == null) {
+            sourcePackages = new ArrayList<>();
         }
-        return source_packages;
+        return sourcePackages;
     }
 
     @JsonbProperty("source_packages")
-    public void setSourcePackagesDistributions(List<URI> source_packages) {
-        this.source_packages = source_packages;
+    public void setSourcePackagesDistributions(List<URI> sourcePackages) {
+        this.sourcePackages = sourcePackages;
     }
     
     @JsonbProperty("containers")
@@ -112,14 +127,14 @@ public class Distributions {
     
     @JsonbProperty("vm_images")
     public List<VMImage> getVirtualMachineImages() {
-        if (vm_images == null) {
-            vm_images = new ArrayList<>();
+        if (vmImages == null) {
+            vmImages = new ArrayList<>();
         }
-        return vm_images;
+        return vmImages;
     }
 
     @JsonbProperty("vm_images")
-    public void setVirtualMachineImages(List<VMImage> vm_images) {
-        this.vm_images = vm_images;
+    public void setVirtualMachineImages(List<VMImage> vmImages) {
+        this.vmImages = vmImages;
     }
 }

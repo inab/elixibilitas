@@ -36,6 +36,8 @@ public class Distribution {
     private Boolean readme;
     private Binaries binaries;
     private Sourcecode sourcecode;
+    private Boolean vre;
+    private Boolean packages;
 
     @JsonbProperty("readme")
     public Boolean getReadme() {
@@ -62,5 +64,23 @@ public class Distribution {
 
     public void setSourcecode(Sourcecode sourcecode) {
         this.sourcecode = sourcecode;
+    }
+    
+    @JsonbProperty("vre")
+    public Boolean getVRE() {
+        return vre;
+    }
+
+    public void setVRE(Boolean vre) {
+        this.vre = vre;
+    }
+    
+    @JsonbProperty("packages")
+    public Boolean getBinaryPackages() {
+        return packages;
+    }
+
+    public void setBinaryPackages(Boolean packages) {
+        this.packages = packages;
     }
 }

@@ -6,6 +6,10 @@
       "Dependencies": {
         "type": "object",
         "properties": {
+          "build_system": {
+            "description": "build system used to build the tool (maven, cmake, ant..)",
+            "type": "string"
+          },
           "build": {
             "type": "array",
             "items": {
@@ -97,12 +101,12 @@
             "format": "uri"
           },
           "tutorial": {
-            "description": "whether there is a tutorial associated",
+            "description": "link to the tutorial",
             "type": "string",
             "format": "uri"
           },
           "build_instructions": {
-            "description": "whether instructions for building the software are provided",
+            "description": "link to the instructions for building the software",
             "type": "string",
             "format": "uri"
           },
@@ -157,6 +161,30 @@
           }
         }
       },
+      "Container": {
+        "type": "object",
+        "properties": {
+          "type": {
+            "type": "string"
+          },
+          "uri": {
+            "type": "string",
+            "format": "uri"   
+          }
+        }
+      },
+      "VMImage": {
+        "type": "object",
+        "properties": {
+          "type": {
+            "type": "string"
+          },
+          "uri": {
+            "type": "string",
+            "format": "uri"   
+          }
+        }
+      },
       "Distributions": {
         "type": "object",
         "properties": {
@@ -186,6 +214,25 @@
             "items": {
               "type": "string",
               "format": "uri"
+            }
+          },
+          "vre": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "format": "uri"
+            }
+          },
+          "containers": {
+            "type": "array",
+            "items": {
+              "$ref": "#/definitions/Container"
+            }
+          },
+          "vm_images": {
+            "type": "array",
+            "items": {
+              "$ref": "#/definitions/VMImage"
             }
           }
         }
