@@ -15,3 +15,4 @@ es.elixir.bsc.openebench.checker.biotools.CitationDocumentationChecker
 es.elixir.bsc.openebench.checker.biotools.BuildSystemChecker
 es.elixir.bsc.openebench.checker.biotools.VREDistributionChecker
 es.elixir.bsc.openebench.checker.biotools.PackageDistributionChecker
+es.elixir.bsc.openebench.checker.biotools.BuildInstructionsChecker

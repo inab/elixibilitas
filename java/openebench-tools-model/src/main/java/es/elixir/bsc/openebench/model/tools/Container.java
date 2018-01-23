@@ -49,6 +49,7 @@ public class Container {
         return uri;
     }
 
+    @JsonbProperty("uri")
     public void setURI(URI uri) {
         this.uri = uri;
     }

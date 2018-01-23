@@ -44,6 +44,7 @@ public class Contact {
         return url;
     }
 
+    @JsonbProperty("url")
     public void setUrl(URI url) {
         this.url = url;
     }
@@ -53,6 +54,7 @@ public class Contact {
         return email;
     }
     
+    @JsonbProperty("email")
     public void setEmail(String email) {
         this.email = email;
     }
@@ -62,6 +64,7 @@ public class Contact {
         return name;
     }
 
+    @JsonbProperty("name")
     public void setName(String name) {
         this.name = name;
     }
@@ -71,6 +74,7 @@ public class Contact {
         return phone;
     }
     
+    @JsonbProperty("phone")
     public void setPhone(String phone) {
         this.phone = phone;
     }

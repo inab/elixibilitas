@@ -74,6 +74,7 @@ public class Tool extends LD {
         return name;
     }
 
+    @JsonbProperty("name")
     public void setName(String name) {
         this.name = name;
     }
@@ -83,6 +84,7 @@ public class Tool extends LD {
         return version;
     }
 
+    @JsonbProperty("version")
     public void setVersion(String version) {
         this.version = version;
     }
@@ -92,6 +94,7 @@ public class Tool extends LD {
         return timestamp;
     }
 
+    @JsonbProperty("@timestamp")
     public void setTimestamp(ZonedDateTime timestamp) {
         this.timestamp = timestamp;
     }
@@ -101,6 +104,7 @@ public class Tool extends LD {
         return xid;
     }
 
+    @JsonbProperty("@xid")
     public void setExternalId(String xid) {
         this.xid = xid;
     }
@@ -123,6 +127,7 @@ public class Tool extends LD {
         return homepage;
     }
 
+    @JsonbProperty("homepage")
     public void setHomepage(URI homepage) {
         this.homepage = homepage;
     }
@@ -155,6 +160,7 @@ public class Tool extends LD {
         return description;
     }
 
+    @JsonbProperty("description")
     public void setDescription(String description) {
         this.description = description;
     }
@@ -164,6 +170,7 @@ public class Tool extends LD {
         return license;
     }
 
+    @JsonbProperty("license")
     public void setLicense(String license) {
         this.license = license;
     }
@@ -173,6 +180,7 @@ public class Tool extends LD {
         return maturity;
     }
 
+    @JsonbProperty("maturity")
     public void setMaturity(String maturity) {
         this.maturity = maturity;
     }
@@ -182,6 +190,7 @@ public class Tool extends LD {
         return cost;
     }
 
+    @JsonbProperty("cost")
     public void setCost(String cost) {
         this.cost = cost;
     }
@@ -191,6 +200,7 @@ public class Tool extends LD {
         return dependencies;
     }
 
+    @JsonbProperty("dependencies")
     public void setDependencies(Dependencies dependencies) {
         this.dependencies = dependencies;
     }
@@ -200,6 +210,7 @@ public class Tool extends LD {
         return support;
     }
 
+    @JsonbProperty("support")
     public void setSupport(Support support) {
         this.support = support;
     }
@@ -209,6 +220,7 @@ public class Tool extends LD {
         return community;
     }
 
+    @JsonbProperty("community")
     public void setCommunity(Community community) {
         this.community = community;
     }
@@ -218,6 +230,7 @@ public class Tool extends LD {
         return distributions;
     }
 
+    @JsonbProperty("distributions")
     public void setDistributions(Distributions distributions) {
         this.distributions = distributions;
     }
@@ -227,6 +240,7 @@ public class Tool extends LD {
         return documentation;
     }
 
+    @JsonbProperty("documentation")
     public void setDocumentation(Documentation documentation) {
         this.documentation = documentation;
     }
@@ -236,6 +250,7 @@ public class Tool extends LD {
         return semantics;
     }
 
+    @JsonbProperty("semantics")
     public void setSemantics(Semantics semantics) {
         this.semantics = semantics;
     }

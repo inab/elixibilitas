@@ -27,6 +27,7 @@
         "type": "object",
         "properties": {
           "brief": {
+            "description": "a short description is provided",
             "type": "boolean"
           },
           "description": {
@@ -72,9 +73,18 @@
             "type": "boolean"
           },
           "license": {
+            "description": "web site states a license",
             "type": "boolean"
           },
           "resources": {
+            "type": "boolean"
+          },
+          "robots": {
+            "description": "search engines allowed to track the website",
+            "type": "boolean"
+          },
+          "ssl": {
+            "description": "web site access is secured",
             "type": "boolean"
           }
         }
@@ -91,6 +101,11 @@
             "type": "boolean"
           },
           "automated": {
+            "description": "whether the automated build system used",
+            "type": "boolean"
+          },
+          "unix": {
+            "description": "operative system used to build the software (unix or not)",
             "type": "boolean"
           }
         }
@@ -195,6 +210,10 @@
       "Sourcecode": {
         "type": "object",
         "properties": {
+          "interpreted": {
+            "description": "whether the sourcecode is interpreted (Python, Perl, Ruby) or compiled (C, C++, Fortran)",
+            "type": "boolean"
+          },
           "copyright": {
             "description": "each source code file has a copyright statement",
             "type": "boolean"

@@ -1,6 +1,6 @@
 /**
  * *****************************************************************************
- * Copyright (C) 2017 ELIXIR ES, Spanish National Bioinformatics Institute (INB)
+ * Copyright (C) 2018 ELIXIR ES, Spanish National Bioinformatics Institute (INB)
  * and Barcelona Supercomputing Center (BSC)
  *
  * Modifications to the initial code base are copyright of their respective
@@ -35,7 +35,7 @@ import es.elixir.bsc.openebench.model.tools.Tool;
  * @author Dmitry Repchevsky
  */
 
-public class TutorialChecker implements MetricsChecker {
+public class BuildInstructionsChecker implements MetricsChecker {
     @Override
     public Boolean check(Tool tool, Metrics metrics) {
         Boolean bool = check(tool);
@@ -51,9 +51,9 @@ public class TutorialChecker implements MetricsChecker {
                     project.setDocumentation(documentation = new es.elixir.bsc.elixibilitas.model.metrics.Documentation());
                 }
             }
-            documentation.setTutorial(true);
+            documentation.setHowTo(true);
         } else if (project != null && project.getDocumentation() != null) {
-            project.getDocumentation().setTutorial(bool);
+            project.getDocumentation().setHowTo(bool);
         }
         return bool;
     }
@@ -63,6 +63,6 @@ public class TutorialChecker implements MetricsChecker {
         if (documentation == null) {
             return null;
         }
-        return documentation.getTutorial() == null ? null : true;
+        return documentation.getBuildInstructions() == null ? null : true;
     }
 }

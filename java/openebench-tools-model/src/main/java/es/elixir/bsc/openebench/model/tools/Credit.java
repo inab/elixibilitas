@@ -47,6 +47,7 @@ public class Credit {
         return name;
     }
     
+    @JsonbProperty("name")
     public void setName(String name) {
         this.name = name;
     }
@@ -56,6 +57,7 @@ public class Credit {
         return email;
     }
     
+    @JsonbProperty("email")
     public void setEmail(String email) {
         this.email = email;
     }
@@ -65,6 +67,7 @@ public class Credit {
         return type;
     }
     
+    @JsonbProperty("type")
     public void setType(String type) {
         this.type = type;
     }
@@ -74,6 +77,7 @@ public class Credit {
         return role;
     }
     
+    @JsonbProperty("role")
     public void setRole(String role) {
         this.role = role;
     }
@@ -83,6 +87,7 @@ public class Credit {
         return orcid;
     }
     
+    @JsonbProperty("orcid")
     public void setOrcid(String orcid) {
         this.orcid = orcid;
     }
@@ -92,6 +97,7 @@ public class Credit {
         return url;
     }
     
+    @JsonbProperty("url")
     public void setUrl(URI url) {
         this.url = url;
     }
@@ -101,6 +107,7 @@ public class Credit {
         return comment;
     }
     
+    @JsonbProperty("comment")
     public void setComment(String comment) {
         this.comment = comment;
     }

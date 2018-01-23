@@ -43,6 +43,7 @@ public class Support {
         return helpdesk;
     }
     
+    @JsonbProperty("helpdesk")
     public void setHelpdesk(URI helpdesk) {
         this.helpdesk = helpdesk;
     }
