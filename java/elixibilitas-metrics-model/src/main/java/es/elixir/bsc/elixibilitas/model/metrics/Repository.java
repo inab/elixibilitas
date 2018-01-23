@@ -41,6 +41,7 @@ public class Repository {
         return anonymous;
     }
 
+    @JsonbProperty("anonymous")
     public void setAnonymous(Boolean anonymous) {
         this.anonymous = anonymous;
     }
@@ -50,9 +51,9 @@ public class Repository {
         return online;
     }
 
+    @JsonbProperty("online")
     public void setOnline(Boolean online) {
         this.online = online;
     }
-
 }
 

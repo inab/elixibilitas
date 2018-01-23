@@ -35,6 +35,7 @@ import javax.json.bind.annotation.JsonbProperty;
 public class Website {
 
     private Integer operational;
+    private Boolean robots;
     private Boolean ssl;
     private Long accessTime;
     private ZonedDateTime lastCheck;
@@ -48,15 +49,27 @@ public class Website {
         return operational;
     }
 
+    @JsonbProperty("operational")
     public void setOperational(Integer operational) {
         this.operational = operational;
     }
 
+    @JsonbProperty("robots")
+    public Boolean getRobotsAllowed() {
+        return robots;
+    }
+
+    @JsonbProperty("robots")
+    public void setRobotsAllowedL(Boolean robots) {
+        this.robots = robots;
+    }
+    
     @JsonbProperty("ssl")
     public Boolean getSSL() {
         return ssl;
     }
 
+    @JsonbProperty("ssl")
     public void setSSL(Boolean ssl) {
         this.ssl = ssl;
     }
@@ -66,6 +79,7 @@ public class Website {
         return accessTime;
     }
 
+    @JsonbProperty("access_time")
     public void setAccessTime(Long accessTime) {
         this.accessTime = accessTime;
     }
@@ -75,6 +89,7 @@ public class Website {
         return lastCheck;
     }
 
+    @JsonbProperty("last_check")
     public void setLastCheck(ZonedDateTime lastCheck) {
         this.lastCheck = lastCheck;
     }
@@ -84,6 +99,7 @@ public class Website {
         return copyright;
     }
 
+    @JsonbProperty("copyright")
     public void setCopyright(Copyright copyright) {
         this.copyright = copyright;
     }
@@ -93,6 +109,7 @@ public class Website {
         return license;
     }
 
+    @JsonbProperty("license")
     public void setLicense(Boolean license) {
         this.license = license;
     }
@@ -102,6 +119,7 @@ public class Website {
         return acknowledgement;
     }
 
+    @JsonbProperty("acknowledgement")
     public void setAcknowledgement(Boolean acknowledgement) {
         this.acknowledgement = acknowledgement;
     }
@@ -111,6 +129,7 @@ public class Website {
         return resources;
     }
 
+    @JsonbProperty("resources")
     public void setResources(Boolean resources) {
         this.resources = resources;
     }

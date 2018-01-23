@@ -41,6 +41,7 @@ public class Binaries {
         return freeness;
     }
 
+    @JsonbProperty("freeness")
     public void setFreeness(Boolean freeness) {
         this.freeness = freeness;
     }
@@ -50,6 +51,7 @@ public class Binaries {
         return registration;
     }
 
+    @JsonbProperty("registration")
     public void setRegistration(Boolean registration) {
         this.registration = registration;
     }

@@ -36,12 +36,14 @@ public class Build {
     private Boolean instructions;
     private Boolean dependencies;
     private Boolean automated;
+    private Boolean unix;
 
     @JsonbProperty("instructions")
     public Boolean getInstructions() {
         return instructions;
     }
 
+    @JsonbProperty("instructions")
     public void setInstructions(Boolean instructions) {
         this.instructions = instructions;
     }
@@ -51,6 +53,7 @@ public class Build {
         return dependencies;
     }
 
+    @JsonbProperty("dependencies")
     public void setDependencies(Boolean dependencies) {
         this.dependencies = dependencies;
     }
@@ -60,7 +63,19 @@ public class Build {
         return automated;
     }
 
+    @JsonbProperty("automated")
     public void setAutomated(Boolean automated) {
         this.automated = automated;
     }
+    
+    @JsonbProperty("automated")
+    public Boolean getUnix() {
+        return automated;
+    }
+
+    @JsonbProperty("unix")
+    public void setUnix(Boolean unix) {
+        this.unix = unix;
+    }
+
 }

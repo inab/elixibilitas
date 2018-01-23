@@ -38,10 +38,11 @@ public class IssueTracking {
     private Duration resolveTime;
 
     @JsonbProperty("public_tracker")
-    public Boolean isPublicTracker() {
+    public Boolean getPublicTracker() {
         return publicTracker;
     }
 
+    @JsonbProperty("public_tracker")
     public void setPublicTracker(Boolean publicTracker) {
         this.publicTracker = publicTracker;
     }
@@ -51,6 +52,7 @@ public class IssueTracking {
         return resolveTime;
     }
 
+    @JsonbProperty("resolve_time")
     public void setResolveTime(Duration resolveTime) {
         this.resolveTime = resolveTime;
     }

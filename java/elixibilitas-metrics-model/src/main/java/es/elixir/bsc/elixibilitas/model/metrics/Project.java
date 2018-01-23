@@ -48,6 +48,7 @@ public class Project {
         return identity;
     }
 
+    @JsonbProperty("identity")
     public void setIdentity(Identity identity) {
         this.identity = identity;
     }
@@ -57,6 +58,7 @@ public class Project {
         return summary;
     }
 
+    @JsonbProperty("summary")
     public void setSummary(Summary summary) {
         this.summary = summary;
     }
@@ -66,6 +68,7 @@ public class Project {
         return website;
     }
 
+    @JsonbProperty("website")
     public void setWebsite(Website website) {
         this.website = website;
     }
@@ -75,6 +78,7 @@ public class Project {
         return build;
     }
 
+    @JsonbProperty("build")
     public void setBuild(Build build) {
         this.build = build;
     }
@@ -84,6 +88,7 @@ public class Project {
         return deployment;
     }
 
+    @JsonbProperty("deployment")
     public void setDeployment(Deployment deployment) {
         this.deployment = deployment;
     }
@@ -93,6 +98,7 @@ public class Project {
         return license;
     }
 
+    @JsonbProperty("license")
     public void setLicense(License license) {
         this.license = license;
     }
@@ -102,6 +108,7 @@ public class Project {
         return documentation;
     }
 
+    @JsonbProperty("documentation")
     public void setDocumentation(Documentation documentation) {
         this.documentation = documentation;
     }
@@ -111,6 +118,7 @@ public class Project {
         return publications;
     }
 
+    @JsonbProperty("publications")
     public void setPublications(Integer publications) {
         this.publications = publications;
     }
@@ -120,6 +128,7 @@ public class Project {
         return readme;
     }
 
+    @JsonbProperty("readme")
     public void setReadme(Boolean readme) {
         this.readme = readme;
     }

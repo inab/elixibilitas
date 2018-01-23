@@ -30,6 +30,7 @@ import javax.json.bind.annotation.JsonbProperty;
 /**
  * @author Dmitry Repchevsky
  */
+
 public class Summary {
     private Boolean brief;
     private Boolean description;
@@ -44,6 +45,7 @@ public class Summary {
         return brief;
     }
 
+    @JsonbProperty("brief")
     public void setBrief(Boolean brief) {
         this.brief = brief;
     }
@@ -53,6 +55,7 @@ public class Summary {
         return description;
     }
 
+    @JsonbProperty("description")
     public void setDescription(Boolean description) {
         this.description = description;
     }
@@ -62,6 +65,7 @@ public class Summary {
         return concept;
     }
 
+    @JsonbProperty("concept")
     public void setConcept(Boolean concept) {
         this.concept = concept;
     }
@@ -71,6 +75,7 @@ public class Summary {
         return rationale;
     }
 
+    @JsonbProperty("rationale")
     public void setRationale(Boolean rationale) {
         this.rationale = rationale;
     }
@@ -80,6 +85,7 @@ public class Summary {
         return architecture;
     }
 
+    @JsonbProperty("architecture")
     public void setArchitecture(Boolean architecture) {
         this.architecture = architecture;
     }
@@ -89,6 +95,7 @@ public class Summary {
         return usecases;
     }
 
+    @JsonbProperty("usecases")
     public void setUsecases(Boolean usecases) {
         this.usecases = usecases;
     }
@@ -98,6 +105,7 @@ public class Summary {
         return caseStudies;
     }
 
+    @JsonbProperty("case_studies")
     public void setCaseStudies(Boolean caseStudies) {
         this.caseStudies = caseStudies;
     }

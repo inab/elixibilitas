@@ -41,6 +41,7 @@ public class License {
         return openSource;
     }
 
+    @JsonbProperty("open_source")
     public void setOpenSource(Boolean openSource) {
         this.openSource = openSource;
     }
@@ -50,6 +51,7 @@ public class License {
         return osi;
     }
 
+    @JsonbProperty("osi")
     public void setOsi(Boolean osi) {
         this.osi = osi;
     }

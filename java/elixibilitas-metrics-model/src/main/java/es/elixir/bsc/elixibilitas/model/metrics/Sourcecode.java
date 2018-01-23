@@ -33,6 +33,7 @@ import javax.json.bind.annotation.JsonbProperty;
 
 public class Sourcecode {
 
+    private Boolean interpreted;
     private Boolean copyright;
     private Boolean license;
     private Boolean headers;
@@ -41,11 +42,22 @@ public class Sourcecode {
     private Boolean publicAccess;
     private Repository repository;
     
+    @JsonbProperty("interpreted")
+    public Boolean getInterpreted() {
+        return interpreted;
+    }
+
+    @JsonbProperty("interpreted")
+    public void setInterpreted(Boolean interpreted) {
+        this.interpreted = interpreted;
+    }
+
     @JsonbProperty("copyright")
     public Boolean getCopyright() {
         return copyright;
     }
 
+    @JsonbProperty("copyright")
     public void setCopyright(Boolean copyright) {
         this.copyright = copyright;
     }
@@ -55,6 +67,7 @@ public class Sourcecode {
         return license;
     }
 
+    @JsonbProperty("license")
     public void setLicense(Boolean license) {
         this.license = license;
     }
@@ -74,6 +87,7 @@ public class Sourcecode {
         return readme;
     }
 
+    @JsonbProperty("readme")
     public void setReadme(Boolean readme) {
         this.readme = readme;
     }
@@ -83,6 +97,7 @@ public class Sourcecode {
         return free;
     }
 
+    @JsonbProperty("free")
     public void setFree(Boolean free) {
         this.free = free;
     }
@@ -102,6 +117,7 @@ public class Sourcecode {
         return repository;
     }
 
+    @JsonbProperty("repository")
     public void setRepository(Repository repository) {
         this.repository = repository;
     }

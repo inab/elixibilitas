@@ -44,6 +44,7 @@ public class Distribution {
         return readme;
     }
 
+    @JsonbProperty("readme")
     public void setReadme(Boolean readme) {
         this.readme = readme;
     }
@@ -53,6 +54,7 @@ public class Distribution {
         return binaries;
     }
 
+    @JsonbProperty("binaries")
     public void setBinaries(Binaries binaries) {
         this.binaries = binaries;
     }
@@ -62,6 +64,7 @@ public class Distribution {
         return sourcecode;
     }
 
+    @JsonbProperty("sourcecode")
     public void setSourcecode(Sourcecode sourcecode) {
         this.sourcecode = sourcecode;
     }
@@ -71,6 +74,7 @@ public class Distribution {
         return vre;
     }
 
+    @JsonbProperty("vre")
     public void setVRE(Boolean vre) {
         this.vre = vre;
     }
@@ -80,6 +84,7 @@ public class Distribution {
         return packages;
     }
 
+    @JsonbProperty("packages")
     public void setBinaryPackages(Boolean packages) {
         this.packages = packages;
     }

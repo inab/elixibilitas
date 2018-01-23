@@ -45,6 +45,7 @@ public class Metrics {
         return timestamp;
     }
 
+    @JsonbProperty("@timestamp")
     public void setTimestamp(ZonedDateTime timestamp) {
         this.timestamp = timestamp;
     }
@@ -54,6 +55,7 @@ public class Metrics {
         return project;
     }
 
+    @JsonbProperty("project")
     public void setProject(Project project) {
         this.project = project;
     }
@@ -63,6 +65,7 @@ public class Metrics {
         return distribution;
     }
 
+    @JsonbProperty("distribution")
     public void setDistribution(Distribution distribution) {
         this.distribution = distribution;
     }
@@ -72,6 +75,7 @@ public class Metrics {
         return support;
     }
 
+    @JsonbProperty("support")
     public void setSupport(Support support) {
         this.support = support;
     }

@@ -44,6 +44,7 @@ public class Documentation {
         return api;
     }
 
+    @JsonbProperty("api")
     public void setAPI(Boolean api) {
         this.api = api;
     }
@@ -53,6 +54,7 @@ public class Documentation {
         return apiVersioned;
     }
 
+    @JsonbProperty("api_versioned")
     public void setAPIVersioned(Boolean apiVersioned) {
         this.apiVersioned = apiVersioned;
     }
@@ -62,6 +64,7 @@ public class Documentation {
         return howto;
     }
 
+    @JsonbProperty("howto")
     public void setHowTo(Boolean howto) {
         this.howto = howto;
     }
@@ -71,6 +74,7 @@ public class Documentation {
         return tutorial;
     }
 
+    @JsonbProperty("tutorial")
     public void setTutorial(Boolean tutorial) {
         this.tutorial = tutorial;
     }
@@ -80,6 +84,7 @@ public class Documentation {
         return citation;
     }
 
+    @JsonbProperty("citation")
     public void setCitationInstructions(Boolean citation) {
         this.citation = citation;
     }

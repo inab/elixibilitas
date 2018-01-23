@@ -41,6 +41,7 @@ public class Support {
         return email;
     }
 
+    @JsonbProperty("email")
     public void setEmail(Boolean email) {
         this.email = email;
     }
@@ -50,6 +51,7 @@ public class Support {
         return issueTracking;
     }
 
+    @JsonbProperty("issue_tracking")
     public void setIssueTracking(IssueTracking issueTracking) {
         this.issueTracking = issueTracking;
     }

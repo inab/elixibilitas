@@ -44,6 +44,7 @@ public class Identity {
         return domain;
     }
 
+    @JsonbProperty("domain")
     public void setDomain(Boolean domain) {
         this.domain = domain;
     }
@@ -53,6 +54,7 @@ public class Identity {
         return logo;
     }
 
+    @JsonbProperty("logo")
     public void setLogo(Boolean logo) {
         this.logo = logo;
     }
@@ -62,6 +64,7 @@ public class Identity {
         return recognizability;
     }
 
+    @JsonbProperty("recognizability")
     public void setRecognizability(Boolean recognizability) {
         this.recognizability = recognizability;
     }
@@ -71,6 +74,7 @@ public class Identity {
         return uniqueness;
     }
 
+    @JsonbProperty("uniqueness")
     public void setUniqueness(Boolean uniqueness) {
         this.uniqueness = uniqueness;
     }
@@ -80,6 +84,7 @@ public class Identity {
         return trademark;
     }
 
+    @JsonbProperty("trademark")
     public void setTrademark(Boolean trademark) {
         this.trademark = trademark;
     }

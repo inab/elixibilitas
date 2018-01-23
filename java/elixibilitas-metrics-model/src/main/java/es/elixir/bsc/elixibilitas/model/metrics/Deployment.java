@@ -40,6 +40,7 @@ public class Deployment {
         return instructions;
     }
 
+    @JsonbProperty("instructions")
     public void setInstructions(Boolean instructions) {
         this.instructions = instructions;
     }
@@ -49,6 +50,7 @@ public class Deployment {
         return dependencies;
     }
 
+    @JsonbProperty("dependencies")
     public void setDependencies(Boolean dependencies) {
         this.dependencies = dependencies;
     }
