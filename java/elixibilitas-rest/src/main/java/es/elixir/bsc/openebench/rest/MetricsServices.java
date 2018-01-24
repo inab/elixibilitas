@@ -164,7 +164,7 @@ public class MetricsServices {
 
     private ResponseBuilder getMetricsAsync(String id, String path) {
         final String json = metricsDAO.getJSON(id);
-        if (json == null) {
+        if (json == null || json.isEmpty()) {
             return Response.status(Response.Status.NOT_FOUND);
         }
         if (path != null && path.length() > 0) {

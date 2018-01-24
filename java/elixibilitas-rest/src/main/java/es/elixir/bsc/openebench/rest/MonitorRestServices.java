@@ -29,6 +29,7 @@ import com.mongodb.MongoClient;
 import com.mongodb.MongoClientURI;
 import es.elixir.bsc.elixibilitas.dao.MetricsDAO;
 import es.elixir.bsc.elixibilitas.dao.ToolsDAO;
+import es.elixir.bsc.openebench.checker.MetricsChecker;
 import io.swagger.v3.oas.annotations.OpenAPIDefinition;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.info.Contact;
@@ -41,14 +42,20 @@ import io.swagger.v3.oas.annotations.servers.Server;
 import java.io.BufferedWriter;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
+import java.io.StringReader;
 import java.io.Writer;
 import java.util.List;
+import java.util.Map;
 import javax.annotation.PostConstruct;
 import javax.annotation.Resource;
 import javax.enterprise.concurrent.ManagedExecutorService;
 import javax.inject.Inject;
 import javax.json.Json;
 import javax.json.JsonObjectBuilder;
+import javax.json.JsonPointer;
+import javax.json.JsonStructure;
+import javax.json.JsonValue;
+import javax.json.JsonWriter;
 import javax.servlet.ServletContext;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
@@ -97,6 +104,8 @@ public class MonitorRestServices {
     private ToolsDAO toolsDAO;
     private MetricsDAO metricsDAO;
     
+    private Map<String, MetricsChecker> checkers;
+    
     @PostConstruct
     public void init() {
         
@@ -107,6 +116,8 @@ public class MonitorRestServices {
         
         toolsDAO = new ToolsDAO(mc.getDatabase(mongodbURI.getDatabase()), toolsBaseURI);
         metricsDAO = new MetricsDAO(mc.getDatabase(mongodbURI.getDatabase()), metricsBaseURI);
+        
+        checkers = MetricsChecker.checkers();
     }
 
     @GET
@@ -153,6 +164,50 @@ public class MonitorRestServices {
     }
 
     @GET
+    @Path("/metrics/{id}/{type}/{host}{path:.*}")
+    @Produces(MediaType.APPLICATION_JSON)
+    public void metrics(@PathParam("id") String id,
+                        @PathParam("type") String type,
+                        @PathParam("host") String host,
+                        @PathParam("path") String path,
+                        @Suspended final AsyncResponse asyncResponse) {
+        
+        if (path == null || path.isEmpty()) {
+            asyncResponse.resume(Response.status(Response.Status.BAD_REQUEST).build());
+        }
+        
+        executor.submit(() -> {
+            asyncResponse.resume(getMetricsAsync(id + '/' + type + '/' + host, path).build());
+        });
+    }
+    
+    private Response.ResponseBuilder getMetricsAsync(String id, String path) {        
+        final MetricsChecker checker = checkers.get(path);
+        if (checker == null) {
+            return Response.status(Response.Status.NOT_FOUND);
+        }
+        
+        final String json = toolsDAO.getJSON(id);
+        if (json == null || json.isEmpty()) {
+            return Response.status(Response.Status.NOT_FOUND);
+        }
+
+        final JsonPointer pointer = Json.createPointer(checker.getToolPath());
+        final JsonStructure structure = Json.createReader(new StringReader(json)).read();
+        if (!pointer.containsValue(structure)) {
+            return Response.status(Response.Status.NOT_FOUND);
+        }
+        final JsonValue value = pointer.getValue(structure);
+        StreamingOutput stream = (OutputStream out) -> {
+            try (JsonWriter writer = Json.createWriter(out)) {
+                writer.write(value);
+            }
+        };
+        return Response.ok(stream);
+
+    }
+
+    @GET
     @Path("/aggregate")
     @Produces(MediaType.APPLICATION_JSON)
     @Operation(summary = "Returns all tools descriptions.",
@@ -193,7 +248,7 @@ public class MonitorRestServices {
                 
         return Response.ok(stream);
     }
-    
+
     @GET
     @Path("/statistics/")
     @Produces(MediaType.APPLICATION_JSON)
