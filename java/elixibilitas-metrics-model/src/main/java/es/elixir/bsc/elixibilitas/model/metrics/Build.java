@@ -68,9 +68,9 @@ public class Build {
         this.automated = automated;
     }
     
-    @JsonbProperty("automated")
+    @JsonbProperty("unix")
     public Boolean getUnix() {
-        return automated;
+        return unix;
     }
 
     @JsonbProperty("unix")
