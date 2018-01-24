@@ -40,6 +40,16 @@ import es.elixir.bsc.openebench.checker.MetricsChecker;
 public class APIDocumentationChecker implements MetricsChecker {
     
     @Override
+    public String getToolPath() {
+        return "/documentation/api";
+    }
+    
+    @Override
+    public String getMetricsPath() {
+        return "/project/documentation/api";
+    }
+    
+    @Override
     public Boolean check(Tool tool, Metrics metrics) {
         Boolean bool = check(tool);
         Project project = metrics.getProject();

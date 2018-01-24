@@ -44,7 +44,17 @@ public class PublicationChecker implements MetricsChecker {
     private final static URI DOI_RESOLVER_URI = URI.create("https://doi.org/");
     private final static URI PMID_RESOLVER_URI = URI.create("https://www.ncbi.nlm.nih.gov/pubmed/");
     private final static URI PMCID_RESOLVER_URI = URI.create("https://www.ncbi.nlm.nih.gov/pmc/articles/");
-        
+      
+    @Override
+    public String getToolPath() {
+        return "/publications";
+    }
+    
+    @Override
+    public String getMetricsPath() {
+        return "/project/publications";
+    }
+
     @Override
     public Boolean check(Tool tool, Metrics metrics) {
         
@@ -59,9 +69,8 @@ public class PublicationChecker implements MetricsChecker {
         if (project != null) {
             project.setPublications(n);
         } else if (n != null) {
-            project = new Project();
+            metrics.setProject(project = new Project());
             project.setPublications(n);
-            metrics.setProject(project);
         }
 
         return n == null ? null : n > 0;

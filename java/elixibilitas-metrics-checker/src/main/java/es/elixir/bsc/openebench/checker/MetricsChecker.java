@@ -28,14 +28,40 @@ package es.elixir.bsc.openebench.checker;
 import es.elixir.bsc.elixibilitas.model.metrics.Metrics;
 import es.elixir.bsc.openebench.model.tools.Tool;
 import java.util.Iterator;
+import java.util.Map;
 import java.util.ServiceLoader;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * @author Dmitry Repchevsky
  */
 
 public interface MetricsChecker {
+    /**
+     * Sets the metrics value for the tool.
+     * 
+     * @param tool the tool for which metrics is calculated.
+     * @param metrics metrics object to set the metrics
+     * 
+     * @return calculated metrics value
+     */
     Boolean check(Tool tool, Metrics metrics);
+    
+    String getToolPath();
+    String getMetricsPath();
+
+    public static Map<String, MetricsChecker> checkers() {
+        Map<String, MetricsChecker> checkers = new ConcurrentHashMap<>();
+        
+        ServiceLoader<MetricsChecker> loader = ServiceLoader.load(MetricsChecker.class);
+        Iterator<MetricsChecker> iterator = loader.iterator();
+        while(iterator.hasNext()) {
+            MetricsChecker checker = iterator.next();
+            checkers.put(checker.getMetricsPath(), checker);
+        }
+        
+        return checkers;
+    }
     
     public static void checkAll(Tool tool, Metrics metrics) {
         ServiceLoader<MetricsChecker> loader = ServiceLoader.load(MetricsChecker.class);

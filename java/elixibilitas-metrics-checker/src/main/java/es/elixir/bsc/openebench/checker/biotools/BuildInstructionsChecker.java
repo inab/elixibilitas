@@ -36,6 +36,17 @@ import es.elixir.bsc.openebench.model.tools.Tool;
  */
 
 public class BuildInstructionsChecker implements MetricsChecker {
+    
+    @Override
+    public String getToolPath() {
+        return "/documentation/build_instructions";
+    }
+    
+    @Override
+    public String getMetricsPath() {
+        return "/project/documentation/howto";
+    }
+
     @Override
     public Boolean check(Tool tool, Metrics metrics) {
         Boolean bool = check(tool);

@@ -38,6 +38,16 @@ import es.elixir.bsc.openebench.checker.MetricsChecker;
 public class IssueTrackerChecker implements MetricsChecker {
 
     @Override
+    public String getToolPath() {
+        return "/support/issue_tracker";
+    }
+    
+    @Override
+    public String getMetricsPath() {
+        return "/support/issue_tracker";
+    }
+
+    @Override
     public Boolean check(Tool tool, Metrics metrics) {
         
         Boolean bool = check(tool);

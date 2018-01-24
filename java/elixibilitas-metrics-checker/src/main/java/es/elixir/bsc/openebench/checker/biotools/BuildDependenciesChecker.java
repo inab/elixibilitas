@@ -39,6 +39,17 @@ import java.util.List;
  */
 
 public class BuildDependenciesChecker implements MetricsChecker {
+    
+    @Override
+    public String getToolPath() {
+        return "/dependencies";
+    }
+    
+    @Override
+    public String getMetricsPath() {
+        return "/project/build/dependencies";
+    }
+
     @Override
     public Boolean check(Tool tool, Metrics metrics) {
         Boolean bool = check(tool);

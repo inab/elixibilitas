@@ -41,6 +41,16 @@ import java.util.Set;
 
 public class LicenseChecker implements MetricsChecker {
 
+    @Override
+    public String getToolPath() {
+        return "/license";
+    }
+    
+    @Override
+    public String getMetricsPath() {
+        return "/project/license";
+    }
+
     private final static Set<String> OPEN = Collections.unmodifiableSet(new HashSet<String>(
             Arrays.asList("0BSD", "AAL", "ADSL", "AFL-1.1", "AFL-1.2", "AFL-2.0",
                     "AFL-2.1", "AFL-3.0", "AGPL-1.0", "AGPL-3.0", "AMDPLPA", "AML", 

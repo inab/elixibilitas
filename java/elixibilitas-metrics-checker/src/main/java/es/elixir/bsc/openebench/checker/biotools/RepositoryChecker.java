@@ -16,6 +16,16 @@ import java.util.List;
 public class RepositoryChecker implements MetricsChecker {
 
     @Override
+    public String getToolPath() {
+        return "/repositories";
+    }
+    
+    @Override
+    public String getMetricsPath() {
+        return "/distribution/sourcecode/repository/";
+    }
+
+    @Override
     public Boolean check(Tool tool, Metrics metrics) {
         
         Boolean bool = check(tool);

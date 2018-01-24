@@ -39,6 +39,16 @@ import java.util.List;
 public class EmailChecker implements MetricsChecker {
 
     @Override
+    public String getToolPath() {
+        return "/contacts";
+    }
+    
+    @Override
+    public String getMetricsPath() {
+        return "/project/summary/description";
+    }
+
+    @Override
     public Boolean check(Tool tool, Metrics metrics) {
         Boolean bool = check(tool);
         Support support = metrics.getSupport();

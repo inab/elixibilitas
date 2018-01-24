@@ -13,6 +13,16 @@ import es.elixir.bsc.openebench.checker.MetricsChecker;
 public class DescriptionChecker implements MetricsChecker {
 
     @Override
+    public String getToolPath() {
+        return "/description";
+    }
+    
+    @Override
+    public String getMetricsPath() {
+        return "/project/summary/description";
+    }
+
+    @Override
     public Boolean check(Tool tool, Metrics metrics) {
         Boolean bool = check(tool);
         

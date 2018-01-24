@@ -39,6 +39,16 @@ import java.util.List;
 public class PackageDistributionChecker implements MetricsChecker {
 
     @Override
+    public String getToolPath() {
+        return "/distributions/binary_packages";
+    }
+    
+    @Override
+    public String getMetricsPath() {
+        return "/distribution/packages";
+    }
+
+    @Override
     public Boolean check(Tool tool, Metrics metrics) {
         Boolean bool = check(tool);
         if (Boolean.TRUE.equals(bool)) {

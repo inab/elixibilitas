@@ -39,6 +39,17 @@ import java.util.List;
  */
 
 public class RuntimeDependenciesChecker implements MetricsChecker {
+    
+    @Override
+    public String getToolPath() {
+        return "/dependencies/runtime";
+    }
+    
+    @Override
+    public String getMetricsPath() {
+        return "/project/deployment/dependencies/";
+    }
+
     @Override
     public Boolean check(Tool tool, Metrics metrics) {
         Boolean bool = check(tool);

@@ -62,6 +62,16 @@ public class HomepageChecker implements MetricsChecker {
     
     private final static X509TrustManager TM;
 
+    @Override
+    public String getToolPath() {
+        return "/homepage";
+    }
+    
+    @Override
+    public String getMetricsPath() {
+        return "/project/website";
+    }
+    
     static {
         X509TrustManager tmp = null;
         try {

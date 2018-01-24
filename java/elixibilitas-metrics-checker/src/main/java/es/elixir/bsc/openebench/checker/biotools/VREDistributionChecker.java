@@ -39,13 +39,22 @@ import java.util.List;
 public class VREDistributionChecker implements MetricsChecker {
 
     @Override
+    public String getToolPath() {
+        return "/distributions/vre";
+    }
+    
+    @Override
+    public String getMetricsPath() {
+        return "/distribution/vre";
+    }
+
+    @Override
     public Boolean check(Tool tool, Metrics metrics) {
         Boolean bool = check(tool);
         if (Boolean.TRUE.equals(bool)) {
             Distribution distribution = metrics.getDistribution();
             if (distribution == null) {
                 metrics.setDistribution(distribution = new Distribution());
-                distribution.setVRE(bool);
             }
             distribution.setVRE(bool);
         }
@@ -57,7 +66,7 @@ public class VREDistributionChecker implements MetricsChecker {
         es.elixir.bsc.openebench.model.tools.Distributions distributions = tool.getDistributions();
         if (distributions != null) {
             final List<URI> vres = distributions.getVirtualResearchEnvironment();
-            return !vres.isEmpty();
+            return vres != null && !vres.isEmpty();
         }
         return false;
     }

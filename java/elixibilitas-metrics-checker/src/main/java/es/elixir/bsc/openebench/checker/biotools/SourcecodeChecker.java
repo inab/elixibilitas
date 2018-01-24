@@ -40,13 +40,22 @@ import java.util.List;
 public class SourcecodeChecker implements MetricsChecker {
 
     @Override
+    public String getToolPath() {
+        return "/distributions/sourcecode";
+    }
+    
+    @Override
+    public String getMetricsPath() {
+        return "/distribution/sourcecode";
+    }
+
+    @Override
     public Boolean check(Tool tool, Metrics metrics) {
         Boolean bool = check(tool);
         if (Boolean.TRUE.equals(bool)) {
             Distribution distribution = metrics.getDistribution();
             if (distribution == null) {
-                distribution = new Distribution();
-                metrics.setDistribution(distribution);
+                metrics.setDistribution(distribution = new Distribution());
                 distribution.setSourcecode(new Sourcecode());
             } else if (distribution.getSourcecode() == null) {
                 distribution.setSourcecode(new Sourcecode());
@@ -60,9 +69,7 @@ public class SourcecodeChecker implements MetricsChecker {
         final es.elixir.bsc.openebench.model.tools.Distributions distributions = tool.getDistributions();
         if (distributions != null) {
             final List<URI> sources = distributions.getSourcecodeDistributions();
-            final List<URI> packages = distributions.getSourcePackagesDistributions();
-
-            return !(sources.isEmpty() && packages.isEmpty());
+            return sources != null && !sources.isEmpty();
         }
         return false;
     }

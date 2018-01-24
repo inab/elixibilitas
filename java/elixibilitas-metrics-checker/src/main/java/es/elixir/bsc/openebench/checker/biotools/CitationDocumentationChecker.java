@@ -38,6 +38,16 @@ import es.elixir.bsc.openebench.model.tools.Tool;
 public class CitationDocumentationChecker implements MetricsChecker {
     
     @Override
+    public String getToolPath() {
+        return "/documentation/citation_instructions";
+    }
+    
+    @Override
+    public String getMetricsPath() {
+        return "/project/documentation/citation";
+    }
+
+    @Override
     public Boolean check(Tool tool, Metrics metrics) {
         Boolean bool = check(tool);
         Project project = metrics.getProject();

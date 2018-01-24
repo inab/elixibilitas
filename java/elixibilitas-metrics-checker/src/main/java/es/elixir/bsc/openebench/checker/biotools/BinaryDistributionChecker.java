@@ -40,6 +40,16 @@ import java.util.List;
 public class BinaryDistributionChecker implements MetricsChecker {
 
     @Override
+    public String getToolPath() {
+        return "/distributions/binaries";
+    }
+    
+    @Override
+    public String getMetricsPath() {
+        return "/distribution/binaries";
+    }
+
+    @Override
     public Boolean check(Tool tool, Metrics metrics) {
         Boolean bool = check(tool);
         if (Boolean.TRUE.equals(bool)) {
@@ -59,9 +69,8 @@ public class BinaryDistributionChecker implements MetricsChecker {
         es.elixir.bsc.openebench.model.tools.Distributions distributions = tool.getDistributions();
         if (distributions != null) {
             List<URI> binaries = distributions.getBinaryDistributions();
-            List<URI> packages = distributions.getBinaryPackagesDistributions();
 
-            return !(binaries.isEmpty() && packages.isEmpty());
+            return binaries != null && !binaries.isEmpty();
         }
         return false;
     }
