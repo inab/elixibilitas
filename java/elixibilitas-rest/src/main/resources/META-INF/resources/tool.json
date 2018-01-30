@@ -117,6 +117,19 @@
           }
         }
       },
+      "NCitations": {
+        "type": "object",
+        "properties": {
+          "year": {
+            "description": "the year citations counted",
+            "type": "string"
+          },
+          "cited": {
+            "description": "number of citations for the year",
+            "type": "integer"
+          }
+        }
+      },
       "Publication": {
         "type": "object",
         "properties": {
@@ -128,6 +141,12 @@
           },
           "pmid": {
             "type": "string"
+          },
+          "citations": {
+            "type": "array",
+            "items": {
+              "$ref": "#/definitions/NCitations"
+            }
           }
         }
       },

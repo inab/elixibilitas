@@ -59,9 +59,11 @@
         "type": "object",
         "properties": {
           "operational": {
+            "description": "http response code from the last check",
             "type": "integer"
           },
           "last_check": {
+            "description": "last time the homepage has been checked",
             "type": "string",
             "format": "date-time"
           },
@@ -84,7 +86,7 @@
             "type": "boolean"
           },
           "ssl": {
-            "description": "web site access is secured",
+            "description": "web site access is properly secured (no property = not ssl, false = ssl troubles)",
             "type": "boolean"
           }
         }
@@ -127,9 +129,11 @@
         "type": "object",
         "properties": {
           "open_source": {
+            "description": "project has an open source license",
             "type": "boolean"
           },
           "osi": {
+            "description": "software has an Open Software Initiative (OSI)-recognised license",
             "type": "boolean"
           }
         }
@@ -138,6 +142,7 @@
         "type": "object",
         "properties": {
           "api": {
+            "description": "software has an API documentation (e.g. JavaDoc, Doxygen)",
             "type": "boolean"
           },
           "api_versioned": {
