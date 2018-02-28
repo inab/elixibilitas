@@ -319,10 +319,13 @@ public class ToolsDAO extends AbstractDAO<Document> implements Serializable {
      * @param id
      * @param skip mongodb skip parameter (aka from).
      * @param limit mongodb limit parameter (limits number of tools to be written).
-     * @param text text to search.
+     * @param text text to search either in 'name' or 'description' property.
+     * @param name text to search in the 'name' property.
+     * @param description text to search in the 'descriptino' property.
      * @param projections - properties to write or null for all.
      */
-    public void write(Writer writer, String id, Integer skip, Integer limit, String text, List<String> projections) {
+    public void write(Writer writer, String id, Integer skip, Integer limit, 
+            String text, String name, String description, List<String> projections) {
         try {
             final MongoCollection<Document> col = database.getCollection(collection);
             try (JsonWriter jwriter = new JsonWriter(writer, new JsonWriterSettings(true))) {
@@ -342,6 +345,14 @@ public class ToolsDAO extends AbstractDAO<Document> implements Serializable {
                 if (text != null && !text.isEmpty()) {
                     aggregation.add(Aggregates.match(Filters.or(Filters.regex("description", text, "i"),
                                             Filters.regex("name", text, "i"))));
+                }
+
+                if (name != null && !name.isEmpty()) {
+                    aggregation.add(Aggregates.match(Filters.regex("name", name, "i")));
+                }
+
+                if (description != null && !description.isEmpty()) {
+                    aggregation.add(Aggregates.match(Filters.regex("description", description, "i")));
                 }
                 
                 if (id != null && !id.isEmpty()) {
@@ -415,7 +426,9 @@ public class ToolsDAO extends AbstractDAO<Document> implements Serializable {
         }
     }
 
-    public void aggregate(Writer writer, String id, Integer skip, Integer limit, String text, List<String> projections) {
+    public void aggregate(Writer writer, String id, Integer skip, 
+            Integer limit, String text, String name, String description,
+            List<String> projections) {
         try {
             final MongoCollection<Document> col = database.getCollection(collection);
             try (JsonWriter jwriter = new JsonWriter(writer, new JsonWriterSettings(true))) {
@@ -436,6 +449,15 @@ public class ToolsDAO extends AbstractDAO<Document> implements Serializable {
                     aggregation.add(Aggregates.match(Filters.or(Filters.regex("description", text, "i"),
                                             Filters.regex("name", text, "i"))));
                 }
+                
+                if (name != null && !name.isEmpty()) {
+                    aggregation.add(Aggregates.match(Filters.regex("name", name, "i")));
+                }
+                
+                if (description != null && !description.isEmpty()) {
+                    aggregation.add(Aggregates.match(Filters.regex("description", description, "i")));
+                }
+
                 
                 if (id != null && !id.isEmpty()) {
                     final String[] nodes = id.split(":");

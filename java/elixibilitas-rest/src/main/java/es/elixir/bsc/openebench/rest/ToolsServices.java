@@ -164,7 +164,7 @@ public class ToolsServices {
     private ResponseBuilder getToolsAsync() {
         StreamingOutput stream = (OutputStream out) -> {
             try (Writer writer = new BufferedWriter(new OutputStreamWriter(out, "UTF-8"))) {
-                toolsDAO.write(writer, null, null, null, null, null);
+                toolsDAO.write(writer, null, null, null, null, null, null, null);
             }
         };
                 

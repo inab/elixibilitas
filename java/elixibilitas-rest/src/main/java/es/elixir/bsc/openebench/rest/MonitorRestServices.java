@@ -32,9 +32,12 @@ import es.elixir.bsc.elixibilitas.dao.ToolsDAO;
 import es.elixir.bsc.openebench.checker.MetricsChecker;
 import io.swagger.v3.oas.annotations.OpenAPIDefinition;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import static io.swagger.v3.oas.annotations.enums.ParameterIn.QUERY;
 import io.swagger.v3.oas.annotations.info.Contact;
 import io.swagger.v3.oas.annotations.info.Info;
 import io.swagger.v3.oas.annotations.info.License;
+import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -124,26 +127,38 @@ public class MonitorRestServices {
     @Path("/search")
     @Produces(MediaType.APPLICATION_JSON)
     @Operation(summary = "Returns all tools descriptions.",
+               description = "Queries the tools with a possibility to limit the response. " +
+                             "The response is grouped by ids and sorted by names.",
 //        parameters = {
-//            @Parameter(in = "query", name = "skip", description = "skip n tools", required = false),
-//            @Parameter(in = "query", name = "limit", description = "return n tools", required = false),
-//            @Parameter(in = "query", name = "projection", description = "fields to return", required = false),
-//            @Parameter(in = "query", name = "text", description = "text to search", required = false)
+//            @Parameter(in = QUERY, name = "skip", description = "skip 'n' tools"),
+//            @Parameter(in = QUERY, name = "limit", description = "return 'n' tools"),
+//            @Parameter(in = QUERY, name = "projection", description = "tools properties to return"),
+//            @Parameter(in = QUERY, name = "text", description = "text to search"),
+//            @Parameter(in = QUERY, name = "name", description = "text to search in the 'name' property"),
+//            @Parameter(in = QUERY, name = "description", description = "text to search in the 'description' property")
 //        },
 
         responses = {
             @ApiResponse(content = @Content(mediaType = MediaType.APPLICATION_JSON,
                                             schema = @Schema(ref="https://openebench.bsc.es/monitor/tool/tool.json")))
         }
+
+//        responses = {
+//            @ApiResponse(content = @Content(mediaType = MediaType.APPLICATION_JSON,
+//                                            array = @ArraySchema(
+//                                            schema = @Schema(ref="https://openebench.bsc.es/monitor/tool/tool.json"))))
+//        }
     )
     public void search(@QueryParam("id") final String id,
                        @QueryParam("skip") final Integer skip,
                        @QueryParam("limit") final Integer limit,
                        @QueryParam("projection") final List<String> projections,
                        @QueryParam("text") final String text,
-                              @Suspended final AsyncResponse asyncResponse) {
+                       @QueryParam("name") final String name,
+                       @QueryParam("description") final String description,
+                       @Suspended final AsyncResponse asyncResponse) {
         executor.submit(() -> {
-            asyncResponse.resume(searchAsync(id, skip, limit, projections, text).build());
+            asyncResponse.resume(searchAsync(id, skip, limit, projections, text, name, description));
         });
     }
     
@@ -152,11 +167,64 @@ public class MonitorRestServices {
                               final Integer skip, 
                               final Integer limit, 
                               final List<String> projections, 
-                              final String text) {
+                              final String text,
+                              final String name,
+                              final String description) {
 
         StreamingOutput stream = (OutputStream out) -> {
             try (Writer writer = new BufferedWriter(new OutputStreamWriter(out, "UTF-8"))) {
-                toolsDAO.write(writer, id, skip, limit, text, projections);
+                toolsDAO.write(writer, id, skip, limit, text, name, description, projections);
+            }
+        };
+                
+        return Response.ok(stream);
+    }
+
+    @GET
+    @Path("/aggregate")
+    @Produces(MediaType.APPLICATION_JSON)
+    @Operation(summary = "Returns all tools descriptions.",
+               description = "The same as '/search' with a difference in the output format",
+//        parameters = {
+//            @Parameter(in = QUERY, name = "skip", description = "skip 'n' tools"),
+//            @Parameter(in = QUERY, name = "limit", description = "return 'n' tools"),
+//            @Parameter(in = QUERY, name = "projection", description = "tools properties to return"),
+//            @Parameter(in = QUERY, name = "text", description = "text to search"),
+//            @Parameter(in = QUERY, name = "name", description = "text to search in the 'name' property"),
+//            @Parameter(in = QUERY, name = "description", description = "text to search in the 'description' property")
+//        },
+
+        responses = {
+            @ApiResponse(content = 
+                    @Content(mediaType = MediaType.APPLICATION_JSON,
+                             schema = @Schema(ref="https://openebench.bsc.es/monitor/tool/tool.json")))
+        }
+    )
+
+    public void aggregate(@QueryParam("id") final String id,
+                          @QueryParam("skip") final Integer skip,
+                          @QueryParam("limit") final Integer limit,
+                          @QueryParam("projection") final List<String> projections,
+                          @QueryParam("text") final String text,
+                          @QueryParam("name") final String name,
+                          @QueryParam("description") final String description,
+                          @Suspended final AsyncResponse asyncResponse) {
+        executor.submit(() -> {
+            asyncResponse.resume(aggregateAsync(id, skip, limit, projections, text, name, description).build());
+        });
+    }
+    
+    private Response.ResponseBuilder aggregateAsync(final String id, 
+                              final Integer skip, 
+                              final Integer limit, 
+                              final List<String> projections, 
+                              final String text,
+                              final String name,
+                              final String description) {
+
+        StreamingOutput stream = (OutputStream out) -> {
+            try (Writer writer = new BufferedWriter(new OutputStreamWriter(out, "UTF-8"))) {
+                toolsDAO.aggregate(writer, id, skip, limit, text, name, description, projections);
             }
         };
                 
@@ -205,48 +273,6 @@ public class MonitorRestServices {
         };
         return Response.ok(stream);
 
-    }
-
-    @GET
-    @Path("/aggregate")
-    @Produces(MediaType.APPLICATION_JSON)
-    @Operation(summary = "Returns all tools descriptions.",
-//        parameters = {
-//            @Parameter(in = "query", name = "skip", description = "skip n tools", required = false),
-//            @Parameter(in = "query", name = "limit", description = "return n tools", required = false),
-//            @Parameter(in = "query", name = "projection", description = "fields to return", required = false),
-//            @Parameter(in = "query", name = "text", description = "text to search", required = false)
-//        },
-
-        responses = {
-            @ApiResponse(content = @Content(mediaType = MediaType.APPLICATION_JSON,
-                                            schema = @Schema(ref="https://openebench.bsc.es/monitor/tool/tool.json")))
-        }
-    )
-    public void aggregate(@QueryParam("id") final String id,
-                         @QueryParam("skip") final Integer skip,
-                         @QueryParam("limit") final Integer limit,
-                         @QueryParam("projection") final List<String> projections,
-                         @QueryParam("text") final String text,
-                              @Suspended final AsyncResponse asyncResponse) {
-        executor.submit(() -> {
-            asyncResponse.resume(aggregateAsync(id, skip, limit, projections, text).build());
-        });
-    }
-    
-    private Response.ResponseBuilder aggregateAsync(final String id, 
-                              final Integer skip, 
-                              final Integer limit, 
-                              final List<String> projections, 
-                              final String text) {
-
-        StreamingOutput stream = (OutputStream out) -> {
-            try (Writer writer = new BufferedWriter(new OutputStreamWriter(out, "UTF-8"))) {
-                toolsDAO.aggregate(writer, id, skip, limit, text, projections);
-            }
-        };
-                
-        return Response.ok(stream);
     }
 
     @GET
