@@ -20,6 +20,11 @@ Modules are logically separated by their functionality:
 ###### REST API
 The REST API is based on [JAX-RS](jcp.org/en/jsr/detail?id=370) API.
 
+> Open API 3.0 (aka Swagger): [https://openebench.bsc.es/monitor/openapi.json](https://openebench.bsc.es/monitor/openapi.json)<br/>
+> Tool JSON Schema: [https://openebench.bsc.es/monitor/tool/tool.json](https://openebench.bsc.es/monitor/tool/tool.json)<br/>
+> Metrics JSON Schema: [https://openebench.bsc.es/monitor/metrics/metrics.json](https://openebench.bsc.es/monitor/metrics/metrics.json)
+<br/><br/>
+
 The API provides an access to biological tools descriptions:
 ```
 https://openebench.bsc.es/monitor/tool/{id}
@@ -35,10 +40,6 @@ where:
 
 ---
 
-> Swagger: [https://openebench.bsc.es/monitor/openapi.json](https://openebench.bsc.es/monitor/openapi.json)<br/>
-> Tool JSON Schema: [https://openebench.bsc.es/monitor/tool/tool.json](https://openebench.bsc.es/monitor/tool/tool.json)<br/>
-> Metrics JSON Schema: [https://openebench.bsc.es/monitor/metrics/metrics.json](https://openebench.bsc.es/monitor/metrics/metrics.json)
-<br/><br/>
 > Note that {id}/{type}/{host} uniquely identify the tool, while omitting the {type} or {host} returns an array of descriptions.<br/><br/>
 > example 1: [https://openebench.bsc.es/monitor/tool/bio.tools:pmut:2017/web/mmb.irbbarcelona.org](https://openebench.bsc.es/monitor/tool/bio.tools:pmut:2017/web/mmb.irbbarcelona.org) .<br/>
 > example 2: [https://openebench.bsc.es/monitor/tool/bio.tools:pmut:2017/web/mmb.irbbarcelona.org/credits](https://openebench.bsc.es/monitor/tool/bio.tools:pmut:2017/web/mmb.irbbarcelona.org/credits) .<br/>
@@ -65,6 +66,20 @@ or, what is the same:
 curl -v -X PATCH -u user:password -H 'Content-Type: application/json' /
 https://openebench.bsc.es/monitor/metrics/{id} -d '{"support": {"email": true}}'
 ```
+---
+It is possible to query tools:
+```
+https://openebench.bsc.es/monitor/rest/search?id={id}&{skip}&{limit}&{projection}&{text}&{name}&{description}
+```
+where:
+- {id} is the compound tool id (i.e. "pmut", "bio.tools:pmut", ":pmut:2017")
+- {skip} skip 'n' tools
+- {limit} return 'n' tools
+- {projection} tools properties to return
+- {text} text to search
+> example 1: [https://openebench.bsc.es/monitor/rest/search?id=pmut](https://openebench.bsc.es/monitor/rest/search?id=pmut) .<br/>
+
+---
 
 The API also provides EDAM descriptions for the tool:
 ```
