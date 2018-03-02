@@ -77,7 +77,10 @@ where:
 - {limit} return 'n' tools
 - {projection} tools properties to return
 - {text} text to search
-> example 1: [https://openebench.bsc.es/monitor/rest/search?id=pmut](https://openebench.bsc.es/monitor/rest/search?id=pmut) .<br/>
+> The method is thought for the client's GUI that may use pagination mechanism. The results are grouped by the id and sorted by names.<br/>
+> example 1: [https://openebench.bsc.es/monitor/rest/search](https://openebench.bsc.es/monitor/rest/search) .<br/>
+> example 2: [https://openebench.bsc.es/monitor/rest/search?id=pmut](https://openebench.bsc.es/monitor/rest/search?id=pmut) .<br/>
+> example 3: [https://openebench.bsc.es/monitor/rest/search?text=alignment](https://openebench.bsc.es/monitor/rest/search?text=alignment) .<br/>
 
 ---
 
