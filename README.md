@@ -69,15 +69,17 @@ https://openebench.bsc.es/monitor/metrics/{id} -d '{"support": {"email": true}}'
 ---
 It is possible to query tools:
 ```
-https://openebench.bsc.es/monitor/rest/search?id={id}&{skip}&{limit}&{projection}&{text}&{name}&{description}
+https://openebench.bsc.es/monitor/rest/search?id={id}&{projection}&{text}&{name}&{description}
 ```
 where:
 - {id} is the compound tool id (i.e. "pmut", "bio.tools:pmut", ":pmut:2017")
-- {skip} skip 'n' tools
-- {limit} return 'n' tools
 - {projection} tools properties to return
 - {text} text to search
-> The method is thought for the client's GUI that may use pagination mechanism. The results are grouped by the id and sorted by names.<br/>
+> The method is thought for the client's GUI that may use a pagination mechanism.<br/>
+> The pagination is implemented via the HTTP Range Header (i.g. "Range: items=10-30").<br/>
+> The response always contains the HTTP Content-Range Header ("Content-Range: items 10-30/10000").<br/>
+> When pagination is used, the server seponds with 206 Partial Content.<br/>
+> The results are grouped by the id and sorted by names.<br/>
 > example 1: [https://openebench.bsc.es/monitor/rest/search](https://openebench.bsc.es/monitor/rest/search) .<br/>
 > example 2: [https://openebench.bsc.es/monitor/rest/search?id=pmut](https://openebench.bsc.es/monitor/rest/search?id=pmut) .<br/>
 > example 3: [https://openebench.bsc.es/monitor/rest/search?text=alignment](https://openebench.bsc.es/monitor/rest/search?text=alignment) .<br/>
