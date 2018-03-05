@@ -50,6 +50,7 @@ public class OpenEBenchMonitorApplication extends Application {
         resources.add(MonitorRestServices.class);
         resources.add(CorsResponseFilter.class);
         resources.add(JSONContentTypeFilter.class);
+        resources.add(PublicationsService.class);
         
         return resources;
     }

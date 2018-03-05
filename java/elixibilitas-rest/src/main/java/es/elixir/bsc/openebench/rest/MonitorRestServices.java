@@ -30,14 +30,13 @@ import com.mongodb.MongoClientURI;
 import es.elixir.bsc.elixibilitas.dao.MetricsDAO;
 import es.elixir.bsc.elixibilitas.dao.ToolsDAO;
 import es.elixir.bsc.openebench.checker.MetricsChecker;
+import es.elixir.bsc.openebench.rest.ext.ContentRange;
+import es.elixir.bsc.openebench.rest.ext.Range;
 import io.swagger.v3.oas.annotations.OpenAPIDefinition;
 import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.Parameter;
-import static io.swagger.v3.oas.annotations.enums.ParameterIn.QUERY;
 import io.swagger.v3.oas.annotations.info.Contact;
 import io.swagger.v3.oas.annotations.info.Info;
 import io.swagger.v3.oas.annotations.info.License;
-import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -61,15 +60,18 @@ import javax.json.JsonValue;
 import javax.json.JsonWriter;
 import javax.servlet.ServletContext;
 import javax.ws.rs.GET;
+import javax.ws.rs.HEAD;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
+import javax.ws.rs.HeaderParam;
 import javax.ws.rs.container.AsyncResponse;
 import javax.ws.rs.container.Suspended;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import javax.ws.rs.core.Response.ResponseBuilder;
 import javax.ws.rs.core.StreamingOutput;
 import javax.ws.rs.core.UriBuilder;
 import javax.ws.rs.core.UriInfo;
@@ -149,37 +151,53 @@ public class MonitorRestServices {
 //                                            schema = @Schema(ref="https://openebench.bsc.es/monitor/tool/tool.json"))))
 //        }
     )
-    public void search(@QueryParam("id") final String id,
-                       @QueryParam("skip") final Integer skip,
-                       @QueryParam("limit") final Integer limit,
+    public void search(@HeaderParam("Range") final Range range,
+                       @QueryParam("id") final String id,
                        @QueryParam("projection") final List<String> projections,
                        @QueryParam("text") final String text,
                        @QueryParam("name") final String name,
                        @QueryParam("description") final String description,
                        @Suspended final AsyncResponse asyncResponse) {
         executor.submit(() -> {
-            asyncResponse.resume(searchAsync(id, skip, limit, projections, text, name, description));
+            asyncResponse.resume(searchAsync(id, range != null ? range.getFirstPos() :  null, 
+                    range != null ? range.getLastPos() : null,
+                    projections, text, name, description).build());
         });
     }
     
     private Response.ResponseBuilder searchAsync(
                               final String id,
-                              final Integer skip, 
-                              final Integer limit, 
+                              final Integer from, 
+                              final Integer to, 
                               final List<String> projections, 
                               final String text,
                               final String name,
                               final String description) {
 
         StreamingOutput stream = (OutputStream out) -> {
+
+            final Integer skip;
+            if (from == null || to == null) {
+                skip = to;
+            } else {
+                skip = to - from;
+            }
+
             try (Writer writer = new BufferedWriter(new OutputStreamWriter(out, "UTF-8"))) {
-                toolsDAO.write(writer, id, skip, limit, text, name, description, projections);
+                toolsDAO.write(writer, id, from, skip, text, name, description, projections);
             }
         };
-                
-        return Response.ok(stream);
-    }
 
+        final int count = toolsDAO.search_count(id, text, name, description);
+        
+        final ContentRange range = new ContentRange("items", from, to, count);
+        
+        ResponseBuilder response = from == null && to == null 
+                ? Response.ok() : Response.status(Response.Status.PARTIAL_CONTENT);
+        
+        return response.header("Accept-Ranges", "items").header("Content-Range", range.toString()).entity(stream);
+    }
+    
     @GET
     @Path("/aggregate")
     @Produces(MediaType.APPLICATION_JSON)
@@ -201,7 +219,8 @@ public class MonitorRestServices {
         }
     )
 
-    public void aggregate(@QueryParam("id") final String id,
+    public void aggregate(@HeaderParam("Range") final Range range,
+                          @QueryParam("id") final String id,
                           @QueryParam("skip") final Integer skip,
                           @QueryParam("limit") final Integer limit,
                           @QueryParam("projection") final List<String> projections,
@@ -210,25 +229,47 @@ public class MonitorRestServices {
                           @QueryParam("description") final String description,
                           @Suspended final AsyncResponse asyncResponse) {
         executor.submit(() -> {
-            asyncResponse.resume(aggregateAsync(id, skip, limit, projections, text, name, description).build());
+            if (range != null) {
+                asyncResponse.resume(aggregateAsync(id, range.getFirstPos(), range.getLastPos(), projections, text, name, description).build());
+            } else {
+                final Integer from = skip;
+                Integer to = limit;
+                if (from != null && to != null) {
+                    to += limit;
+                }
+                
+                asyncResponse.resume(aggregateAsync(id, from, to, projections, text, name, description).build());
+            }
         });
     }
     
     private Response.ResponseBuilder aggregateAsync(final String id, 
-                              final Integer skip, 
-                              final Integer limit, 
+                              final Integer from, 
+                              final Integer to, 
                               final List<String> projections, 
                               final String text,
                               final String name,
                               final String description) {
 
         StreamingOutput stream = (OutputStream out) -> {
+            final Integer skip;
+            if (from == null || to == null) {
+                skip = to;
+            } else {
+                skip = to - from;
+            }
             try (Writer writer = new BufferedWriter(new OutputStreamWriter(out, "UTF-8"))) {
-                toolsDAO.aggregate(writer, id, skip, limit, text, name, description, projections);
+                toolsDAO.aggregate(writer, id, from, skip, text, name, description, projections);
             }
         };
-                
-        return Response.ok(stream);
+        final int count = toolsDAO.aggregate_count(id, text, name, description);
+        
+        final ContentRange range = new ContentRange("items", from, to, count);
+        
+        ResponseBuilder response = from == null && to == null 
+                ? Response.ok() : Response.status(Response.Status.PARTIAL_CONTENT);
+        
+        return response.header("Accept-Ranges", "items").header("Content-Range", range.toString()).entity(stream);
     }
 
     @GET
