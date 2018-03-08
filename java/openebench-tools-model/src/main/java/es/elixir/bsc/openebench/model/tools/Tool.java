@@ -45,6 +45,8 @@ public class Tool extends LD {
     private String xid;
     private List<String> altIDs;
 
+    private Boolean depricated;
+
     private URI homepage;
     private List<URI> repositories;
     private String brief;
@@ -120,6 +122,16 @@ public class Tool extends LD {
     @JsonbProperty("alt_ids")
     public void setAlternativeIDs(List<String> altIDs) {
         this.altIDs = altIDs;
+    }
+
+    @JsonbProperty("depricated")
+    public Boolean getDepricated() {
+        return depricated;
+    }
+
+    @JsonbProperty("depricated")
+    public void setDepricated(Boolean depricated) {
+        this.depricated = depricated;
     }
 
     @JsonbProperty("homepage")
