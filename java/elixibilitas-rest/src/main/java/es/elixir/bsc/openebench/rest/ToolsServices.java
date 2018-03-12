@@ -405,7 +405,7 @@ public class ToolsServices {
     private ResponseBuilder patchToolAsync(String user, String id, String path, JsonValue value) {
         final JsonPatch patch = Json.createPatchBuilder().replace(path, value).build();
         final String result = toolsDAO.patch(user, id, patch);
-        return Response.status(result == null ? Status.NOT_MODIFIED : Status.OK);
+        return Response.status(result == null ? Status.NOT_MODIFIED : Status.OK).entity(result);
     }
     
     @GET
