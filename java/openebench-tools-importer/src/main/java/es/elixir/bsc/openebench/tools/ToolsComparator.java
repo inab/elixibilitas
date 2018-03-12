@@ -39,36 +39,7 @@ public class ToolsComparator {
     
     private final static int[][] matrix = matrix(1000, 1000);
         
-    public static void main(String[] args) {
-        
-        final Map<String, Tool> tools = OpenEBenchRepository.getTools();
-        for (Tool t1 : tools.values()) {
-            double score = 0;
-            Tool tool1 = null;
-            Tool tool2 = null;
-            for (Tool t2 : tools.values()) {
-                if (t1 != t2) {
-                    double sc = compare(t1, t2);
-                    if (sc > score) {
-                        score = sc;
-                        tool1 = t1;
-                        tool2 = t2;
-                    }
-                }
-            }
-
-            if (score > 0) {
-                System.out.println("score: " + score);
-                System.out.println("=>" + tool1.id);
-                System.out.println("->" + tool2.id);
-                System.out.println(cmpHomepages(tool1, tool2) + ", " + cmpDescriptions(tool1, tool2));
-                System.out.println();
-            }
-        }
-    }
-        
     public static double compare(Tool t1, Tool t2) {
-        
         final double[] scores = new double[] {
                                     cmpHomepages(t1, t2),
                                     cmpDescriptions(t1, t2),
@@ -87,7 +58,7 @@ public class ToolsComparator {
     private static double cmpSources(Tool t1, Tool t2) {
         
         final Distributions dist1 = t1.getDistributions();
-        final Distributions dist2 = t1.getDistributions();
+        final Distributions dist2 = t2.getDistributions();
         if (dist1 == null || dist2 == null) {
             return 0;
         }
@@ -179,6 +150,21 @@ public class ToolsComparator {
         return host1.equals(host2) ? score * 0.9 : score * 0.05;        
     }
     
+    private static double cmpNames(Tool t1, Tool t2) {
+        final String name1 = t1.getName();
+        final String name2 = t2.getName();
+        if (name1 == null || name1.isEmpty() ||
+            name2 == null || name2.isEmpty()) {
+            return 0;
+        }
+        final int[][] m = name1.length() > 1000 && name2.length() > 1000 ?
+                                matrix(name1.length(), name2.length()) :
+                                matrix;
+        final int score = score(m, name1, name2);
+        
+        return score <= 0 ? 0 : (float)(score * score)/(name1.length() * name2.length());
+    }
+    
     private static double cmpDescriptions(Tool t1, Tool t2) {
     
         final String descr1 = t1.getDescription();
@@ -188,7 +174,7 @@ public class ToolsComparator {
             return 0;
         }
         
-        final int[][] m = descr1.length() > 1000 && descr2.length() > 1000 ?
+        final int[][] m = descr1.length() > 1000 || descr2.length() > 1000 ?
                                 matrix(descr1.length(), descr2.length()) :
                                 matrix;
         final int score = score(m, descr1, descr2);

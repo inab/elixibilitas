@@ -25,14 +25,14 @@
 
 package es.elixir.bsc.openebench.biotools;
 
-import com.mongodb.MongoClient;
-
-import es.elixir.bsc.elixibilitas.dao.ToolsDAO;
 import es.elixir.bsc.openebench.model.tools.Tool;
 import es.elixir.bsc.openebench.tools.OpenEBenchRepository;
+import java.io.IOException;
 import java.net.URI;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * The bio.tools data model importer.
@@ -42,34 +42,53 @@ import java.util.Set;
 
 public class BiotoolsRepositoryImporter {
     
-    public static void main(String[] args) {
-        new BiotoolsRepositoryImporter().load(new MongoClient("localhost"));
+    private OpenEBenchRepository repository;
+    
+    public BiotoolsRepositoryImporter() {}
+
+    public BiotoolsRepositoryImporter(String username, String password) {
+        repository = new OpenEBenchRepository(username, password);
     }
     
-    public void load(MongoClient mc) {
+    public void load() {
         
-        final ToolsDAO dao = new ToolsDAO(mc.getDatabase("elixibilitas"), OpenEBenchRepository.URI_BASE);
         final Set<URI> ids = new HashSet<>();
         
         BiotoolsRepositoryIterator iter = new BiotoolsRepositoryIterator();
         while (iter.hasNext()) {
             final Tool tool = iter.next();
-            dao.put("bio.tools", tool);
-            ids.add(tool.id);
+            try {
+                System.out.println("> PUT: " + tool.id);
+                if (repository != null) {
+                    repository.put(tool);
+                }
+                ids.add(tool.id);
+            } catch (IOException ex) {
+                Logger.getLogger(BiotoolsRepositoryImporter.class.getName()).log(Level.SEVERE, null, ex);
+            }
         }
 
-        for (Tool tool : dao.get()) {
+        for (Tool tool : OpenEBenchRepository.getTools().values()) {
             final Boolean deprecated = tool.getDepricated();
-            if (ids.contains(tool.id)) {
-                if (Boolean.TRUE.equals(deprecated)) {
-                    tool.setDepricated(null);
-                    dao.put ("bio.tools", tool);
-                }
-            } else if (!Boolean.TRUE.equals(deprecated)) {
-                tool.setDepricated(true);
+            
+            try {
+                if (ids.contains(tool.id)) {
+                    if (Boolean.TRUE.equals(deprecated)) {
+                        tool.setDepricated(null);
+                        if (repository != null) {
+                            repository.put(tool);
+                        }
+                    }
+                } else if (!Boolean.TRUE.equals(deprecated)) {
+                    tool.setDepricated(true);
 
-                System.out.println("----> " + tool.id);
-                dao.update("bio.tools", tool, tool.id.toString().substring(dao.baseURI.length()));
+                    System.out.println("> DEPRICATE: " + tool.id);
+                    if (repository != null) {
+                        repository.patch(tool);
+                    }
+                }
+            } catch (IOException ex) {
+                Logger.getLogger(BiotoolsRepositoryImporter.class.getName()).log(Level.SEVERE, null, ex);
             }
         }
         

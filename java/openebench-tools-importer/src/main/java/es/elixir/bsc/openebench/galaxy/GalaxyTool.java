@@ -57,6 +57,7 @@ public class GalaxyTool {
     public final String id;
     public final String name;
     public final String description;
+    private String link;
     private String repository;
     private List<String> categories;
     private List<BiocondaPackage> requirements;
@@ -121,6 +122,14 @@ public class GalaxyTool {
         return nodes.length >= 1 ? nodes[nodes.length - 1] : null;
     }
     
+    public String getLink() {
+        return link;
+    }
+    
+    public void setLink(String link) {
+        this.link = link;
+    }
+
     public Metadata getMetadata() throws IOException {
         if (metadata == null) {
             synchronized(this) {
@@ -163,6 +172,11 @@ public class GalaxyTool {
         final String description = obj.getString("description", null);
         
         final GalaxyTool tool = new GalaxyTool(id, name, description);
+        
+        final String link = obj.getString("link", null);
+        if (link != null) {
+            tool.setLink(link);
+        }
         
         final JsonArray categories = obj.getJsonArray("category_ids");
         if (categories != null) {
