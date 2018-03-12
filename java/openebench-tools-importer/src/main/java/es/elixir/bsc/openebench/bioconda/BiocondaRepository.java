@@ -26,6 +26,7 @@
 package es.elixir.bsc.openebench.bioconda;
 
 import java.io.IOException;
+import java.util.Collection;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Level;
@@ -36,6 +37,8 @@ import java.util.logging.Logger;
  */
 
 public class BiocondaRepository {
+    
+    public final static String SERVER = "https://conda.anaconda.org/bioconda/linux-64/repodata.json.bz2";
     
     private static volatile Map<BiocondaPackage, BiocondaPackage> packages;
         
@@ -53,9 +56,21 @@ public class BiocondaRepository {
         return packages.get(new BiocondaPackage(name, version));
     }
     
+    public static Collection<BiocondaPackage> getPackages() {
+        if (packages == null) {
+            synchronized(BiocondaRepository.class) {
+                if (packages == null) {
+                    packages = load();
+                }
+            }
+        }
+        
+        return packages.values();
+    }
+    
     private static Map<BiocondaPackage, BiocondaPackage> load() {
         final Map<BiocondaPackage, BiocondaPackage> map = new ConcurrentHashMap<>();
-        try (BiocondaRepositoryIterator iter = new BiocondaRepositoryIterator()) {
+        try (BiocondaRepositoryIterator iter = new BiocondaRepositoryIterator(SERVER)) {
             while(iter.hasNext()) {
                 final BiocondaPackage pack = iter.next();
                 if (pack != null) {

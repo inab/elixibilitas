@@ -26,76 +26,63 @@
 package es.elixir.bsc.openebench.tools;
 
 import es.elixir.bsc.openebench.model.tools.Tool;
-import java.io.BufferedInputStream;
 import java.io.IOException;
-import java.io.InputStream;
-import java.net.URI;
-import java.util.Iterator;
 import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import javax.json.Json;
-import javax.json.JsonObject;
-import javax.json.JsonValue;
-import javax.json.bind.Jsonb;
-import javax.json.bind.JsonbBuilder;
-import javax.json.bind.JsonbConfig;
-import javax.json.bind.config.PropertyNamingStrategy;
-import javax.json.stream.JsonParser;
-
 /**
  * @author Dmitry Repchevsky
  */
 
 public class OpenEBenchRepository {
     
-    public static final String URI_BASE = "https://openebench.bsc.es/monitor/tool/";
-    
     private static volatile Map<String, Tool> tools;
     
+    private OpenEBenchEndpoint endpoint;
+    
+    public OpenEBenchRepository() {
+    }
+    
+    public OpenEBenchRepository(String name, String password) {
+        endpoint = new OpenEBenchEndpoint(name, password);
+    }
+
+    public int put(Tool tool) throws IOException {
+        if (endpoint == null) {
+            return 403;
+        }
+
+        final int code = endpoint.put(tool);
+        if (code == 200) {
+            if (OpenEBenchRepository.tools != null) {
+                tools.put(tool.id.toString(), tool);
+            }
+        }
+        return code;
+    }
+
+    public int patch(Tool tool) throws IOException {
+        if (endpoint == null) {
+            return 403;
+        }
+
+        final int code = endpoint.patch(tool);
+        if (code == 200) {
+            if (OpenEBenchRepository.tools != null) {
+                tools.put(tool.id.toString(), tool);
+            }
+        }
+        return code;
+    }
+
     public static Map<String, Tool> getTools() {
         Map<String, Tool> toolz = OpenEBenchRepository.tools;
         if (toolz == null) {
             synchronized(ToolsComparator.class) {
                 toolz = OpenEBenchRepository.tools;
                 if (toolz == null) {
-                    OpenEBenchRepository.tools = toolz = load();
+                    OpenEBenchRepository.tools = toolz = OpenEBenchEndpoint.get();
                 }
             }
         }
         return toolz;
-    }
-
-    private static Map<String, Tool> load() {
-        Map<String, Tool> toolz = new ConcurrentHashMap<>();
-        
-        final Jsonb jsonb = JsonbBuilder.create(
-                new JsonbConfig().withPropertyNamingStrategy(PropertyNamingStrategy.UPPER_CAMEL_CASE));
-        
-        try (InputStream in = URI.create(URI_BASE).toURL().openStream();
-             JsonParser parser = Json.createParser(new BufferedInputStream(in))) {
-            if (parser.hasNext() &&
-                parser.next() == JsonParser.Event.START_ARRAY) {
-                
-                final Iterator<JsonValue> iter = parser.getArrayStream().iterator();
-                while(iter.hasNext()) {
-                    final JsonValue value = iter.next();
-                    if (value.getValueType() == JsonValue.ValueType.OBJECT) {
-                        final JsonObject object = value.asJsonObject();
-                        final Tool tool = jsonb.fromJson(object.toString(), Tool.class);
-                        toolz.put(tool.getHomepage().toString(), tool);
-                    }
-                }
-            }
-        } catch (IOException ex) {
-            Logger.getLogger(ToolsComparator.class.getName()).log(Level.SEVERE, null, ex);
-        }
-        
-        return toolz;
-    }    
-
-    public static Tool getByHomepage(String homepage) {
-        return getTools().get(homepage);
     }
 }

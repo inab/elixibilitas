@@ -28,20 +28,14 @@
     </properties>
     
     <dependencies>
-        
-        <dependency>
-            <groupId>es.elixir.bsc.elixibilitas</groupId>
-            <artifactId>elixibilitas-dao</artifactId>
-            <version>0.1-SNAPSHOT</version>
-        </dependency>
-<!--
+
         <dependency>
             <groupId>es.elixir.bsc.elixibilitas</groupId>
             <artifactId>openebench-tools-model</artifactId>
             <version>0.1-SNAPSHOT</version>
             <type>jar</type>
         </dependency>
--->
+
         <dependency>
             <groupId>es.elixir.bsc.biotools</groupId>
             <artifactId>biotools-schema-parser</artifactId>
@@ -89,7 +83,7 @@
     </dependencies>
 
     <build>
-        <finalName>galaxy-test</finalName>
+        <finalName>import-tools</finalName>
         <plugins>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
@@ -102,7 +96,7 @@
                     </descriptorRefs>                  
                     <archive>
                         <manifest>
-                            <mainClass>es.elixir.bsc.openebench.galaxy.Test</mainClass>
+                            <mainClass>es.elixir.bsc.openebench.OpenEBenchToolsImporter</mainClass>
                         </manifest>
                     </archive>
                 </configuration>

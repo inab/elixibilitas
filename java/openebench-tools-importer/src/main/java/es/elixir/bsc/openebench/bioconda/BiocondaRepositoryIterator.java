@@ -40,15 +40,13 @@ import org.apache.commons.compress.compressors.bzip2.BZip2CompressorInputStream;
 
 public class BiocondaRepositoryIterator implements Iterator<BiocondaPackage> , Closeable, AutoCloseable {
     
-    public final static String SERVER = "https://conda.anaconda.org/bioconda/linux-64/repodata.json.bz2";
-    
     private final BZip2CompressorInputStream in;
     private final JsonParser parser;
     
     private JsonParser.Event event;
     
-    public BiocondaRepositoryIterator() throws IOException {
-        in = new BZip2CompressorInputStream (URI.create(SERVER).toURL().openStream());
+    public BiocondaRepositoryIterator(String server) throws IOException {
+        in = new BZip2CompressorInputStream (URI.create(server).toURL().openStream());
         parser = Json.createParser(in);
         if (parser.hasNext() &&
             parser.next() == JsonParser.Event.START_OBJECT) {
@@ -98,14 +96,5 @@ public class BiocondaRepositoryIterator implements Iterator<BiocondaPackage> , C
     public void close() throws IOException {
         parser.close();
         in.close();
-    }
-    
-    public static void main(String[] args) throws IOException {
-        BiocondaRepositoryIterator iter = new BiocondaRepositoryIterator();
-        while(iter.hasNext()) {
-            System.out.println(iter.next().getMetadata());
-
-        }
-        
     }
 }
