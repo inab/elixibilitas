@@ -21,7 +21,7 @@ public class OpenEBenchToolsImporter {
             "import-tools (-biotools || -bioconda || -galaxy) [-user && -password]\n\n" +
             "parameters:\n\n" +
             "-h (--help)                - this help message\n" +
-            "-biotool                   - import tools from biotools repository\n" +
+            "-biotools                  - import tools from biotools repository\n" +
             "-bioconda                  - import tools from bioconda repository\n" +
             "-galaxy 'server'           - import tools from galaxy server repository\n" +
             "-u (--user) 'username'     - OpenEBench username\n" +
