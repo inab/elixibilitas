@@ -199,7 +199,7 @@ public abstract class AbstractDAO<T> {
     }
 
     /**
-     * Apply Json patch to the mongodb metrics document.
+     * Apply Json patch to the mongodb document.
      * 
      * @param id metrics id
      * @param patch Json patch to apply

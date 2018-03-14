@@ -14,6 +14,10 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.json.bind.Jsonb;
+import javax.json.bind.JsonbBuilder;
+import javax.json.bind.JsonbConfig;
+import javax.json.bind.config.PropertyNamingStrategy;
 
 /**
  * @author Dmitry Repchevsky
@@ -50,6 +54,15 @@ public class BiocondaRepositoryImporter {
                             System.out.println("> PUT: " + tool.id.toString());
                             if (repository != null) {
                                 repository.put(tool);
+                            } else {
+                                System.out.println("    name: " + tool.getName());
+                                System.out.println("    version: " + tool.getVersion());
+                                System.out.println("    homepage: " + tool.getHomepage());
+                                System.out.println("    description: " + tool.getDescription());
+//                                final Jsonb jsonb = JsonbBuilder.create(
+//                                        new JsonbConfig().withPropertyNamingStrategy(PropertyNamingStrategy.UPPER_CAMEL_CASE)
+//                                        .withFormatting(true));
+//                                System.out.println(jsonb.toJson(tool));
                             }
                             
                         }
@@ -118,8 +131,6 @@ public class BiocondaRepositoryImporter {
                 if (uri.endsWith("bioconductor.org")) {
                     final int idx = uri.indexOf("bio.tools:" + name + ":");
                     if (idx > 0) {
-//                        System.out.print("    -> by bioconductor: " + pack.name + ":" + pack.version);
-//                        System.out.println("    " + t.id);
                         return t.id.toString();
                     }
                 }
@@ -135,8 +146,6 @@ public class BiocondaRepositoryImporter {
                 if (uri.endsWith("cran.r-project.org")) {
                     final int idx = uri.indexOf("bio.tools:" + name + ":");
                     if (idx > 0) {
-//                        System.out.print("    -> by r-project: " + pack.name + ":" + pack.version);
-//                        System.out.println("    " + t.id);
                         return t.id.toString();
                     }
                 }
@@ -173,25 +182,16 @@ public class BiocondaRepositoryImporter {
 
         Tool tool = new Tool(URI.create(String.format(ID_TEMPLATE, id != null ? id : pack.name, pack.version, "cmd", authority)), "cmd");
 
-//        System.out.println("--> " + tool.id);
-
         tool.setName(pack.name);
         tool.setVersion(pack.version);
         tool.setHomepage(homepage);
         tool.setLicense(metadata.license);
         tool.setDescription(metadata.summary);
 
-//        System.out.println("    name:     " + tool.getName());
-//        System.out.println("    version:  " + tool.getVersion());
-//        System.out.println("    homepage: " + tool.getHomepage());
-//        System.out.println("    ext-id:   " + tool.getExternalId());
-//        System.out.println("    license:  " + tool.getLicense());
-
         // set repository
         if (metadata.git != null && !metadata.git.isEmpty()) {
             try {
                 final URI repository = URI.create(metadata.git);
-//                System.out.println("    repo: " + repository);
                 tool.getRepositories().add(repository);
             } catch(IllegalArgumentException ex) {}
         }
@@ -200,7 +200,6 @@ public class BiocondaRepositoryImporter {
             for (String src_url : metadata.src_urls) {
                 try {
                     final URI source = URI.create(src_url);
-//                    System.out.println("    source: " + source);
                     Distributions distributions = tool.getDistributions();
                     if (distributions == null) {
                         tool.setDistributions(distributions = new Distributions());
@@ -214,7 +213,6 @@ public class BiocondaRepositoryImporter {
         if (pack.file != null && !pack.file.isEmpty()) {
             try {
                 final URI conda = URI.create(pack.toString());
-//                System.out.println("    file: " + conda);
                 Distributions distributions = tool.getDistributions();
                 if (distributions == null) {
                     tool.setDistributions(distributions = new Distributions());
