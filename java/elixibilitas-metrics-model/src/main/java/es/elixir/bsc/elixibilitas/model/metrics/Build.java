@@ -77,5 +77,4 @@ public class Build {
     public void setUnix(Boolean unix) {
         this.unix = unix;
     }
-
 }
