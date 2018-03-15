@@ -27,6 +27,12 @@ The REST API is based on [JAX-RS](jcp.org/en/jsr/detail?id=370) API.
 
 The API provides an access to biological tools descriptions:
 ```
+https://openebench.bsc.es/monitor/tool/
+```
+> Returns all OpenEBench tools.<br/>
+> The pagination is implemented via the HTTP Range Header (i.g. "Range: tools=10-30").<br/>
+> The response always contains the HTTP Content-Range Header ("Content-Range: tools 10-30/20000").
+```
 https://openebench.bsc.es/monitor/tool/{id}
 https://openebench.bsc.es/monitor/tool/{id}/{type}
 https://openebench.bsc.es/monitor/tool/{id}/{type}/{host}
@@ -76,8 +82,8 @@ where:
 - {projection} tools properties to return
 - {text} text to search
 > The method is thought for the client's GUI that may use a pagination mechanism.<br/>
-> The pagination is implemented via the HTTP Range Header (i.g. "Range: items=10-30").<br/>
-> The response always contains the HTTP Content-Range Header ("Content-Range: items 10-30/10000").<br/>
+> The pagination is implemented via the HTTP Range Header (i.g. "Range: tools=10-30").<br/>
+> The response always contains the HTTP Content-Range Header ("Content-Range: tools 10-30/10000").<br/>
 > When pagination is used, the server seponds with 206 Partial Content.<br/>
 > The results are grouped by the id and sorted by names.<br/>
 > example 1: [https://openebench.bsc.es/monitor/rest/search](https://openebench.bsc.es/monitor/rest/search) .<br/>
