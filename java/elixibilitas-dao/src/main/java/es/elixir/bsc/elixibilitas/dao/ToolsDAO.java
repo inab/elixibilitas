@@ -331,29 +331,8 @@ public class ToolsDAO extends AbstractDAO<Document> implements Serializable {
         }
 
         if (id != null && !id.isEmpty()) {
-            final String[] nodes = id.split(":");
-            if (nodes.length > 2) {
-                if (nodes[0].isEmpty()) {
-                    aggregation.add(Aggregates.match(
-                        Filters.and(Filters.eq("_id.id", nodes[1]),
-                            Filters.eq("_id.version", nodes[2]))));
-
-                } else {
-                    aggregation.add(Aggregates.match(
-                        Filters.and(Filters.eq("_id.nmsp", nodes[0]),
-                            Filters.eq("_id.id", nodes[1]),
-                            Filters.eq("_id.version", nodes[2]))));
-                }
-            } else if (nodes.length > 1) {
-                aggregation.add(Aggregates.match(
-                        Filters.and(Filters.eq("_id.nmsp", nodes[0]),
-                            Filters.eq("_id.id", nodes[1]))));
-            } else {
-                aggregation.add(Aggregates.match(
-                        Filters.eq("_id.id", nodes[0])));
-            }
+            aggregation.add(createIdFilter(id));
         }
-
 
         aggregation.add(Aggregates.group(new BasicDBObject("_id", "$_id.id"), Accumulators.push("tools", "$$ROOT")));
 
@@ -413,27 +392,7 @@ public class ToolsDAO extends AbstractDAO<Document> implements Serializable {
                 }
                 
                 if (id != null && !id.isEmpty()) {
-                    final String[] nodes = id.split(":");
-                    if (nodes.length > 2) {
-                        if (nodes[0].isEmpty()) {
-                            aggregation.add(Aggregates.match(
-                                Filters.and(Filters.eq("_id.id", nodes[1]),
-                                    Filters.eq("_id.version", nodes[2]))));
-
-                        } else {
-                            aggregation.add(Aggregates.match(
-                                Filters.and(Filters.eq("_id.nmsp", nodes[0]),
-                                    Filters.eq("_id.id", nodes[1]),
-                                    Filters.eq("_id.version", nodes[2]))));
-                        }
-                    } else if (nodes.length > 1) {
-                        aggregation.add(Aggregates.match(
-                                Filters.and(Filters.eq("_id.nmsp", nodes[0]),
-                                    Filters.eq("_id.id", nodes[1]))));
-                    } else {
-                        aggregation.add(Aggregates.match(
-                                Filters.eq("_id.id", nodes[0])));
-                    }
+                    aggregation.add(createIdFilter(id));
                 }
 
                 if (projections != null && projections.size() > 0) {
@@ -483,6 +442,35 @@ public class ToolsDAO extends AbstractDAO<Document> implements Serializable {
         }
     }
 
+    private Bson createIdFilter(String id) {
+        final String[] nodes = id.split(":", -1);
+        if (nodes.length > 2) {
+            if (nodes[0].isEmpty()) {
+                return Aggregates.match(
+                    Filters.and(Filters.eq("_id.id", nodes[1]),
+                        Filters.eq("_id.version", nodes[2])));
+
+            } else if (nodes[1].isEmpty()) {
+                return Aggregates.match(Filters.eq("_id.nmsp", nodes[0]));
+            } else {
+                return Aggregates.match(
+                    Filters.and(Filters.eq("_id.nmsp", nodes[0]),
+                        Filters.eq("_id.id", nodes[1]),
+                        Filters.eq("_id.version", nodes[2])));
+            }
+        } else if (nodes.length > 1) {
+            if (nodes[1].isEmpty()) {
+                return Aggregates.match(Filters.eq("_id.nmsp", nodes[0]));
+            } else {
+                return Aggregates.match(
+                            Filters.and(Filters.eq("_id.nmsp", nodes[0]),
+                                        Filters.eq("_id.id", nodes[1])));
+            }
+        } else {
+            return Aggregates.match(Filters.eq("_id.id", nodes[0]));
+        }
+    }
+    
     public int aggregate_count(String id, String text, String name, String description) {
 
         final MongoCollection<Document> col = database.getCollection(collection);
