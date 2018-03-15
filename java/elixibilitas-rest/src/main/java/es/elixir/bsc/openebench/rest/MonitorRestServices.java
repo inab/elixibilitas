@@ -161,7 +161,11 @@ public class MonitorRestServices {
         executor.submit(() -> {
             asyncResponse.resume(searchAsync(id, range != null ? range.getFirstPos() :  null, 
                     range != null ? range.getLastPos() : null,
-                    projections, text, name, description).build());
+                    projections, text, name, description)
+                        .header("Access-Control-Allow-Headers", "Range")
+                        .header("Access-Control-Expose-Headers", "Accept-Ranges")
+                        .header("Access-Control-Expose-Headers", "Content-Range")
+                        .build());
         });
     }
     
@@ -176,26 +180,26 @@ public class MonitorRestServices {
 
         StreamingOutput stream = (OutputStream out) -> {
 
-            final Integer skip;
+            final Integer limit;
             if (from == null || to == null) {
-                skip = to;
+                limit = to;
             } else {
-                skip = to - from;
+                limit = to - from;
             }
 
             try (Writer writer = new BufferedWriter(new OutputStreamWriter(out, "UTF-8"))) {
-                toolsDAO.write(writer, id, from, skip, text, name, description, projections);
+                toolsDAO.write(writer, id, from, limit, text, name, description, projections);
             }
         };
 
         final int count = toolsDAO.search_count(id, text, name, description);
         
-        final ContentRange range = new ContentRange("items", from, to, count);
+        final ContentRange range = new ContentRange("tools", from, to, count);
         
         ResponseBuilder response = from == null && to == null 
                 ? Response.ok() : Response.status(Response.Status.PARTIAL_CONTENT);
         
-        return response.header("Accept-Ranges", "items").header("Content-Range", range.toString()).entity(stream);
+        return response.header("Accept-Ranges", "tools").header("Content-Range", range.toString()).entity(stream);
     }
     
     @GET
@@ -230,7 +234,11 @@ public class MonitorRestServices {
                           @Suspended final AsyncResponse asyncResponse) {
         executor.submit(() -> {
             if (range != null) {
-                asyncResponse.resume(aggregateAsync(id, range.getFirstPos(), range.getLastPos(), projections, text, name, description).build());
+                asyncResponse.resume(aggregateAsync(id, range.getFirstPos(), range.getLastPos(), projections, text, name, description)
+                        .header("Access-Control-Allow-Headers", "Range")
+                        .header("Access-Control-Expose-Headers", "Accept-Ranges")
+                        .header("Access-Control-Expose-Headers", "Content-Range")
+                        .build());
             } else {
                 final Integer from = skip;
                 Integer to = limit;
@@ -238,7 +246,11 @@ public class MonitorRestServices {
                     to += limit;
                 }
                 
-                asyncResponse.resume(aggregateAsync(id, from, to, projections, text, name, description).build());
+                asyncResponse.resume(aggregateAsync(id, from, to, projections, text, name, description)
+                        .header("Access-Control-Allow-Headers", "Range")
+                        .header("Access-Control-Expose-Headers", "Accept-Ranges")
+                        .header("Access-Control-Expose-Headers", "Content-Range")
+                        .build());
             }
         });
     }
@@ -252,14 +264,14 @@ public class MonitorRestServices {
                               final String description) {
 
         StreamingOutput stream = (OutputStream out) -> {
-            final Integer skip;
+            final Integer limit;
             if (from == null || to == null) {
-                skip = to;
+                limit = to;
             } else {
-                skip = to - from;
+                limit = to - from;
             }
             try (Writer writer = new BufferedWriter(new OutputStreamWriter(out, "UTF-8"))) {
-                toolsDAO.aggregate(writer, id, from, skip, text, name, description, projections);
+                toolsDAO.aggregate(writer, id, from, limit, text, name, description, projections);
             }
         };
         final int count = toolsDAO.aggregate_count(id, text, name, description);

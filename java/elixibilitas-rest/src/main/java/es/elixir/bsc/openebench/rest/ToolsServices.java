@@ -28,6 +28,8 @@ package es.elixir.bsc.openebench.rest;
 import com.mongodb.MongoClient;
 import com.mongodb.MongoClientURI;
 import es.elixir.bsc.elixibilitas.dao.ToolsDAO;
+import es.elixir.bsc.openebench.rest.ext.ContentRange;
+import es.elixir.bsc.openebench.rest.ext.Range;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -144,6 +146,7 @@ public class ToolsServices {
     /**
      * Get back all tools as a JSON array.
      * 
+     * @param range
      * @param asyncResponse 
      */
     @GET
@@ -155,20 +158,39 @@ public class ToolsServices {
                                             schema = @Schema(ref="https://openebench.bsc.es/monitor/tool/tool.json")))
         }
     )
-    public void getTools(@Suspended final AsyncResponse asyncResponse) {
+    public void getTools(@HeaderParam("Range") final Range range,
+                         @Suspended final AsyncResponse asyncResponse) {
         executor.submit(() -> {
-            asyncResponse.resume(getToolsAsync().build());
+            asyncResponse.resume(
+                    getToolsAsync(range == null ? null : range.getFirstPos(), 
+                                  range == null ? null : range.getLastPos())
+                    .header("Access-Control-Allow-Headers", "Range")
+                    .header("Access-Control-Expose-Headers", "Accept-Ranges")
+                    .header("Access-Control-Expose-Headers", "Content-Range")
+                    .build());
         });
     }
 
-    private ResponseBuilder getToolsAsync() {
+    private ResponseBuilder getToolsAsync(final Integer from, final Integer to) {
         StreamingOutput stream = (OutputStream out) -> {
+            final Integer limit;
+            if (from == null || to == null) {
+                limit = to;
+            } else {
+                limit = to - from;
+            }
             try (Writer writer = new BufferedWriter(new OutputStreamWriter(out, "UTF-8"))) {
-                toolsDAO.write(writer, null, null, null, null, null, null, null);
+                toolsDAO.write(writer, null, from, limit, null, null, null, null);
             }
         };
-                
-        return Response.ok(stream);
+        final int count = (int) toolsDAO.count();
+        
+        final ContentRange range = new ContentRange("tools", from, to, count);
+        
+        ResponseBuilder response = from == null && to == null 
+                ? Response.ok() : Response.status(Response.Status.PARTIAL_CONTENT);
+        
+        return response.header("Accept-Ranges", "tools").header("Content-Range", range.toString()).entity(stream);
     }
 
     @GET
