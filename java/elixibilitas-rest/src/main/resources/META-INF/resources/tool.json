@@ -331,6 +331,10 @@
               "type": "string"
             }
       },
+      "depricated": {
+            "description": "the tool changed its id or was removed from the original repository",
+            "type": "boolean"
+      },
       "homepage": {
             "type": "string",
             "format": "uri"

@@ -88,6 +88,10 @@
           "ssl": {
             "description": "web site access is properly secured (no property = not ssl, false = ssl troubles)",
             "type": "boolean"
+          },
+          "access_time": {
+            "description": "homepage load time in ms.",
+            "type": "integer"
           }
         }
       },
