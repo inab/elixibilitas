@@ -31,6 +31,8 @@ import es.elixir.bsc.openebench.checker.BatchMetricsChecker;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.annotation.Resource;
 import javax.enterprise.concurrent.ManagedScheduledExecutorService;
 import javax.servlet.ServletContextEvent;
@@ -60,7 +62,7 @@ public class MetricsMonitorScheduler implements ServletContextListener {
     @Override
     public void contextDestroyed(ServletContextEvent sce) {
         executor.shutdown();
-        scheduler.shutdownNow();
+        scheduler.shutdown();
     }
     
     public static class MetricsImporter implements Runnable {
@@ -77,6 +79,8 @@ public class MetricsMonitorScheduler implements ServletContextListener {
         public void run() {
             try (MongoClient mc = new MongoClient(new MongoClientURI(uri))) {
                 new BatchMetricsChecker(executor).check(mc);
+            } catch (Exception ex) {
+                Logger.getLogger(MetricsMonitorScheduler.class.getName()).log(Level.SEVERE, null, ex);
             }
         }
     }
