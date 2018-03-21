@@ -50,8 +50,6 @@ public class GalaxyToolsIterator implements Iterator<GalaxyTool> , Closeable, Au
     private final Iterator<JsonValue> iterator;
     private Iterator<JsonValue> elements;
     
-    private JsonArray elem;
-    
     public GalaxyToolsIterator(final URI server) throws IOException {
         in = new BufferedInputStream(server.resolve(API).toURL().openStream());
         parser = Json.createParser(in);

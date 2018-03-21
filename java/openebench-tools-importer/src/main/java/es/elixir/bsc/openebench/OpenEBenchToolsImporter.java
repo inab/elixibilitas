@@ -3,6 +3,7 @@ package es.elixir.bsc.openebench;
 import es.elixir.bsc.openebench.bioconda.BiocondaRepositoryImporter;
 import es.elixir.bsc.openebench.biotools.BiotoolsRepositoryImporter;
 import es.elixir.bsc.openebench.galaxy.GalaxyRepositoryImporter;
+import es.elixir.bsc.openebench.openminted.OMTDRepositoryImporter;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
@@ -27,7 +28,7 @@ public class OpenEBenchToolsImporter {
             "-u (--user) 'username'     - OpenEBench username\n" +
             "-p (--password) 'password' - OpenEBench pasword\n\n" +
             "comment: in the absense of credentials the tool only simulates the activity.\n" +
-            "example: >java -jar import-tools.jar -biotool\n";
+            "example: >java -jar import-tools.jar -biotools\n";
     
     public static void main(String[] args) {
         Map<String, List<String>> params = parameters(args);
@@ -65,6 +66,13 @@ public class OpenEBenchToolsImporter {
             } else {
                 new BiocondaRepositoryImporter(u, p).load();
             }
+        } else if (params.get("-omtd") != null) {
+            final URI server = URI.create("https://test.openminted.eu/api/request/application/all");
+            if (u == null || u.isEmpty() || p == null || p.isEmpty()) {
+                new OMTDRepositoryImporter(server).load();
+            } else {
+                new OMTDRepositoryImporter(server, u, p).load();
+            }            
         } else {
             final List<String> galaxy = params.get("-galaxy");
             if (galaxy != null) {
@@ -93,6 +101,7 @@ public class OpenEBenchToolsImporter {
                 case "-biotools":
                 case "-bioconda":
                 case "-galaxy":
+                case "-omtd":
                 case "-h":
                 case "--helph": values = parameters.get(arg);
                                 if (values == null) {
