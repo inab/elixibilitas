@@ -17,6 +17,24 @@ Modules are logically separated by their functionality:
 - elixibilitas-dao - MongoDB data access classes for "tools" and "metrics" collection management.
 - elixibilitas-rest - RESTful API.
 
+###### OWL2 Ontology
+There is an ontological view to the OpenEBench tools.
+
+The tools ontology is is located at
+```
+https://openebench.bsc.es/monitor/tools.owl
+```
+The tools data may be obtained in OWL2 JSON-LD format for any concrete tool record:<br/>
+> [https://openebench.bsc.es/monitor/tool/bio.tools:pmut:2017/web/mmb.irbbarcelona.org](https://openebench.bsc.es/monitor/tool/bio.tools:pmut:2017/web/mmb.irbbarcelona.org)
+
+or for the entire tools collection:<br/>
+> [https://openebench.bsc.es/monitor/tool/](https://openebench.bsc.es/monitor/tool/)
+
+The decision to return JSON or JSON-LD is taken on the HTTP "Accept" header.<br/><br/>
+These URLs may be imported into [Protegé](https://protege.stanford.edu/) tool.<br/>
+**NB:** Entire ontology is very big and exceeds the default Protegé memory settings.
+
+
 ###### REST API
 The REST API is based on [JAX-RS](jcp.org/en/jsr/detail?id=370) API.
 
