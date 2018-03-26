@@ -20,9 +20,9 @@ Modules are logically separated by their functionality:
 ###### OWL2 Ontology
 There is an ontological view to the OpenEBench tools.
 
-The tools ontology is is located at
+The tools ontology is located at:
 ```
-https://openebench.bsc.es/monitor/tools.owl
+[https://openebench.bsc.es/monitor/tools.owl](https://openebench.bsc.es/monitor/tools.owl)
 ```
 The tools data may be obtained in OWL2 JSON-LD format for any concrete tool record:<br/>
 > [https://openebench.bsc.es/monitor/tool/bio.tools:pmut:2017/web/mmb.irbbarcelona.org](https://openebench.bsc.es/monitor/tool/bio.tools:pmut:2017/web/mmb.irbbarcelona.org)
