@@ -31,7 +31,6 @@ import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoCursor;
 import com.mongodb.client.MongoDatabase;
 import com.mongodb.client.model.Filters;
-import static es.elixir.bsc.elixibilitas.dao.AbstractDAO.LICENSE;
 import es.elixir.bsc.elixibilitas.model.metrics.Metrics;
 import java.io.IOException;
 import java.io.Serializable;
@@ -82,6 +81,32 @@ public class MetricsDAO extends AbstractDAO<BsonString> implements Serializable 
         return "metrics";
     }
 
+    @Override
+    protected String getLabel(BsonString pk) {
+        final String[] nodes = pk.getValue().split("/");
+        if (nodes.length > 0) {
+            final String[] _id = nodes[0].split(":");
+            if (_id.length > 1) {
+                return _id[1];
+            }
+        }
+        
+        return "";
+    }
+
+    @Override
+    protected String getVersion(BsonString pk) {
+        final String[] nodes = pk.getValue().split("/");
+        if (nodes.length > 0) {
+            final String[] _id = nodes[0].split(":");
+            if (_id.length > 2) {
+                return _id[2];
+            }
+        }
+        
+        return "";
+    }
+    
     public List<Metrics> get() {
         List<Metrics> metrics = new ArrayList<>();
 

@@ -351,6 +351,7 @@
             "type": "string"
       },
       "description": {
+            "description" : "high-level description of the tool",
             "type": "string"
       },
       "license": {

@@ -1,32 +1,41 @@
 [
 {
-  "@id" : "http://openebench.bsc.es/monitor/tool",
+  "@id" : "http://openebench.bsc.es/monitor/toolz",
   "@type" : "http://www.w3.org/2002/07/owl#Ontology",
 
   "http://www.w3.org/2002/07/owl#imports" : [ {
-    "@id" : "https://openebench.bsc.es/monitor/biotools.owl"
+    "@id" : "https://openebench.bsc.es/monitor/tools.owl"
   } ]
 },
 {
   "@context": {
     "@vocab": "https://openebench.bsc.es/monitor/tools#",
     "@base": "https://openebench.bsc.es/monitor/tools#",
+    "@label": "http://www.w3.org/2000/01/rdf-schema#label",
+    "@timestamp": { "@type": "http://www.w3.org/2001/XMLSchema#dateTime"},
+    "depricated": { "@type": "http://www.w3.org/2001/XMLSchema#boolean"},
+    "year": { "@type": "http://www.w3.org/2001/XMLSchema#dateTime"},
+    "cited": { "@type": "http://www.w3.org/2001/XMLSchema#nonNegativeInteger"},
     "homepage": { "@type": "http://www.w3.org/2001/XMLSchema#anyURI"},
     "repositories": { "@type": "http://www.w3.org/2001/XMLSchema#anyURI"},
     "helpdesk": { "@type": "http://www.w3.org/2001/XMLSchema#anyURI"},
     "issue_tracker": { "@type": "http://www.w3.org/2001/XMLSchema#anyURI"},
     "mailing_list": { "@type": "http://www.w3.org/2001/XMLSchema#anyURI"},
-    "doc_link": { "@type": "http://www.w3.org/2001/XMLSchema#anyURI"},
+    "doc_links": { "@type": "http://www.w3.org/2001/XMLSchema#anyURI"},
     "url": { "@type": "http://www.w3.org/2001/XMLSchema#anyURI"},
+    "uri": { "@type": "http://www.w3.org/2001/XMLSchema#anyURI"},
     "social_media": { "@type": "http://www.w3.org/2001/XMLSchema#anyURI"},
     "binaries": { "@type": "http://www.w3.org/2001/XMLSchema#anyURI"},
     "binary_packages": { "@type": "http://www.w3.org/2001/XMLSchema#anyURI"},
     "sourcecode": { "@type": "http://www.w3.org/2001/XMLSchema#anyURI"},
     "source_packages": { "@type": "http://www.w3.org/2001/XMLSchema#anyURI"},
+    "vre": { "@type": "http://www.w3.org/2001/XMLSchema#anyURI"},
+    "containers": { "@type": "http://www.w3.org/2001/XMLSchema#anyURI"},
+    "vm_images": { "@type": "http://www.w3.org/2001/XMLSchema#anyURI"},
     "topics": { "@type": "http://www.w3.org/2001/XMLSchema#anyURI"},
     "operations": { "@type": "http://www.w3.org/2001/XMLSchema#anyURI"},
-    "formats": { "@type": "http://www.w3.org/2001/XMLSchema#anyURI"},
-    "datatype": { "@type": "http://www.w3.org/2001/XMLSchema#anyURI"}
+    "datatype": { "@type": "http://www.w3.org/2001/XMLSchema#anyURI"},
+    "formats": { "@type": "http://www.w3.org/2001/XMLSchema#anyURI"}
   },
 
   "tools" : 

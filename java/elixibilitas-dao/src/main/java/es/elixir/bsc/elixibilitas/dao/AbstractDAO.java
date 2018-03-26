@@ -48,6 +48,8 @@ public abstract class AbstractDAO<T> {
     protected abstract T createPK(String uri);
     protected abstract String getURI(T pk);
     protected abstract String getType(T pk);
+    protected abstract String getLabel(T pk);
+    protected abstract String getVersion(T pk);
     
     public long count() {
         return database.getCollection(collection).count();
@@ -85,6 +87,8 @@ public abstract class AbstractDAO<T> {
 
             bson.remove("@id");
             bson.remove("@type");
+            bson.remove("@label");
+            bson.remove("@version");
             
             FindOneAndReplaceOptions opt = new FindOneAndReplaceOptions().upsert(true).
                     projection(Projections.excludeId()).returnDocument(ReturnDocument.BEFORE);
@@ -101,14 +105,20 @@ public abstract class AbstractDAO<T> {
 
             final String uri = getURI(pk);
             final String type = getType(pk);
+            final String label = getLabel(pk);
+            final String version = getVersion(pk);
 
             doc.append("@id", uri);
             doc.append("@type", type);
+            doc.append("@label", label);
+            doc.append("@version", version);
             doc.append("@license", LICENSE);
             doc.append("@timestamp", timestamp);
 
             bson.append("@id", uri);
             bson.append("@type", type);
+            bson.append("@label", label);
+            bson.append("@version", version);
             bson.append("@license", LICENSE);
 
             final String result = bson.toJson();
@@ -152,6 +162,8 @@ public abstract class AbstractDAO<T> {
             
             bson.remove("@id");
             bson.remove("@type");
+            bson.remove("@label");
+            bson.remove("@version");
             
             Document before = col.find(Filters.eq("_id", pk)).projection(Projections.excludeId()).first();
 
@@ -166,6 +178,8 @@ public abstract class AbstractDAO<T> {
             if (after != null) {
                 final String uri = getURI(pk);
                 final String type = getType(pk);
+                final String label = getLabel(pk);
+                final String version = getVersion(pk);
 
                 if (before == null) {
                     before = new Document();
@@ -173,11 +187,16 @@ public abstract class AbstractDAO<T> {
                 
                 before.append("@id", uri);
                 before.append("@type", type);
+                before.append("@label", label);
+                before.append("@version", version);
                 before.append("@license", LICENSE);
                 before.append("@timestamp", newTimestamp);
 
                 after.append("@id", uri);
                 after.append("@type", type);
+                after.append("@label", label);
+                after.append("@version", version);
+
                 after.append("@license", LICENSE);
 
                 final String result = after.toJson();
@@ -232,6 +251,9 @@ public abstract class AbstractDAO<T> {
 
                 result.append("@id", getURI(pk));
                 result.append("@type", getType(pk));
+                result.append("@label", getLabel(pk));
+                result.append("@version", getVersion(pk));
+
                 result.append("@license", LICENSE);
 
                 return result.toJson();

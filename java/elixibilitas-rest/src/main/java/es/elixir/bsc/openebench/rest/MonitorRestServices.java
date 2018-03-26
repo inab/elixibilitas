@@ -53,19 +53,22 @@ import javax.annotation.Resource;
 import javax.enterprise.concurrent.ManagedExecutorService;
 import javax.inject.Inject;
 import javax.json.Json;
+import javax.json.JsonArray;
+import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
 import javax.json.JsonPointer;
 import javax.json.JsonStructure;
 import javax.json.JsonValue;
 import javax.json.JsonWriter;
+import javax.json.stream.JsonGenerator;
 import javax.servlet.ServletContext;
 import javax.ws.rs.GET;
-import javax.ws.rs.HEAD;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.HeaderParam;
+import javax.ws.rs.OPTIONS;
 import javax.ws.rs.container.AsyncResponse;
 import javax.ws.rs.container.Suspended;
 import javax.ws.rs.core.Context;
@@ -123,6 +126,16 @@ public class MonitorRestServices {
         metricsDAO = new MetricsDAO(mc.getDatabase(mongodbURI.getDatabase()), metricsBaseURI);
         
         checkers = MetricsChecker.checkers();
+    }
+
+    @OPTIONS
+    @Path("/search")
+    public Response search() {
+         return Response.ok()
+                 .header("Access-Control-Allow-Headers", "Range")
+                 .header("Access-Control-Expose-Headers", "Accept-Ranges")
+                 .header("Access-Control-Expose-Headers", "Content-Range")
+                 .build();
     }
 
     @GET
@@ -188,7 +201,7 @@ public class MonitorRestServices {
             }
 
             try (Writer writer = new BufferedWriter(new OutputStreamWriter(out, "UTF-8"))) {
-                toolsDAO.write(writer, id, from, limit, text, name, description, projections);
+                toolsDAO.search(writer, id, from, limit, text, name, description, projections);
             }
         };
 
@@ -200,6 +213,16 @@ public class MonitorRestServices {
                 ? Response.ok() : Response.status(Response.Status.PARTIAL_CONTENT);
         
         return response.header("Accept-Ranges", "tools").header("Content-Range", range.toString()).entity(stream);
+    }
+
+    @OPTIONS
+    @Path("/aggregate")
+    public Response aggregate() {
+         return Response.ok()
+                 .header("Access-Control-Allow-Headers", "Range")
+                 .header("Access-Control-Expose-Headers", "Accept-Ranges")
+                 .header("Access-Control-Expose-Headers", "Content-Range")
+                 .build();
     }
     
     @GET
@@ -281,7 +304,8 @@ public class MonitorRestServices {
         ResponseBuilder response = from == null && to == null 
                 ? Response.ok() : Response.status(Response.Status.PARTIAL_CONTENT);
         
-        return response.header("Accept-Ranges", "items").header("Content-Range", range.toString()).entity(stream);
+        return response.header("Accept-Ranges", "items")
+                       .header("Content-Range", range.toString()).entity(stream);
     }
 
     @GET
@@ -328,6 +352,71 @@ public class MonitorRestServices {
 
     }
 
+    @GET
+    @Path("/homepage/{id}/{type}/{host}{path:.*}")
+    @Produces(MediaType.APPLICATION_JSON)
+    public void getHomePageMonitoring(@PathParam("id") String id,
+                           @PathParam("type") String type,
+                           @PathParam("host") String host,
+                           @PathParam("path") String path,
+                           @Suspended final AsyncResponse asyncResponse) {
+        executor.submit(() -> {
+            asyncResponse.resume(getHomePageMonitoringAsync(id + "/" + type + "/" + host).build());
+        });
+    }
+            
+    private Response.ResponseBuilder getHomePageMonitoringAsync(String id) {
+        final JsonArray operational = metricsDAO.findLog(id, "/project/website/operational", null, null, null);
+        if (operational == null) {
+            return Response.status(Response.Status.INTERNAL_SERVER_ERROR);
+        } else if (operational.isEmpty()) {
+            return Response.status(Response.Status.NOT_FOUND);
+        }
+        
+        final JsonArray access_time = metricsDAO.findLog(id, "/project/website/access_time", null, null, null);
+        if (access_time == null) {
+            return Response.status(Response.Status.INTERNAL_SERVER_ERROR);
+        } else if (access_time.isEmpty()) {
+            return Response.status(Response.Status.NOT_FOUND);
+        }
+        
+        StreamingOutput stream = (OutputStream out) -> {
+            try (JsonGenerator writer = Json.createGenerator(out)) {
+                writer.writeStartArray();
+
+                String code = "0";
+                String date = "1970-01-01T00:00:00.000Z";
+                JsonObject obj = operational.getJsonObject(0);
+
+                for (int i = 0, j = 1, m = access_time.size(), n = operational.size(); i < m; i++) {
+                    writer.writeStartObject();
+
+                    final JsonObject o = access_time.getJsonObject(i);
+                    final String adate = o.getString("date", null);
+                    final String time = o.getString("value", "0");
+
+                    if (adate.compareTo(date) >= 0) {
+                        code = obj.getString("value", "0");
+                        if (j < n) {
+                            obj = operational.getJsonObject(j++);
+                            date = obj.getString("date", null);
+                        }
+                    }
+
+                    writer.write("date", adate);
+                    writer.write("code", Integer.parseInt(code));
+                    writer.write("access_time", Integer.parseInt(time));
+
+                    writer.writeEnd();
+                }
+                
+                writer.writeEnd();
+            }
+        };
+        
+        return Response.ok(stream);
+    }
+    
     @GET
     @Path("/statistics/")
     @Produces(MediaType.APPLICATION_JSON)

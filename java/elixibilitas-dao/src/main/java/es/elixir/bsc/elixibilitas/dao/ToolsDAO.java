@@ -138,9 +138,19 @@ public class ToolsDAO extends AbstractDAO<Document> implements Serializable {
 
     @Override
     protected String getType(Document pk) {
-        return (String)pk.get("type");
+        return pk.getString("type");
     }
 
+    @Override
+    protected String getLabel(Document pk) {
+        return pk.getString("id");
+    }
+    
+    @Override
+    protected String getVersion(Document pk) {
+        return pk.getString("version");
+    }
+    
     public List<Tool> get() {
         List<Tool> tools = new ArrayList<>();
 
@@ -165,11 +175,13 @@ public class ToolsDAO extends AbstractDAO<Document> implements Serializable {
     }
     
     private Tool deserialize(Document doc) {
-        final Document _id = (Document) doc.remove("_id");
-        final String type = _id.getString("type");
+        final Document _id = (Document)doc.remove("_id");
+        final String type = getType(_id);
 
         doc.append("@id", getURI(_id));
         doc.append("@type", type);
+        doc.append("@label", getLabel(_id));
+        doc.append("@version", getVersion(_id));
                         
         final Jsonb jsonb = JsonbBuilder.create(
                 new JsonbConfig().withPropertyNamingStrategy(PropertyNamingStrategy.UPPER_CAMEL_CASE));
@@ -204,9 +216,6 @@ public class ToolsDAO extends AbstractDAO<Document> implements Serializable {
         }
 
         final Document doc = docs.get(0);
-        final Document _id = (Document) doc.remove("_id");
-        doc.append("@id", getURI(_id));
-        doc.append("@type", _id.getString("type"));
             
         return doc.toJson();        
     }
@@ -224,10 +233,6 @@ public class ToolsDAO extends AbstractDAO<Document> implements Serializable {
         sb.append('[');
         do {
             final Document doc = iter.next();
-            final Document _id = (Document) doc.remove("_id");
-            doc.append("@id", getURI(_id));
-            doc.append("@type", _id.getString("type"));
-                        
             sb.append(doc.toJson());
         } while (iter.hasNext() && sb.append(',') != null);
         sb.append(']');
@@ -246,6 +251,11 @@ public class ToolsDAO extends AbstractDAO<Document> implements Serializable {
                 try (MongoCursor<Document> cursor = col.find(query).iterator()) {
                     while(cursor.hasNext()) {
                         Document doc = cursor.next();
+                        final Document _id = (Document)doc.remove("_id");
+                        doc.append("@id", getURI(_id));
+                        doc.append("@type", getType(_id));
+                        doc.append("@label", getLabel(_id));
+                        doc.append("@version", getVersion(_id));
                         doc.append("@license", LICENSE);
                         list.add(doc);
                     }
@@ -347,7 +357,50 @@ public class ToolsDAO extends AbstractDAO<Document> implements Serializable {
         final Document doc = iterator.first();
         
         return doc.get("count", Integer.class);
-    }    
+    }
+    
+    public void write(Writer writer) {
+        try {
+            final MongoCollection<Document> col = database.getCollection(collection);
+            try (JsonWriter jwriter = new JsonWriter(writer, new JsonWriterSettings(true))) {
+
+                final DocumentCodec codec = new DocumentCodec() {
+                    @Override
+                    public void encode(BsonWriter writer,
+                       Document document,
+                       EncoderContext encoderContext) {
+                            super.encode(jwriter, document, encoderContext);
+                    }
+                };
+
+                writer.write("[");
+                
+                FindIterable iterator = col.find();
+
+                try (MongoCursor<Document> cursor = iterator.iterator()) {
+                    if (cursor.hasNext()) {
+                        do {
+                            final Document doc = cursor.next();
+
+                            Document _id = (Document) doc.remove("_id");
+                            doc.append("@id", getURI(_id));
+                            doc.append("@type", getType(_id));
+                            doc.append("@label", getLabel(_id));
+                            doc.append("@version", getVersion(_id));
+                            doc.append("@license", LICENSE);
+
+                            doc.toJson(codec);
+                            jwriter.flush();
+                        } while (cursor.hasNext() && writer.append(",\n") != null);
+                    }
+                }
+                writer.write("]\n");
+            }
+        } catch(IOException ex) {
+            Logger.getLogger(ToolsDAO.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }
+
     /**
      * Find tools and write them into the reader.
      * 
@@ -360,7 +413,7 @@ public class ToolsDAO extends AbstractDAO<Document> implements Serializable {
      * @param description text to search in the 'descriptino' property.
      * @param projections - properties to write or null for all.
      */
-    public void write(Writer writer, String id, Integer skip, Integer limit, 
+    public void search(Writer writer, String id, Integer skip, Integer limit, 
             String text, String name, String description, List<String> projections) {
         try {
             final MongoCollection<Document> col = database.getCollection(collection);
@@ -417,8 +470,8 @@ public class ToolsDAO extends AbstractDAO<Document> implements Serializable {
 
                 aggregation.add(Aggregates.unwind("$tools"));
                 aggregation.add(Aggregates.replaceRoot("$tools"));
-                AggregateIterable<Document> iterator = col.aggregate(aggregation);
-                
+                AggregateIterable<Document> iterator = col.aggregate(aggregation).useCursor(true);
+
                 try (MongoCursor<Document> cursor = iterator.iterator()) {
                     if (cursor.hasNext()) {
                         do {
@@ -426,7 +479,9 @@ public class ToolsDAO extends AbstractDAO<Document> implements Serializable {
 
                             Document _id = (Document) doc.remove("_id");
                             doc.append("@id", getURI(_id));
-                            doc.append("@type", _id.getString("type"));
+                            doc.append("@type", getType(_id));
+                            doc.append("@label", getLabel(_id));
+                            doc.append("@version", getVersion(_id));
                             doc.append("@license", LICENSE);
 
                             doc.toJson(codec);
@@ -436,38 +491,8 @@ public class ToolsDAO extends AbstractDAO<Document> implements Serializable {
                 }
                 writer.write("]\n");
             }
-
         } catch(IOException ex) {
             Logger.getLogger(ToolsDAO.class.getName()).log(Level.SEVERE, null, ex);
-        }
-    }
-
-    private Bson createIdFilter(String id) {
-        final String[] nodes = id.split(":", -1);
-        if (nodes.length > 2) {
-            if (nodes[0].isEmpty()) {
-                return Aggregates.match(
-                    Filters.and(Filters.eq("_id.id", nodes[1]),
-                        Filters.eq("_id.version", nodes[2])));
-
-            } else if (nodes[1].isEmpty()) {
-                return Aggregates.match(Filters.eq("_id.nmsp", nodes[0]));
-            } else {
-                return Aggregates.match(
-                    Filters.and(Filters.eq("_id.nmsp", nodes[0]),
-                        Filters.eq("_id.id", nodes[1]),
-                        Filters.eq("_id.version", nodes[2])));
-            }
-        } else if (nodes.length > 1) {
-            if (nodes[1].isEmpty()) {
-                return Aggregates.match(Filters.eq("_id.nmsp", nodes[0]));
-            } else {
-                return Aggregates.match(
-                            Filters.and(Filters.eq("_id.nmsp", nodes[0]),
-                                        Filters.eq("_id.id", nodes[1])));
-            }
-        } else {
-            return Aggregates.match(Filters.eq("_id.id", nodes[0]));
         }
     }
     
@@ -490,27 +515,7 @@ public class ToolsDAO extends AbstractDAO<Document> implements Serializable {
 
 
         if (id != null && !id.isEmpty()) {
-            final String[] nodes = id.split(":");
-            if (nodes.length > 2) {
-                if (nodes[0].isEmpty()) {
-                    aggregation.add(Aggregates.match(
-                        Filters.and(Filters.eq("_id.id", nodes[1]),
-                            Filters.eq("_id.version", nodes[2]))));
-
-                } else {
-                    aggregation.add(Aggregates.match(
-                        Filters.and(Filters.eq("_id.nmsp", nodes[0]),
-                            Filters.eq("_id.id", nodes[1]),
-                            Filters.eq("_id.version", nodes[2]))));
-                }
-            } else if (nodes.length > 1) {
-                aggregation.add(Aggregates.match(
-                        Filters.and(Filters.eq("_id.nmsp", nodes[0]),
-                            Filters.eq("_id.id", nodes[1]))));
-            } else {
-                aggregation.add(Aggregates.match(
-                        Filters.eq("_id.id", nodes[0])));
-            }
+            aggregation.add(createIdFilter(id));
         }
 
         aggregation.add(Aggregates.group(new BasicDBObject("_id", "$_id.id")));
@@ -556,29 +561,8 @@ public class ToolsDAO extends AbstractDAO<Document> implements Serializable {
                     aggregation.add(Aggregates.match(Filters.regex("description", description, "i")));
                 }
 
-                
                 if (id != null && !id.isEmpty()) {
-                    final String[] nodes = id.split(":");
-                    if (nodes.length > 2) {
-                        if (nodes[0].isEmpty()) {
-                            aggregation.add(Aggregates.match(
-                                Filters.and(Filters.eq("_id.id", nodes[1]),
-                                    Filters.eq("_id.version", nodes[2]))));
-
-                        } else {
-                            aggregation.add(Aggregates.match(
-                                Filters.and(Filters.eq("_id.nmsp", nodes[0]),
-                                    Filters.eq("_id.id", nodes[1]),
-                                    Filters.eq("_id.version", nodes[2]))));
-                        }
-                    } else if (nodes.length > 1) {
-                        aggregation.add(Aggregates.match(
-                                Filters.and(Filters.eq("_id.nmsp", nodes[0]),
-                                    Filters.eq("_id.id", nodes[1]))));
-                    } else {
-                        aggregation.add(Aggregates.match(
-                                Filters.eq("_id.id", nodes[0])));
-                    }
+                    aggregation.add(createIdFilter(id));
                 }
 
                 if (projections != null && projections.size() > 0) {
@@ -591,10 +575,6 @@ public class ToolsDAO extends AbstractDAO<Document> implements Serializable {
                 }
                 aggregation.add(Aggregates.group(new BasicDBObject("_id", "$_id.id"),
                         Accumulators.push("entries", "$$ROOT")));
-
-
-//                aggregation.add(Aggregates.group(new BasicDBObject("_id", BsonNull.VALUE),
-//                        Accumulators.sum("count", 1), Accumulators.push("entries", "$$ROOT")));
                 
                 aggregation.add(Aggregates.sort(Sorts.ascending("entries.name")));
 
@@ -606,17 +586,13 @@ public class ToolsDAO extends AbstractDAO<Document> implements Serializable {
                     aggregation.add(Aggregates.limit(limit));
                 }
 
-//                aggregation.add(Aggregates.unwind("$tools"));
-//                aggregation.add(Aggregates.replaceRoot("$tools"));
-                AggregateIterable<Document> iterator = col.aggregate(aggregation);
+                AggregateIterable<Document> iterator = col.aggregate(aggregation).useCursor(true);
 
                 try (MongoCursor<Document> cursor = iterator.iterator()) {
                     if (cursor.hasNext()) {
                         do {
-                            
                             final Document doc = cursor.next();
 
-                            
                             writer.append("{\"id\": \"");
                             final String tid = doc.get("_id", Document.class).get("_id", String.class);
                             writer.append(tid);
@@ -628,7 +604,9 @@ public class ToolsDAO extends AbstractDAO<Document> implements Serializable {
                             for (Document tool : tools) {
                                 Document _id = (Document) tool.remove("_id");
                                 tool.append("@id", getURI(_id));
-                                tool.append("@type", _id.getString("type"));
+                                tool.append("@type", getType(_id));
+                                tool.append("@label", getLabel(_id));
+                                tool.append("@version", getVersion(_id));
                                 tool.append("@license", LICENSE);
                                 
                                 final String type = getType(_id);
@@ -664,6 +642,35 @@ public class ToolsDAO extends AbstractDAO<Document> implements Serializable {
 
         } catch(IOException ex) {
             Logger.getLogger(ToolsDAO.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }
+
+    private Bson createIdFilter(String id) {
+        final String[] nodes = id.split(":", -1);
+        if (nodes.length > 2) {
+            if (nodes[0].isEmpty()) {
+                return Aggregates.match(
+                    Filters.and(Filters.eq("_id.id", nodes[1]),
+                        Filters.eq("_id.version", nodes[2])));
+
+            } else if (nodes[1].isEmpty()) {
+                return Aggregates.match(Filters.eq("_id.nmsp", nodes[0]));
+            } else {
+                return Aggregates.match(
+                    Filters.and(Filters.eq("_id.nmsp", nodes[0]),
+                        Filters.eq("_id.id", nodes[1]),
+                        Filters.eq("_id.version", nodes[2])));
+            }
+        } else if (nodes.length > 1) {
+            if (nodes[1].isEmpty()) {
+                return Aggregates.match(Filters.eq("_id.nmsp", nodes[0]));
+            } else {
+                return Aggregates.match(
+                            Filters.and(Filters.eq("_id.nmsp", nodes[0]),
+                                        Filters.eq("_id.id", nodes[1])));
+            }
+        } else {
+            return Aggregates.match(Filters.eq("_id.id", nodes[0]));
         }
     }
     

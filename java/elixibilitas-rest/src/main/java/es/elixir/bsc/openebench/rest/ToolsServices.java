@@ -68,6 +68,7 @@ import javax.servlet.ServletContext;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
 import javax.ws.rs.HeaderParam;
+import javax.ws.rs.OPTIONS;
 import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
@@ -76,6 +77,7 @@ import javax.ws.rs.QueryParam;
 import javax.ws.rs.container.AsyncResponse;
 import javax.ws.rs.container.Suspended;
 import javax.ws.rs.core.Context;
+import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.ResponseBuilder;
@@ -89,7 +91,7 @@ import javax.ws.rs.core.UriInfo;
  * @author Dmitry Repchevsky
  */
 
-@Path("/tool/")
+@Path("/")
 @ApplicationScoped
 public class ToolsServices {
 
@@ -130,17 +132,62 @@ public class ToolsServices {
 
         toolsDAO = new ToolsDAO(mc.getDatabase(uri.getDatabase()), baseURI);
     }
-    
+
     /**
      * Proxy method to return Tool JSON Schema.
      * 
      * @return JSON Schema for the Tool
      */
     @GET
-    @Path("/tool.json")
+    @Path("/tool/tool.json")
     @Produces(MediaType.APPLICATION_JSON)
     public Response getToolJsonSchema() {
         return Response.ok(ctx.getResourceAsStream("/META-INF/resources/tool.json")).build();
+    }
+
+    /**
+     * Proxy method to return Tool JSON Schema.
+     * 
+     * @return JSON Schema for the Tool
+     */
+    @GET
+    @Path("/tools.owl")
+    public Response getToolsOntology() {
+        return Response.ok(ctx.getResourceAsStream("/META-INF/resources/tools.owl"), "application/owl+xml").build();
+    }
+    
+
+    @GET
+    @Path("/tool/")
+    @Produces("application/ld+json")
+    public void getOntology(@Suspended final AsyncResponse asyncResponse) {
+        executor.submit(() -> {
+            asyncResponse.resume(getOntologyAsync().build());
+        });
+    }
+
+    private ResponseBuilder getOntologyAsync() {
+        StreamingOutput stream = (OutputStream out) -> {
+            try (Writer writer = new BufferedWriter(new OutputStreamWriter(out, "UTF-8"))) {
+                writer.write(ctx_jsonld);
+                toolsDAO.write(writer);
+                writer.write("\n}\n]");
+            } catch(Exception ex) {
+                Logger.getLogger(ToolsServices.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        };
+
+        return Response.ok(stream);
+    }
+
+    @OPTIONS
+    @Path("/tool/")
+    public Response search() {
+         return Response.ok()
+                 .header("Access-Control-Allow-Headers", "Range")
+                 .header("Access-Control-Expose-Headers", "Accept-Ranges")
+                 .header("Access-Control-Expose-Headers", "Content-Range")
+                 .build();
     }
 
     /**
@@ -150,7 +197,7 @@ public class ToolsServices {
      * @param asyncResponse 
      */
     @GET
-    @Path("/")
+    @Path("/tool/")
     @Produces(MediaType.APPLICATION_JSON)
     @Operation(summary = "Returns all tools descriptions.",
         responses = {
@@ -167,6 +214,7 @@ public class ToolsServices {
                     .header("Access-Control-Allow-Headers", "Range")
                     .header("Access-Control-Expose-Headers", "Accept-Ranges")
                     .header("Access-Control-Expose-Headers", "Content-Range")
+                    .type(MediaType.APPLICATION_JSON)
                     .build());
         });
     }
@@ -180,7 +228,9 @@ public class ToolsServices {
                 limit = to - from;
             }
             try (Writer writer = new BufferedWriter(new OutputStreamWriter(out, "UTF-8"))) {
-                toolsDAO.write(writer, null, from, limit, null, null, null, null);
+                toolsDAO.search(writer, null, from, limit, null, null, null, null);
+            } catch(Exception ex) {
+                Logger.getLogger(ToolsServices.class.getName()).log(Level.SEVERE, null, ex);
             }
         };
         final int count = (int) toolsDAO.count();
@@ -194,7 +244,7 @@ public class ToolsServices {
     }
 
     @GET
-    @Path("/{id}")
+    @Path("/tool/{id}")
     @Produces(MediaType.APPLICATION_JSON)
     public void getTools(@PathParam("id") final String id,
                          @Suspended final AsyncResponse asyncResponse) {
@@ -204,7 +254,7 @@ public class ToolsServices {
     }
 
     @GET
-    @Path("/{id}/{type}")
+    @Path("/tool/{id}/{type}")
     @Produces(MediaType.APPLICATION_JSON)
     public void getToolz(@PathParam("id") final String id,
                          @PathParam("type") final String type,
@@ -215,7 +265,7 @@ public class ToolsServices {
     }
     
     @GET
-    @Path("/{id}/{type}/{host}{path:.*}")
+    @Path("/tool/{id}/{type}/{host}{path:.*}")
     @Produces(MediaType.APPLICATION_JSON)
     @Operation(
         summary = "Returns one or many tools by the id.",
@@ -239,7 +289,8 @@ public class ToolsServices {
                         @PathParam("path") final String path,
                         @Suspended final AsyncResponse asyncResponse) {
         executor.submit(() -> {
-            asyncResponse.resume(getToolAsync(id + "/" + type + "/" + host, path).build());
+            asyncResponse.resume(
+                    getToolAsync(id + "/" + type + "/" + host, path).build());
         });
     }
 
@@ -258,6 +309,8 @@ public class ToolsServices {
             StreamingOutput stream = (OutputStream out) -> {
                 try (JsonWriter writer = Json.createWriter(out)) {
                     writer.write(value);
+                } catch(Exception ex) {
+                    Logger.getLogger(ToolsServices.class.getName()).log(Level.SEVERE, null, ex);
                 }
             };
             return Response.ok(stream);
@@ -273,18 +326,18 @@ public class ToolsServices {
     }
     
     @GET
-    @Path("/{id}/{type}/{host}")
+    @Path("/tool/{id}/{type}/{host}{path:.*}")
     @Produces("application/ld+json")
-    public void getOntology(@PathParam("id") final String id,
-                            @PathParam("type") final String type,
-                            @PathParam("host") final String host,
-                            @Suspended final AsyncResponse asyncResponse) {
+    public void getToolOntology(@PathParam("id") final String id,
+                                @PathParam("type") final String type,
+                                @PathParam("host") final String host,
+                                @Suspended final AsyncResponse asyncResponse) {
         executor.submit(() -> {
-            asyncResponse.resume(getOntologyAsync(id + "/" + type + "/" + host).build());
+            asyncResponse.resume(getToolOntologyAsync(id + "/" + type + "/" + host).build());
         });
     }
 
-    private ResponseBuilder getOntologyAsync(String id) {
+    private ResponseBuilder getToolOntologyAsync(String id) {
         final String json = toolsDAO.getJSON(id);
         if (json == null) {
             return Response.status(Status.NOT_FOUND);
@@ -305,7 +358,7 @@ public class ToolsServices {
     }
 
     @PUT
-    @Path("/{id : .*}")
+    @Path("/tool/{id : .*}")
     @Consumes(MediaType.APPLICATION_JSON)
     @Operation(
         summary = "Inserts the tool into the database."
@@ -338,7 +391,7 @@ public class ToolsServices {
     }
 
     @PATCH
-    @Path("/")
+    @Path("/tool/")
     @Consumes(MediaType.APPLICATION_JSON)
     @Operation(
         summary = "Updates tools in the database."
@@ -378,7 +431,7 @@ public class ToolsServices {
     }
 
     @PATCH
-    @Path("/{id}/{type}/{host}{path:.*}")
+    @Path("/tool/{id}/{type}/{host}{path:.*}")
     @Consumes(MediaType.APPLICATION_JSON)
     @Operation(
         summary = "Updates the tool in the database.",
@@ -431,7 +484,7 @@ public class ToolsServices {
     }
     
     @GET
-    @Path("/log/{id}/{type}/{host}{path:.*}")
+    @Path("/tool/log/{id}/{type}/{host}{path:.*}")
     @Produces(MediaType.APPLICATION_JSON)
     public void getToolsLog(@PathParam("id") String id,
                            @PathParam("type") String type,

@@ -26,15 +26,17 @@
 package es.elixir.bsc.openebench.rest;
 
 import java.io.IOException;
+import java.util.List;
 import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.container.ContainerRequestFilter;
 import javax.ws.rs.container.PreMatching;
 import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.ext.Provider;
 
 /**
- * The filter that add "application/json" content to be accepted.
+ * The filter that add "application/json" or "application/ld+json" content to be accepted.
  * For instance some browsers expect "text/html" or "application/xml" what
  * makes impossible to get JSON back from the REST services.
  * 
@@ -47,6 +49,32 @@ public class JSONContentTypeFilter implements ContainerRequestFilter {
 
     @Override
     public void filter(ContainerRequestContext rc) throws IOException {
-        rc.getHeaders().add(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON);
+        final MultivaluedMap<String, String> headers = rc.getHeaders();
+        final List<String> list = headers.get("Accept");
+        if (list != null) {
+            for (String header : list) {
+                final String[] ranges = header.split(",");
+                for (String range : ranges) {
+                    final String[] nodes = range.split(";");
+                    if (MediaType.APPLICATION_XML.equals(nodes[0].trim())) {
+                        if (nodes.length <= 1) {
+                            headers.add(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON);
+                        }
+                        final String qs = nodes[1].replace(" ", "");
+                        if (qs.startsWith("q=")) {
+                            try {
+                                final Float q = Float.parseFloat(qs.substring(2));
+                                headers.add(HttpHeaders.ACCEPT, q > 0.5 ?
+                                        MediaType.APPLICATION_JSON :
+                                        "application/ld+json");
+                                
+                            } catch(NumberFormatException ex) {   
+                            }
+                        }
+                        return;
+                    } 
+                }
+            }
+        }
     }
 }
