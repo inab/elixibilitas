@@ -101,12 +101,12 @@ public class Tool extends LD {
         this.timestamp = timestamp;
     }
     
-    @JsonbProperty("@xid")
+    @JsonbProperty("xid")
     public String getExternalId() {
         return xid;
     }
 
-    @JsonbProperty("@xid")
+    @JsonbProperty("xid")
     public void setExternalId(String xid) {
         this.xid = xid;
     }

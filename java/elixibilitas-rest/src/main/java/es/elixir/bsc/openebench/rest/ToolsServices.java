@@ -77,7 +77,6 @@ import javax.ws.rs.QueryParam;
 import javax.ws.rs.container.AsyncResponse;
 import javax.ws.rs.container.Suspended;
 import javax.ws.rs.core.Context;
-import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.ResponseBuilder;
@@ -256,7 +255,7 @@ public class ToolsServices {
     @GET
     @Path("/tool/{id}/{type}")
     @Produces(MediaType.APPLICATION_JSON)
-    public void getToolz(@PathParam("id") final String id,
+    public void getTools(@PathParam("id") final String id,
                          @PathParam("type") final String type,
                          @Suspended final AsyncResponse asyncResponse) {
         executor.submit(() -> {
@@ -320,7 +319,7 @@ public class ToolsServices {
     }
     
     private ResponseBuilder getToolsAsync(String id) {
-        final String json = toolsDAO.getJSONArray(id);
+        final String json = toolsDAO.getTools(id);
         return json != null ? Response.ok(json, MediaType.APPLICATION_JSON_TYPE) :
                               Response.status(Status.NOT_FOUND);
     }
@@ -344,14 +343,14 @@ public class ToolsServices {
         }
         
         StreamingOutput stream = (OutputStream out) -> {
-            out.write(ctx_jsonld.getBytes());
-            out.write('[');
-            out.write(json.getBytes());
-            out.write(']');
-            out.write('\n');
-            out.write('}');
-            out.write('\n');
-            out.write(']');
+            try (Writer writer = new BufferedWriter(new OutputStreamWriter(out, "UTF-8"))) {
+                writer.write(ctx_jsonld);
+                writer.write('[');
+                writer.write(json);
+                writer.write("\n]\n}\n]");
+            } catch(Exception ex) {
+                Logger.getLogger(ToolsServices.class.getName()).log(Level.SEVERE, null, ex);
+            }
         };
 
         return Response.ok(stream);

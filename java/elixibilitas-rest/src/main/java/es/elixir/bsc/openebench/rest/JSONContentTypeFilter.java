@@ -56,19 +56,21 @@ public class JSONContentTypeFilter implements ContainerRequestFilter {
                 final String[] ranges = header.split(",");
                 for (String range : ranges) {
                     final String[] nodes = range.split(";");
-                    if (MediaType.APPLICATION_XML.equals(nodes[0].trim())) {
+                    final String mime = nodes[0].trim();
+                    if (MediaType.APPLICATION_XML.equals(mime)) {
                         if (nodes.length <= 1) {
                             headers.add(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON);
-                        }
-                        final String qs = nodes[1].replace(" ", "");
-                        if (qs.startsWith("q=")) {
-                            try {
-                                final Float q = Float.parseFloat(qs.substring(2));
-                                headers.add(HttpHeaders.ACCEPT, q > 0.5 ?
-                                        MediaType.APPLICATION_JSON :
-                                        "application/ld+json");
-                                
-                            } catch(NumberFormatException ex) {   
+                        } else {
+                            final String qs = nodes[1].replace(" ", "");
+                            if (qs.startsWith("q=")) {
+                                try {
+                                    final Float q = Float.parseFloat(qs.substring(2));
+                                    headers.add(HttpHeaders.ACCEPT, q > 0.5 ?
+                                            MediaType.APPLICATION_JSON :
+                                            "application/ld+json");
+
+                                } catch(NumberFormatException ex) {   
+                                }
                             }
                         }
                         return;
@@ -76,5 +78,6 @@ public class JSONContentTypeFilter implements ContainerRequestFilter {
                 }
             }
         }
+        headers.add(HttpHeaders.ACCEPT, "application/ld+json");
     }
 }

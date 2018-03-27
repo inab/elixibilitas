@@ -353,6 +353,33 @@ public class MonitorRestServices {
     }
 
     @GET
+    @Path("/widget/{id:.*}")
+    @Produces(MediaType.APPLICATION_JSON)
+    public void getWidget(@PathParam("id") String id,
+                          @Suspended final AsyncResponse asyncResponse) {
+        executor.submit(() -> {
+            asyncResponse.resume(getWidgetAsync(id).build());
+        });
+    }
+
+    private Response.ResponseBuilder getWidgetAsync(String id) {
+        final JsonArray array = toolsDAO.getJSONArray(id);
+        
+        if (array.isEmpty()) {
+            return Response.status(Response.Status.NOT_FOUND);
+        }
+        
+        JsonObject object = array.getJsonObject(0);
+        for (int i = 1; i < array.size(); i++) {
+            final JsonObject obj = array.getJsonObject(i);
+            if (obj.getString("@timestamp", "").compareTo(object.getString("@timestamp", "")) > 0) {
+                object = obj;
+            }
+        }
+        return Response.ok(object);
+    }
+    
+    @GET
     @Path("/homepage/{id}/{type}/{host}{path:.*}")
     @Produces(MediaType.APPLICATION_JSON)
     public void getHomePageMonitoring(@PathParam("id") String id,

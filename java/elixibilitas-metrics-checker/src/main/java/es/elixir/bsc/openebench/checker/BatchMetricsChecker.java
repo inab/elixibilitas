@@ -37,7 +37,7 @@ public class BatchMetricsChecker {
         
         final List<Tool> tools = toolsDAO.get();
         final CountDownLatch latch = new CountDownLatch(tools.size());
-        
+
         tools.forEach(tool -> {
             
             final String id = tool.id.toString().substring(toolsDAO.baseURI.length());

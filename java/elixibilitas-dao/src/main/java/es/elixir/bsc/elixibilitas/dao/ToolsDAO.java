@@ -61,6 +61,10 @@ import java.util.TreeMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
+import javax.json.Json;
+import javax.json.JsonArray;
+import javax.json.JsonArrayBuilder;
+import javax.json.JsonObjectBuilder;
 import javax.json.bind.Jsonb;
 import javax.json.bind.JsonbBuilder;
 import javax.json.bind.JsonbConfig;
@@ -214,13 +218,11 @@ public class ToolsDAO extends AbstractDAO<Document> implements Serializable {
         if (docs.isEmpty()) {
             return null;
         }
-
-        final Document doc = docs.get(0);
-            
-        return doc.toJson();        
+       
+        return docs.get(0).toJson();
     }
     
-    public String getJSONArray(String id) {
+    public String getTools(String id) {
         final List<Document> docs = getBSON(id);
         if (docs.isEmpty()) {
             return null;
@@ -238,6 +240,18 @@ public class ToolsDAO extends AbstractDAO<Document> implements Serializable {
         sb.append(']');
         
         return sb.toString();        
+    }
+
+    public JsonArray getJSONArray(String id) {
+        final JsonArrayBuilder builder = Json.createArrayBuilder();
+        
+        final List<Document> docs = getBSON(id);
+        for (Document doc : docs) {
+            JsonObjectBuilder ob = Json.createObjectBuilder(doc);
+            builder.add(ob);
+        }
+
+        return builder.build();
     }
 
     private List<Document> getBSON(String id) {
@@ -317,6 +331,8 @@ public class ToolsDAO extends AbstractDAO<Document> implements Serializable {
                             Filters.eq("_id.type", nodes[1]));
                 }
                 return Filters.and(Filters.eq("_id.id", _id[1]), Filters.eq("_id.nmsp", _id[0]));
+           } else {
+               return Filters.eq("_id.id", _id[0]);
            }
         }
         
