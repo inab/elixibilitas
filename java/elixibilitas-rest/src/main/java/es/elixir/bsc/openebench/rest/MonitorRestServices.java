@@ -353,16 +353,16 @@ public class MonitorRestServices {
     }
 
     @GET
-    @Path("/widget/{id:.*}")
+    @Path("/widget/tool/{id:.*}")
     @Produces(MediaType.APPLICATION_JSON)
-    public void getWidget(@PathParam("id") String id,
+    public void getToolWidget(@PathParam("id") String id,
                           @Suspended final AsyncResponse asyncResponse) {
         executor.submit(() -> {
-            asyncResponse.resume(getWidgetAsync(id).build());
+            asyncResponse.resume(getToolWidgetAsync(id).build());
         });
     }
 
-    private Response.ResponseBuilder getWidgetAsync(String id) {
+    private Response.ResponseBuilder getToolWidgetAsync(String id) {
         final JsonArray array = toolsDAO.getJSONArray(id);
         
         if (array.isEmpty()) {
@@ -377,6 +377,41 @@ public class MonitorRestServices {
             }
         }
         return Response.ok(object);
+    }
+
+    @GET
+    @Path("/widget/metrics/{id:.*}")
+    @Produces(MediaType.APPLICATION_JSON)
+    public void getMetricsWidget(@PathParam("id") String id,
+                          @Suspended final AsyncResponse asyncResponse) {
+        executor.submit(() -> {
+            asyncResponse.resume(getMetricsWidgetAsync(id).build());
+        });
+    }
+
+    private Response.ResponseBuilder getMetricsWidgetAsync(String id) {
+        final JsonArray array = toolsDAO.getJSONArray(id);
+        
+        if (array.isEmpty()) {
+            return Response.status(Response.Status.NOT_FOUND);
+        }
+        
+        JsonObject object = array.getJsonObject(0);
+        for (int i = 1; i < array.size(); i++) {
+            final JsonObject obj = array.getJsonObject(i);
+            if (obj.getString("@timestamp", "").compareTo(object.getString("@timestamp", "")) > 0) {
+                object = obj;
+            }
+        }
+        
+        final String _id = object.getString("@id", null);
+        
+        final String json = metricsDAO.getJSON(_id.substring(toolsDAO.baseURI.length()));
+        if (json == null) {
+            return Response.status(Response.Status.NOT_FOUND);
+        }
+        
+        return Response.ok(json);
     }
     
     @GET

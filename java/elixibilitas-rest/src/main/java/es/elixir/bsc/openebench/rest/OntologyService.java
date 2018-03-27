@@ -22,37 +22,35 @@
  * MA 02110-1301  USA
  *****************************************************************************
  */
-
 package es.elixir.bsc.openebench.rest;
 
-import io.swagger.v3.jaxrs2.integration.resources.OpenApiResource;
-import java.util.HashSet;
-import java.util.Set;
-import javax.ws.rs.ApplicationPath;
-import javax.ws.rs.core.Application;
+import javax.enterprise.context.ApplicationScoped;
+import javax.inject.Inject;
+import javax.servlet.ServletContext;
+import javax.ws.rs.GET;
+import javax.ws.rs.Path;
+import javax.ws.rs.core.Response;
 
 /**
- * Benchmarking JAX-RS configuration (match everything from the root).
- * 
+ *
  * @author Dmitry Repchevsky
  */
 
-@ApplicationPath("/")
-public class OpenEBenchMonitorApplication extends Application {
-    @Override
-    public Set<Class<?>> getClasses() {
-        Set<Class<?>> resources = new HashSet();
+@Path("/")
+@ApplicationScoped
+public class OntologyService {
+    
+    @Inject 
+    private ServletContext ctx;
 
-        resources.add(OpenApiResource.class);
-        resources.add(ToolsServices.class);
-        resources.add(MetricsServices.class);
-        resources.add(OntologyService.class);
-        resources.add(EdamServices.class);
-        resources.add(MonitorRestServices.class);
-        resources.add(CorsResponseFilter.class);
-        resources.add(JSONContentTypeFilter.class);
-        resources.add(PublicationsService.class);
-        
-        return resources;
+    /**
+     * Proxy method to return Tool JSON Schema.
+     * 
+     * @return JSON Schema for the Tool
+     */
+    @GET
+    @Path("/tools.owl")
+    public Response getToolsOntology() {
+        return Response.ok(ctx.getResourceAsStream("/META-INF/resources/tools.owl"), "application/rdf+xml").build();
     }
 }

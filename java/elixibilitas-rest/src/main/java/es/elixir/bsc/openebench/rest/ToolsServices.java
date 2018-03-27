@@ -90,7 +90,7 @@ import javax.ws.rs.core.UriInfo;
  * @author Dmitry Repchevsky
  */
 
-@Path("/")
+@Path("/tool/")
 @ApplicationScoped
 public class ToolsServices {
 
@@ -138,26 +138,15 @@ public class ToolsServices {
      * @return JSON Schema for the Tool
      */
     @GET
-    @Path("/tool/tool.json")
+    @Path("/tool.json")
     @Produces(MediaType.APPLICATION_JSON)
     public Response getToolJsonSchema() {
         return Response.ok(ctx.getResourceAsStream("/META-INF/resources/tool.json")).build();
     }
-
-    /**
-     * Proxy method to return Tool JSON Schema.
-     * 
-     * @return JSON Schema for the Tool
-     */
-    @GET
-    @Path("/tools.owl")
-    public Response getToolsOntology() {
-        return Response.ok(ctx.getResourceAsStream("/META-INF/resources/tools.owl"), "application/owl+xml").build();
-    }
     
 
     @GET
-    @Path("/tool/")
+    @Path("/")
     @Produces("application/ld+json")
     public void getOntology(@Suspended final AsyncResponse asyncResponse) {
         executor.submit(() -> {
@@ -180,7 +169,7 @@ public class ToolsServices {
     }
 
     @OPTIONS
-    @Path("/tool/")
+    @Path("/")
     public Response search() {
          return Response.ok()
                  .header("Access-Control-Allow-Headers", "Range")
@@ -196,7 +185,7 @@ public class ToolsServices {
      * @param asyncResponse 
      */
     @GET
-    @Path("/tool/")
+    @Path("/")
     @Produces(MediaType.APPLICATION_JSON)
     @Operation(summary = "Returns all tools descriptions.",
         responses = {
@@ -243,7 +232,7 @@ public class ToolsServices {
     }
 
     @GET
-    @Path("/tool/{id}")
+    @Path("/{id}")
     @Produces(MediaType.APPLICATION_JSON)
     public void getTools(@PathParam("id") final String id,
                          @Suspended final AsyncResponse asyncResponse) {
@@ -253,7 +242,7 @@ public class ToolsServices {
     }
 
     @GET
-    @Path("/tool/{id}/{type}")
+    @Path("/{id}/{type}")
     @Produces(MediaType.APPLICATION_JSON)
     public void getTools(@PathParam("id") final String id,
                          @PathParam("type") final String type,
@@ -264,7 +253,7 @@ public class ToolsServices {
     }
     
     @GET
-    @Path("/tool/{id}/{type}/{host}{path:.*}")
+    @Path("/{id}/{type}/{host}{path:.*}")
     @Produces(MediaType.APPLICATION_JSON)
     @Operation(
         summary = "Returns one or many tools by the id.",
@@ -325,7 +314,7 @@ public class ToolsServices {
     }
     
     @GET
-    @Path("/tool/{id}/{type}/{host}{path:.*}")
+    @Path("/{id}/{type}/{host}{path:.*}")
     @Produces("application/ld+json")
     public void getToolOntology(@PathParam("id") final String id,
                                 @PathParam("type") final String type,
@@ -357,7 +346,7 @@ public class ToolsServices {
     }
 
     @PUT
-    @Path("/tool/{id : .*}")
+    @Path("/{id : .*}")
     @Consumes(MediaType.APPLICATION_JSON)
     @Operation(
         summary = "Inserts the tool into the database."
@@ -390,7 +379,7 @@ public class ToolsServices {
     }
 
     @PATCH
-    @Path("/tool/")
+    @Path("/")
     @Consumes(MediaType.APPLICATION_JSON)
     @Operation(
         summary = "Updates tools in the database."
@@ -430,7 +419,7 @@ public class ToolsServices {
     }
 
     @PATCH
-    @Path("/tool/{id}/{type}/{host}{path:.*}")
+    @Path("/{id}/{type}/{host}{path:.*}")
     @Consumes(MediaType.APPLICATION_JSON)
     @Operation(
         summary = "Updates the tool in the database.",
@@ -483,7 +472,7 @@ public class ToolsServices {
     }
     
     @GET
-    @Path("/tool/log/{id}/{type}/{host}{path:.*}")
+    @Path("/log/{id}/{type}/{host}{path:.*}")
     @Produces(MediaType.APPLICATION_JSON)
     public void getToolsLog(@PathParam("id") String id,
                            @PathParam("type") String type,

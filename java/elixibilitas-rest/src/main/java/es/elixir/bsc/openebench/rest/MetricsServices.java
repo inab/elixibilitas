@@ -50,6 +50,7 @@ import javax.annotation.PostConstruct;
 import javax.annotation.Resource;
 import javax.annotation.security.RolesAllowed;
 import javax.enterprise.concurrent.ManagedExecutorService;
+import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 import javax.json.Json;
 import javax.json.JsonArray;
@@ -88,6 +89,7 @@ import javax.ws.rs.core.UriInfo;
  */
 
 @Path("/metrics/")
+@ApplicationScoped
 public class MetricsServices {
     
     @Inject
