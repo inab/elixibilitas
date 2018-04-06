@@ -23,4 +23,32 @@
 | 12 | version:cite                  | project.documentation.citation      | bool  | Whether the resource includes an statement on how to cite it  and potentially associated algorithms, methods, etc. |
 | 13 | version:api                   | project.documentation.api           | uri   | Complete API documentation (e.g. JavaDoc, Doxygen).                                                                |
 | 14 | version:repositories          | project.documentation.api_versioned | uri[] | Whether the API documentation is held under version control system.                                                |
-| 15 | version:source/comments_ratio |                                     |       |                                                                                                                    |
+| 15 | version:source/comments_ratio |                                     |       | Ratio code/comments, code lines/document lines. It reflects how much the code is documented.                       |
+
+#### Usability: Understability metrics
+
+|    | metrics                       | json path                           | type  | description                                                                                                                                                           |
+|----|-------------------------------|-------------------------------------|-------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 16 | canonical:description         | project.summary.description         | bool  | Whether high-level description of the tool is available. It should contain concept, rationale and application. By application we understand what the software is for. |
+| 17 | canonical:architecture        | project.summary.architecture        | bool  | Whether architectural overview, with diagrams, is available.                                                                                                          |
+| 18 | canonical:usecase             | project.summary.case_studies        | bool  | Whether case studies of use are available. Example of use.                                                                                                            |
+| 19 | canonical:concept             | project.summary.concept             | bool  | Whether high-level description of how the tool/software works.                                                                                                        |
+| 20 | canonical:rationale           | project.summary.rationale           | bool  | Whether design rationale is available.                                                                                                                                |
+| 21 | canonical:application         | project.summary.usecases            | uri   | Whether descriptions of intended use cases are available.                                                                |
+
+#### Usability: Buildability & Installability
+
+|    | metrics                            | json path                           | type  | description                                                                                         |
+|----|------------------------------------|-------------------------------------|-------|-----------------------------------------------------------------------------------------------------|
+| 22 | version:build_instructions         | project.build.instructions          | bool  | Whether instructions for building the software are provided.                                        |
+| 23 | version:installation_instructions  | project.deployment.instructions     | bool  | Whether instructions for installing the software are provided.                                      |
+| 24 | version:build_dependencies         | project.build.dependencies          | bool  | Whether the list of all third-party dependencies for proper project build is provided.              |
+| 25 | version:execution_dependencies     | project.deployment.dependencies     | bool  | Whether the list of all third-party runtime dependencies is provided.                               |
+| 26 | version:execution_test             |                                     | bool  | Whether the software has specific tests to ensure the correct installation.                         |
+| 27 | version:virtual_environments       | distribution.vre                    | bool  | Whether the resource could be built into a virtual environment such as BioConda.                    |
+| 28 | version:type                       | project.build.automated             | bool  | Type of the automated build system used (make, maven, ant, etc).                                    |
+| 29 | version:package_based_installation | distribution.packages               | bool  | Whether the software can be installed from pre-configured packages e.g. RPMs, DEBs, PiP, CPAN, PECL |
+| 30 | version:language                   | distribution.sourcecode.interpreted | bool  | Code source languange. Whether it is compiled (C, C++, C#) or interpreted (Python, Perl, Ruby).     |
+| 31 | version:operative_system           | project.build.unix                  | bool  | Operative system used to build the software (Unix or Not).                                          |
+| 32 | compiler_warnings                  |                                     |       | Whether the compiler gives warnings. Compilation sucess.                                            |
+| 33 | version:automated                  | project.build.automated             | bool  | Whether an automated build system used.                                                             |
