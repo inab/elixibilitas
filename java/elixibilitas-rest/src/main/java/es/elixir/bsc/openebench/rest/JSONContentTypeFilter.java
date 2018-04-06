@@ -78,6 +78,6 @@ public class JSONContentTypeFilter implements ContainerRequestFilter {
                 }
             }
         }
-        headers.add(HttpHeaders.ACCEPT, "application/ld+json");
+        headers.add(HttpHeaders.ACCEPT, "application/ld+json;q=.9");
     }
 }
