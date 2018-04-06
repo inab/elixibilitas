@@ -317,9 +317,6 @@
       "name": {
             "type": "string"
       },
-      "version": {
-            "type": "string"
-      },
       "xid": {
             "description": "original (external) identifier used by the datasource",
             "type": "string"
