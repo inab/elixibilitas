@@ -89,19 +89,27 @@ public class OpenEBenchEndpoint {
         
         final Jsonb jsonb = JsonbBuilder.create(
                 new JsonbConfig().withPropertyNamingStrategy(PropertyNamingStrategy.UPPER_CAMEL_CASE));
-        
-        try (InputStream in = URI.create(URI_BASE).toURL().openStream();
-             JsonParser parser = Json.createParser(new BufferedInputStream(in))) {
-            if (parser.hasNext() &&
-                parser.next() == JsonParser.Event.START_ARRAY) {
-                
-                final Iterator<JsonValue> iter = parser.getArrayStream().iterator();
-                while(iter.hasNext()) {
-                    final JsonValue value = iter.next();
-                    if (value.getValueType() == JsonValue.ValueType.OBJECT) {
-                        final JsonObject object = value.asJsonObject();
-                        final Tool tool = jsonb.fromJson(object.toString(), Tool.class);
-                        toolz.put(tool.id.toString(), tool);
+
+        try {
+            HttpURLConnection con = (HttpURLConnection)URI.create(URI_BASE).toURL().openConnection();
+            con.setRequestProperty("Accept", "application/json");
+            con.setUseCaches(false);
+            con.setDoOutput(true);
+            try (InputStream in = con.getInputStream();
+                 JsonParser parser = Json.createParser(new BufferedInputStream(in))) {
+
+
+                if (parser.hasNext() &&
+                    parser.next() == JsonParser.Event.START_ARRAY) {
+
+                    final Iterator<JsonValue> iter = parser.getArrayStream().iterator();
+                    while(iter.hasNext()) {
+                        final JsonValue value = iter.next();
+                        if (value.getValueType() == JsonValue.ValueType.OBJECT) {
+                            final JsonObject object = value.asJsonObject();
+                            final Tool tool = jsonb.fromJson(object.toString(), Tool.class);
+                            toolz.put(tool.id.toString(), tool);
+                        }
                     }
                 }
             }
