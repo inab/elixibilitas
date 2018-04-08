@@ -51,6 +51,7 @@ import java.util.Map;
 import javax.annotation.PostConstruct;
 import javax.annotation.Resource;
 import javax.enterprise.concurrent.ManagedExecutorService;
+import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 import javax.json.Json;
 import javax.json.JsonArray;
@@ -95,6 +96,7 @@ import javax.ws.rs.core.UriInfo;
                     //security = @SecurityRequirement(name = "openid-connect"), 
                     servers = {@Server(url = "https://openebench.bsc.es/")})
 @Path("/rest/")
+@ApplicationScoped
 public class MonitorRestServices {
     
     @Inject
