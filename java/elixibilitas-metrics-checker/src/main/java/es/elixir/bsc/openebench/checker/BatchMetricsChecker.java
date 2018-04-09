@@ -1,11 +1,15 @@
 package es.elixir.bsc.openebench.checker;
 
 import com.mongodb.MongoClient;
+import com.mongodb.MongoClientURI;
 import es.elixir.bsc.elixibilitas.dao.MetricsDAO;
 import es.elixir.bsc.elixibilitas.dao.ToolsDAO;
 import es.elixir.bsc.elixibilitas.model.metrics.Metrics;
 import es.elixir.bsc.openebench.model.tools.Tool;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.TreeMap;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
@@ -20,6 +24,10 @@ import java.util.logging.Logger;
 
 public class BatchMetricsChecker {
     
+    private final static String HELP = "java -jar metrics_checker.jar -uri uri\n\n" +
+                                       "parameters:\n\n" +
+                                       "-uri - mongodb url\n";
+
     private final ExecutorService executor;
     
     public BatchMetricsChecker(ExecutorService executor) {
@@ -27,7 +35,21 @@ public class BatchMetricsChecker {
     }
     
     public static void main(String[] args) {
-        new BatchMetricsChecker(Executors.newCachedThreadPool()).check(new MongoClient("localhost"));
+        Map<String, List<String>> params = parameters(args);
+        
+        if (params.isEmpty()) {
+            new BatchMetricsChecker(Executors.newCachedThreadPool()).check(new MongoClient("localhost"));
+        } else {
+            final List<String> uris = params.get("-uri");
+            if (uris == null || uris.isEmpty()) {
+                System.out.println("missed 'url' parameter");
+                System.out.println(HELP);
+                System.exit(1);
+            }
+
+            final MongoClient mc = new MongoClient(new MongoClientURI(uris.get(0)));
+            new BatchMetricsChecker(Executors.newCachedThreadPool()).check(mc);
+        }
     }
 
     public void check(MongoClient mc) {
@@ -66,4 +88,24 @@ public class BatchMetricsChecker {
             latch.await();
         } catch (InterruptedException ex) {}
     }
+    
+    private static Map<String, List<String>> parameters(String[] args) {
+        TreeMap<String, List<String>> parameters = new TreeMap();        
+        List<String> values = null;
+        for (String arg : args) {
+            switch(arg) {
+                case "-uri":  values = parameters.get(arg);
+                              if (values == null) {
+                                  values = new ArrayList(); 
+                                  parameters.put(arg, values);
+                              }
+                              break;
+                default: if (values != null) {
+                    values.add(arg);
+                }
+            }
+        }
+        return parameters;
+    }
+
 }
