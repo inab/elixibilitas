@@ -37,25 +37,25 @@ public class ContentRange {
     private final static Pattern PATTERN = Pattern.compile("^([a-zA-Z]+) (\\d+)-(\\d+)/(\\*|\\d+)$");
     
     private String unit;
-    private int firstPos;
-    private int lastPos;
-    private int length;
+    private long firstPos;
+    private long lastPos;
+    private long length;
     
     protected ContentRange() {}
 
-    public ContentRange(Integer firstPos, Integer lastPos) {
-        this(null, firstPos, lastPos, Integer.MIN_VALUE);
+    public ContentRange(Long firstPos, Long lastPos) {
+        this(null, firstPos, lastPos, Long.MIN_VALUE);
     }
 
-    public ContentRange(String unit, Integer firstPos, Integer lastPos) {
-        this(unit, firstPos, lastPos, Integer.MIN_VALUE);
+    public ContentRange(String unit, Long firstPos, Long lastPos) {
+        this(unit, firstPos, lastPos, Long.MIN_VALUE);
     }
 
-    public ContentRange(String unit, Integer firstPos, Integer lastPos, Integer length) {
+    public ContentRange(String unit, Long firstPos, Long lastPos, Long length) {
         this.unit = unit;
-        this.firstPos = firstPos == null || firstPos < 0 ? Integer.MIN_VALUE : firstPos;
-        this.lastPos = lastPos == null || lastPos < 0 ? Integer.MIN_VALUE : lastPos;
-        this.length = length == null || length < 0 ? Integer.MIN_VALUE : length;
+        this.firstPos = firstPos == null || firstPos < 0 ? Long.MIN_VALUE : firstPos;
+        this.lastPos = lastPos == null || lastPos < 0 ? Long.MIN_VALUE : lastPos;
+        this.length = length == null || length < 0 ? Long.MIN_VALUE : length;
     }
 
     public ContentRange(String contentRange) {
@@ -67,13 +67,13 @@ public class ContentRange {
             final String g4 = m.group(4);
             
             unit = g1 == null || g1.isEmpty() ? "bytes" : g1;
-            firstPos = g2 == null || g2.isEmpty() ? Integer.MIN_VALUE : Integer.parseInt(g2);
-            lastPos = g3 == null || g3.isEmpty() ? Integer.MIN_VALUE : Integer.parseInt(g3);
-            length = g4 == null || g4.isEmpty() || "*".equals(g4) ? Integer.MIN_VALUE : Integer.parseInt(g4);
+            firstPos = g2 == null || g2.isEmpty() ? Long.MIN_VALUE : Long.parseLong(g2);
+            lastPos = g3 == null || g3.isEmpty() ? Long.MIN_VALUE : Long.parseLong(g3);
+            length = g4 == null || g4.isEmpty() || "*".equals(g4) ? Long.MIN_VALUE : Long.parseLong(g4);
         } else {
-            firstPos = Integer.MIN_VALUE;
-            lastPos = Integer.MIN_VALUE;
-            length = Integer.MIN_VALUE;
+            firstPos = Long.MIN_VALUE;
+            lastPos = Long.MIN_VALUE;
+            length = Long.MIN_VALUE;
         }
     }
     
@@ -85,15 +85,15 @@ public class ContentRange {
         this.unit = unit;
     }
 
-    public Integer getFirstPos() {
+    public Long getFirstPos() {
         return firstPos >= 0 ? firstPos : null;
     }
     
-    public Integer getLastPos() {
+    public Long getLastPos() {
         return lastPos >= 0 ? lastPos : null;
     }
 
-    public Integer getLength() {
+    public Long getLength() {
         return length >= 0 ? length : null;
     }
     
@@ -102,13 +102,13 @@ public class ContentRange {
         return build(unit, firstPos, lastPos, length);
     }
     
-    public static String build(String unit, int firstPos, int lastPos, int length) {
+    public static String build(String unit, long firstPos, long lastPos, long length) {
         final StringBuilder sb = new StringBuilder();
         
         sb.append(unit == null ? "bytes" : unit).append(' ');
         sb.append(firstPos < 0 ? 0 : firstPos).append('-');
-        sb.append(lastPos < 0 ? '*' : Integer.toString(lastPos)).append("/");
-        sb.append(length < 0 ? '*' : Integer.toString(length));
+        sb.append(lastPos < 0 ? '*' : Long.toString(lastPos)).append("/");
+        sb.append(length < 0 ? '*' : Long.toString(length));
         
         return sb.toString();
     }

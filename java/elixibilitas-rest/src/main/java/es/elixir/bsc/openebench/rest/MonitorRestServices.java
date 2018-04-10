@@ -29,7 +29,6 @@ import com.mongodb.MongoClient;
 import com.mongodb.MongoClientURI;
 import es.elixir.bsc.elixibilitas.dao.MetricsDAO;
 import es.elixir.bsc.elixibilitas.dao.ToolsDAO;
-import es.elixir.bsc.openebench.checker.MetricsChecker;
 import es.elixir.bsc.openebench.rest.ext.ContentRange;
 import es.elixir.bsc.openebench.rest.ext.Range;
 import io.swagger.v3.oas.annotations.OpenAPIDefinition;
@@ -44,10 +43,9 @@ import io.swagger.v3.oas.annotations.servers.Server;
 import java.io.BufferedWriter;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
-import java.io.StringReader;
 import java.io.Writer;
+import java.time.Instant;
 import java.util.List;
-import java.util.Map;
 import javax.annotation.PostConstruct;
 import javax.annotation.Resource;
 import javax.enterprise.concurrent.ManagedExecutorService;
@@ -57,10 +55,6 @@ import javax.json.Json;
 import javax.json.JsonArray;
 import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
-import javax.json.JsonPointer;
-import javax.json.JsonStructure;
-import javax.json.JsonValue;
-import javax.json.JsonWriter;
 import javax.json.stream.JsonGenerator;
 import javax.servlet.ServletContext;
 import javax.ws.rs.GET;
@@ -114,7 +108,7 @@ public class MonitorRestServices {
     private ToolsDAO toolsDAO;
     private MetricsDAO metricsDAO;
     
-    private Map<String, MetricsChecker> checkers;
+//    private Map<String, MetricsChecker> checkers;
     
     @PostConstruct
     public void init() {
@@ -127,7 +121,7 @@ public class MonitorRestServices {
         toolsDAO = new ToolsDAO(mc.getDatabase(mongodbURI.getDatabase()), toolsBaseURI);
         metricsDAO = new MetricsDAO(mc.getDatabase(mongodbURI.getDatabase()), metricsBaseURI);
         
-        checkers = MetricsChecker.checkers();
+//        checkers = MetricsChecker.checkers();
     }
 
     @OPTIONS
@@ -186,8 +180,8 @@ public class MonitorRestServices {
     
     private Response.ResponseBuilder searchAsync(
                               final String id,
-                              final Integer from, 
-                              final Integer to, 
+                              final Long from, 
+                              final Long to, 
                               final List<String> projections, 
                               final String text,
                               final String name,
@@ -195,7 +189,7 @@ public class MonitorRestServices {
 
         StreamingOutput stream = (OutputStream out) -> {
 
-            final Integer limit;
+            final Long limit;
             if (from == null || to == null) {
                 limit = to;
             } else {
@@ -207,7 +201,7 @@ public class MonitorRestServices {
             }
         };
 
-        final int count = toolsDAO.search_count(id, text, name, description);
+        final long count = toolsDAO.search_count(id, text, name, description);
         
         final ContentRange range = new ContentRange("tools", from, to, count);
         
@@ -250,8 +244,8 @@ public class MonitorRestServices {
 
     public void aggregate(@HeaderParam("Range") final Range range,
                           @QueryParam("id") final String id,
-                          @QueryParam("skip") final Integer skip,
-                          @QueryParam("limit") final Integer limit,
+                          @QueryParam("skip") final Long skip,
+                          @QueryParam("limit") final Long limit,
                           @QueryParam("projection") final List<String> projections,
                           @QueryParam("text") final String text,
                           @QueryParam("name") final String name,
@@ -265,8 +259,8 @@ public class MonitorRestServices {
                         .header("Access-Control-Expose-Headers", "Content-Range")
                         .build());
             } else {
-                final Integer from = skip;
-                Integer to = limit;
+                final Long from = skip;
+                Long to = limit;
                 if (from != null && to != null) {
                     to += limit;
                 }
@@ -281,15 +275,15 @@ public class MonitorRestServices {
     }
     
     private Response.ResponseBuilder aggregateAsync(final String id, 
-                              final Integer from, 
-                              final Integer to, 
+                              final Long from, 
+                              final Long to, 
                               final List<String> projections, 
                               final String text,
                               final String name,
                               final String description) {
 
         StreamingOutput stream = (OutputStream out) -> {
-            final Integer limit;
+            final Long limit;
             if (from == null || to == null) {
                 limit = to;
             } else {
@@ -299,7 +293,7 @@ public class MonitorRestServices {
                 toolsDAO.aggregate(writer, id, from, limit, text, name, description, projections);
             }
         };
-        final int count = toolsDAO.aggregate_count(id, text, name, description);
+        final long count = toolsDAO.aggregate_count(id, text, name, description);
         
         final ContentRange range = new ContentRange("items", from, to, count);
         
@@ -310,49 +304,49 @@ public class MonitorRestServices {
                        .header("Content-Range", range.toString()).entity(stream);
     }
 
-    @GET
-    @Path("/metrics/{id}/{type}/{host}{path:.*}")
-    @Produces(MediaType.APPLICATION_JSON)
-    public void metrics(@PathParam("id") String id,
-                        @PathParam("type") String type,
-                        @PathParam("host") String host,
-                        @PathParam("path") String path,
-                        @Suspended final AsyncResponse asyncResponse) {
-        
-        if (path == null || path.isEmpty()) {
-            asyncResponse.resume(Response.status(Response.Status.BAD_REQUEST).build());
-        }
-        
-        executor.submit(() -> {
-            asyncResponse.resume(getMetricsAsync(id + '/' + type + '/' + host, path).build());
-        });
-    }
-    
-    private Response.ResponseBuilder getMetricsAsync(String id, String path) {        
-        final MetricsChecker checker = checkers.get(path);
-        if (checker == null) {
-            return Response.status(Response.Status.NOT_FOUND);
-        }
-        
-        final String json = toolsDAO.getJSON(id);
-        if (json == null || json.isEmpty()) {
-            return Response.status(Response.Status.NOT_FOUND);
-        }
-
-        final JsonPointer pointer = Json.createPointer(checker.getToolPath());
-        final JsonStructure structure = Json.createReader(new StringReader(json)).read();
-        if (!pointer.containsValue(structure)) {
-            return Response.status(Response.Status.NOT_FOUND);
-        }
-        final JsonValue value = pointer.getValue(structure);
-        StreamingOutput stream = (OutputStream out) -> {
-            try (JsonWriter writer = Json.createWriter(out)) {
-                writer.write(value);
-            }
-        };
-        return Response.ok(stream);
-
-    }
+//    @GET
+//    @Path("/metrics/{id}/{type}/{host}{path:.*}")
+//    @Produces(MediaType.APPLICATION_JSON)
+//    public void metrics(@PathParam("id") String id,
+//                        @PathParam("type") String type,
+//                        @PathParam("host") String host,
+//                        @PathParam("path") String path,
+//                        @Suspended final AsyncResponse asyncResponse) {
+//        
+//        if (path == null || path.isEmpty()) {
+//            asyncResponse.resume(Response.status(Response.Status.BAD_REQUEST).build());
+//        }
+//        
+//        executor.submit(() -> {
+//            asyncResponse.resume(getMetricsAsync(id + '/' + type + '/' + host, path).build());
+//        });
+//    }
+//    
+//    private Response.ResponseBuilder getMetricsAsync(String id, String path) {        
+//        final MetricsChecker checker = checkers.get(path);
+//        if (checker == null) {
+//            return Response.status(Response.Status.NOT_FOUND);
+//        }
+//        
+//        final String json = toolsDAO.getJSON(id);
+//        if (json == null || json.isEmpty()) {
+//            return Response.status(Response.Status.NOT_FOUND);
+//        }
+//
+//        final JsonPointer pointer = Json.createPointer(checker.getToolPath());
+//        final JsonStructure structure = Json.createReader(new StringReader(json)).read();
+//        if (!pointer.containsValue(structure)) {
+//            return Response.status(Response.Status.NOT_FOUND);
+//        }
+//        final JsonValue value = pointer.getValue(structure);
+//        StreamingOutput stream = (OutputStream out) -> {
+//            try (JsonWriter writer = Json.createWriter(out)) {
+//                writer.write(value);
+//            }
+//        };
+//        return Response.ok(stream);
+//
+//    }
 
     @GET
     @Path("/widget/tool/{id:.*}")
@@ -415,29 +409,58 @@ public class MonitorRestServices {
         
         return Response.ok(json);
     }
-    
+   
+    @OPTIONS
+    @Path("/homepage/{id}/{type}/{host}{path:.*}")
+    public Response getHomePageMonitoring() {
+         return Response.ok()
+                 .header("Access-Control-Allow-Headers", "Range")
+                 .header("Access-Control-Expose-Headers", "Accept-Ranges")
+                 .header("Access-Control-Expose-Headers", "Content-Range")
+                 .build();
+    }
+
     @GET
     @Path("/homepage/{id}/{type}/{host}{path:.*}")
     @Produces(MediaType.APPLICATION_JSON)
-    public void getHomePageMonitoring(@PathParam("id") String id,
+    public void getHomePageMonitoring(@HeaderParam("Range") final Range range,
+                           @PathParam("id") String id,
                            @PathParam("type") String type,
                            @PathParam("host") String host,
                            @PathParam("path") String path,
                            @Suspended final AsyncResponse asyncResponse) {
         executor.submit(() -> {
-            asyncResponse.resume(getHomePageMonitoringAsync(id + "/" + type + "/" + host).build());
+
+            asyncResponse.resume(getHomePageMonitoringAsync(id + "/" + type + "/" + host, range)
+                    .header("Access-Control-Allow-Headers", "Range")
+                    .header("Access-Control-Expose-Headers", "Accept-Ranges")
+                    .header("Access-Control-Expose-Headers", "Content-Range")
+                    .build());
         });
     }
             
-    private Response.ResponseBuilder getHomePageMonitoringAsync(String id) {
-        final JsonArray operational = metricsDAO.findLog(id, "/project/website/operational", null, null, null);
+    private Response.ResponseBuilder getHomePageMonitoringAsync(String id, Range range) {
+        String from;
+        String to;
+        if (range == null) {
+            from = null;
+            to = null;
+        } else {
+            final Long first = range.getFirstPos();
+            from = first == null ? null : Instant.ofEpochSecond(first).toString();
+
+            final Long last = range.getLastPos();
+            to = last == null ? null : Instant.ofEpochSecond(last).toString();
+        }
+            
+        final JsonArray operational = metricsDAO.findLog(id, "/project/website/operational", from, to, null);
         if (operational == null) {
             return Response.status(Response.Status.INTERNAL_SERVER_ERROR);
         } else if (operational.isEmpty()) {
             return Response.status(Response.Status.NOT_FOUND);
         }
         
-        final JsonArray access_time = metricsDAO.findLog(id, "/project/website/access_time", null, null, null);
+        final JsonArray access_time = metricsDAO.findLog(id, "/project/website/access_time", from, to, null);
         if (access_time == null) {
             return Response.status(Response.Status.INTERNAL_SERVER_ERROR);
         } else if (access_time.isEmpty()) {
@@ -478,7 +501,12 @@ public class MonitorRestServices {
             }
         };
         
-        return Response.ok(stream);
+        final ContentRange crange = new ContentRange("datetime", range.getFirstPos(), range.getLastPos(), (long)access_time.size());
+        
+        ResponseBuilder response = from == null && to == null 
+                ? Response.ok() : Response.status(Response.Status.PARTIAL_CONTENT);
+        
+        return response.header("Accept-Ranges", "tools").header("Content-Range", crange.toString()).entity(stream);
     }
     
     @GET

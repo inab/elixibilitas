@@ -14,10 +14,6 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.json.bind.Jsonb;
-import javax.json.bind.JsonbBuilder;
-import javax.json.bind.JsonbConfig;
-import javax.json.bind.config.PropertyNamingStrategy;
 
 /**
  * @author Dmitry Repchevsky
@@ -180,8 +176,13 @@ public class BiocondaRepositoryImporter {
 
         final String authority = homepage != null ? homepage.getHost() : "";
 
-        Tool tool = new Tool(URI.create(String.format(ID_TEMPLATE, id != null ? id : pack.name, pack.version, "cmd", authority)), "cmd");
+        final String _id = id != null ? id : pack.name.toLowerCase();
+        Tool tool = new Tool(URI.create(String.format(ID_TEMPLATE, _id, pack.version, "cmd", authority)), "cmd");
 
+        if (!_id.equals(pack.name)) {
+            tool.setExternalId(pack.version == null || pack.version.isEmpty() ? pack.name : pack.name + ":" + pack.version);
+        }
+        
         tool.setName(pack.name);
         tool.setVersion(pack.version);
         tool.setHomepage(homepage);

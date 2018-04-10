@@ -168,9 +168,14 @@ public class BiotoolsRepositoryIterator implements Iterator<Tool> {
     private void addTool(List<Tool> tools, JsonObject jtool) {
         
         final String id = jtool.getString("id", null);
+        if (id == null || id.isEmpty()) {
+            return;
+        }
+        final String _id = id.toLowerCase();
+        
         final String version = jtool.getString("version", null);
 
-        StringBuilder idTemplate = new StringBuilder("https://openebench.bsc.es/monitor/tool/").append("bio.tools:").append(id);
+        StringBuilder idTemplate = new StringBuilder("https://openebench.bsc.es/monitor/tool/").append("bio.tools:").append(_id);
         
         if (version != null) {
             idTemplate.append(':').append(version.replace(' ', '_'));
@@ -253,6 +258,11 @@ public class BiotoolsRepositoryIterator implements Iterator<Tool> {
                 continue;
                 
             }
+            
+            if (!id.equals(_id)) {
+                tool.setExternalId(version == null || version.isEmpty() ? id : id + ":" + version);
+            }
+            
             tool.setName(name);
             tool.setVersion(version);
 

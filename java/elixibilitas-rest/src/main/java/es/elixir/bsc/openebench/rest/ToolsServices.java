@@ -170,7 +170,7 @@ public class ToolsServices {
 
     @OPTIONS
     @Path("/")
-    public Response search() {
+    public Response getTools() {
          return Response.ok()
                  .header("Access-Control-Allow-Headers", "Range")
                  .header("Access-Control-Expose-Headers", "Accept-Ranges")
@@ -207,9 +207,9 @@ public class ToolsServices {
         });
     }
 
-    private ResponseBuilder getToolsAsync(final Integer from, final Integer to) {
+    private ResponseBuilder getToolsAsync(final Long from, final Long to) {
         StreamingOutput stream = (OutputStream out) -> {
-            final Integer limit;
+            final Long limit;
             if (from == null || to == null) {
                 limit = to;
             } else {
@@ -221,7 +221,7 @@ public class ToolsServices {
                 Logger.getLogger(ToolsServices.class.getName()).log(Level.SEVERE, null, ex);
             }
         };
-        final int count = (int) toolsDAO.count();
+        final long count = (int) toolsDAO.count();
         
         final ContentRange range = new ContentRange("tools", from, to, count);
         

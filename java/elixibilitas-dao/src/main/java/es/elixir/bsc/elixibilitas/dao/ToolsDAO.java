@@ -429,7 +429,7 @@ public class ToolsDAO extends AbstractDAO<Document> implements Serializable {
      * @param description text to search in the 'descriptino' property.
      * @param projections - properties to write or null for all.
      */
-    public void search(Writer writer, String id, Integer skip, Integer limit, 
+    public void search(Writer writer, String id, Long skip, Long limit, 
             String text, String name, String description, List<String> projections) {
         try {
             final MongoCollection<Document> col = database.getCollection(collection);
@@ -478,10 +478,10 @@ public class ToolsDAO extends AbstractDAO<Document> implements Serializable {
                 aggregation.add(Aggregates.sort(Sorts.ascending("tools.name")));
                 
                 if (skip != null) {
-                    aggregation.add(Aggregates.skip(skip));
+                    aggregation.add(Aggregates.skip(skip.intValue()));
                 }
                 if (limit != null) {
-                    aggregation.add(Aggregates.limit(limit));
+                    aggregation.add(Aggregates.limit(limit.intValue()));
                 }
 
                 aggregation.add(Aggregates.unwind("$tools"));
@@ -545,8 +545,8 @@ public class ToolsDAO extends AbstractDAO<Document> implements Serializable {
         
     }
         
-    public void aggregate(Writer writer, String id, Integer skip, 
-            Integer limit, String text, String name, String description,
+    public void aggregate(Writer writer, String id, Long skip, 
+            Long limit, String text, String name, String description,
             List<String> projections) {
         try {
             final MongoCollection<Document> col = database.getCollection(collection);
@@ -596,10 +596,10 @@ public class ToolsDAO extends AbstractDAO<Document> implements Serializable {
 
                 
                 if (skip != null) {
-                    aggregation.add(Aggregates.skip(skip));
+                    aggregation.add(Aggregates.skip(skip.intValue()));
                 }
                 if (limit != null) {
-                    aggregation.add(Aggregates.limit(limit));
+                    aggregation.add(Aggregates.limit(limit.intValue()));
                 }
 
                 AggregateIterable<Document> iterator = col.aggregate(aggregation).useCursor(true);

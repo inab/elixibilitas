@@ -49,6 +49,9 @@ public class JSONContentTypeFilter implements ContainerRequestFilter {
 
     @Override
     public void filter(ContainerRequestContext rc) throws IOException {
+        
+        boolean json = false;
+        
         final MultivaluedMap<String, String> headers = rc.getHeaders();
         final List<String> list = headers.get("Accept");
         if (list != null) {
@@ -74,9 +77,14 @@ public class JSONContentTypeFilter implements ContainerRequestFilter {
                             }
                         }
                         return;
-                    } 
+                    } else if (MediaType.APPLICATION_JSON.equals(mime)) {
+                        json = true;
+                    }
                 }
             }
+        }
+        if (!json) {
+            headers.add(HttpHeaders.ACCEPT, "application/json;q=.5");
         }
         headers.add(HttpHeaders.ACCEPT, "application/ld+json;q=.9");
     }

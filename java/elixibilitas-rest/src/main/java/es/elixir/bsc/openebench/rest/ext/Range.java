@@ -11,8 +11,8 @@ public class Range {
     private final static Pattern PATTERN = Pattern.compile("^([a-zA-Z]+)=(\\d+)-(\\d+)$");
     
     private String unit;
-    private int firstPos;
-    private int lastPos;
+    private long firstPos;
+    private long lastPos;
     
     protected Range() {}
     
@@ -24,11 +24,11 @@ public class Range {
             final String g3 = m.group(3);
             
             unit = g1 == null || g1.isEmpty() ? null : g1;
-            firstPos = g2 == null || g2.isEmpty() ? Integer.MIN_VALUE : Integer.parseInt(g2);
-            lastPos = g3 == null || g3.isEmpty() ? Integer.MIN_VALUE : Integer.parseInt(g3);
+            firstPos = g2 == null || g2.isEmpty() ? Long.MIN_VALUE : Long.parseLong(g2);
+            lastPos = g3 == null || g3.isEmpty() ? Long.MIN_VALUE : Long.parseLong(g3);
         } else {
-            firstPos = Integer.MIN_VALUE;
-            lastPos = Integer.MIN_VALUE;
+            firstPos = Long.MIN_VALUE;
+            lastPos = Long.MIN_VALUE;
         }
     }
     
@@ -40,11 +40,11 @@ public class Range {
         this.unit = unit;
     }
     
-    public Integer getFirstPos() {
+    public Long getFirstPos() {
         return firstPos >= 0 ? firstPos : null;
     }
     
-    public Integer getLastPos() {
+    public Long getLastPos() {
         return lastPos >= 0 ? lastPos : null;
     }
     
@@ -53,12 +53,12 @@ public class Range {
         return build(unit, firstPos, lastPos);
     }
     
-    public static String build(String unit, int firstPos, int lastPos) {
+    public static String build(String unit, long firstPos, long lastPos) {
         StringBuilder sb = new StringBuilder();
         
         sb.append(unit == null ? "bytes" : unit).append('=');
         sb.append(firstPos < 0 ? 0 : firstPos).append('-');
-        sb.append(lastPos < 0 ? '*' : Integer.toString(lastPos));
+        sb.append(lastPos < 0 ? '*' : Long.toString(lastPos));
         
         return sb.toString();
     }
