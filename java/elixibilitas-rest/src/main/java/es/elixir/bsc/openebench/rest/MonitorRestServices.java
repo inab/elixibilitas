@@ -409,21 +409,13 @@ public class MonitorRestServices {
         
         return Response.ok(json);
     }
-   
-    @OPTIONS
-    @Path("/homepage/{id}/{type}/{host}{path:.*}")
-    public Response getHomePageMonitoring() {
-         return Response.ok()
-                 .header("Access-Control-Allow-Headers", "Range")
-                 .header("Access-Control-Expose-Headers", "Accept-Ranges")
-                 .header("Access-Control-Expose-Headers", "Content-Range")
-                 .build();
-    }
 
     @GET
     @Path("/homepage/{id}/{type}/{host}{path:.*}")
     @Produces(MediaType.APPLICATION_JSON)
-    public void getHomePageMonitoring(@HeaderParam("Range") final Range range,
+    public void getHomePageMonitoring(
+                           @QueryParam("date1") Long date1,
+                           @QueryParam("date2") Long date2,
                            @PathParam("id") String id,
                            @PathParam("type") String type,
                            @PathParam("host") String host,
@@ -431,27 +423,15 @@ public class MonitorRestServices {
                            @Suspended final AsyncResponse asyncResponse) {
         executor.submit(() -> {
 
-            asyncResponse.resume(getHomePageMonitoringAsync(id + "/" + type + "/" + host, range)
-                    .header("Access-Control-Allow-Headers", "Range")
-                    .header("Access-Control-Expose-Headers", "Accept-Ranges")
-                    .header("Access-Control-Expose-Headers", "Content-Range")
+            asyncResponse.resume(getHomePageMonitoringAsync(id + "/" + type + "/" + host, date1, date2)
                     .build());
         });
     }
             
-    private Response.ResponseBuilder getHomePageMonitoringAsync(String id, Range range) {
-        String from;
-        String to;
-        if (range == null) {
-            from = null;
-            to = null;
-        } else {
-            final Long first = range.getFirstPos();
-            from = first == null ? null : Instant.ofEpochSecond(first).toString();
-
-            final Long last = range.getLastPos();
-            to = last == null ? null : Instant.ofEpochSecond(last).toString();
-        }
+    private Response.ResponseBuilder getHomePageMonitoringAsync(String id, Long date1, Long date2) {
+ 
+        String from = date1 == null ? null : Instant.ofEpochSecond(date1).toString();
+        String to = date2 == null ? null : Instant.ofEpochSecond(date2).toString();
             
         final JsonArray operational = metricsDAO.findLog(id, "/project/website/operational", from, to, null);
         if (operational == null) {
@@ -501,12 +481,7 @@ public class MonitorRestServices {
             }
         };
         
-        final ContentRange crange = new ContentRange("datetime", range.getFirstPos(), range.getLastPos(), (long)access_time.size());
-        
-        ResponseBuilder response = from == null && to == null 
-                ? Response.ok() : Response.status(Response.Status.PARTIAL_CONTENT);
-        
-        return response.header("Accept-Ranges", "tools").header("Content-Range", crange.toString()).entity(stream);
+        return Response.ok(stream);
     }
     
     @GET
