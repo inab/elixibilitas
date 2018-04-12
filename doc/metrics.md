@@ -2,15 +2,15 @@
 
 #### Identity & Findability metrics
 
-|   | metrics                        | json path                           | type | description                                                        |
-|---|--------------------------------|-------------------------------------|-------|-------------------------------------------------------------------|
-| 1 | canonical:website              | project.website                     | null  | Project/software has a web page.                                  |
-| 2 | canonical:domain               | project.identity.domain             | bool  | Project/software has its own domain name.                         |
-| 3 | canonical:trademark            | project.identity.trademark          | bool  | Project/software name is trade-marked.                            |
-| 4 | version:robots_compatible      | project.website.robots              | bool  | Could Search Engine Robots track their website?                   |
-| 5 | version:registries             |                                     |       | Software registries that include the software.                    |
-| 6 | version:scientific_benchmark   |                                     |       | Software is a part of scientific benchmark activities.            |
-| 7 | canonical:recognizability      |                                     |       | Project/software has a distinct name within its application area. |
+|   | metrics                        | json path                           | type    | description                                                        |
+|---|--------------------------------|-------------------------------------|---------|-------------------------------------------------------------------|
+| 1 | canonical:website              | project.website                     | object  | Project/software has a web page.                                  |
+| 2 | canonical:domain               | project.identity.domain             | bool    | Project/software has its own domain name.                         |
+| 3 | canonical:trademark            | project.identity.trademark          | bool    | Project/software name is trade-marked.                            |
+| 4 | version:robots_compatible      | project.website.robots              | bool    | Could Search Engine Robots track their website?                   |
+| 5 | version:registries             |                                     |         | Software registries that include the software.                    |
+| 6 | version:scientific_benchmark   |                                     |         | Software is a part of scientific benchmark activities.            |
+| 7 | canonical:recognizability      |                                     |         | Project/software has a distinct name within its application area. |
 
 #### Usability: Documentation metrics
 
@@ -52,3 +52,43 @@
 | 31 | version:operative_system           | project.build.unix                  | bool  | Operative system used to build the software (Unix or Not).                                          |
 | 32 | compiler_warnings                  |                                     |       | Whether the compiler gives warnings. Compilation sucess.                                            |
 | 33 | version:automated                  | project.build.automated             | bool  | Whether an automated build system used.                                                             |
+
+#### Copyright
+
+|    | metrics             | json path                         | type  | description                                                           |
+|----|---------------------|-----------------------------------|-------|-----------------------------------------------------------------------|
+| 34 | copyright_statement | project.website.copyright         | bool  | Web site states copyright.                                            |
+| 35 | credits             | project.website.acknowledgement   | bool  | Web site states who developed/develops the software, funders etc.     |
+| 36 | consistency         |                                   | bool  | All sites state exactly the same copyright, licencing and authorship. |
+| 37 | copyright_headers   | distribution.sourcecode.copyright | bool  | Each source code file has a copyright statement.                      |
+
+#### Licensing
+
+|    | metrics             | json path                               | type   | description                                                        |
+|----|---------------------|-----------------------------------------|--------|--------------------------------------------------------------------|
+| 38 | project_license     | project.license                         | object | Project has a license.                                             |
+| 39 | license_statement   | project.website.license                 | bool   | Web site states license.                                           |
+| 40 | sourcecode_license  | distribution.sourcecode.license         | bool   | Code distribution includes a license file.                         |
+| 41 | license_headers     | distribution.sourcecode.license_headers | bool   | Each source code file has a license header.                        |
+| 42 | open_source         | project.license.open_source             | bool   | Project has an open source license.                                |
+| 43 | osi                 | project.license.osi                     | bool   | Software has an Open Software Initiative (OSI)-recognised license. |
+
+#### Accesibility
+
+|    | metrics                                  | json path                                    | type   | description                                                               |
+|----|------------------------------------------|----------------------------------------------|--------|---------------------------------------------------------------------------|
+| 44 | binary_distribution                      | distribution.binaries                        | object | Whether binary distributions are available.                               |
+| 45 | binary_distribution_freeness             | distribution.binaries.freeness               | bool   | Binary distributions are freely available.                                |
+| 46 | binaries_download_registration           | distribution.binaries.registration           | bool   | Binary distributions are available without the need for any registration. |
+| 47 | sourcecode                               | distribution.sourcecode                      | object | Source distributions are available.                                       |
+| 48 | sourcecode_freeness                      | distribution.sourcecode.free                 | bool   | Source distributions are freely available.                                |
+| 49 | sourcecode_download_registration         | distribution.sourcecode.public               | bool   | Sourcecode is available without the need for any registration.            |
+| 50 | sourcecode_repository                    | distribution.sourcecode.repository           | object | Access to source code repository is available.                            |
+| 51 | sourcecode_anonymous_access              | distribution.sourcecode.repository.anonymous | bool   | Anonymous read-only access to source code repository.                     |
+| 52 | sourcecode_repository_browse             | distribution.sourcecode.repository.online    | bool   | Ability to browse source code repository online.                          |
+| 53 | sourcecode_repository_accessible         |                                              | bool   | Make sure the repository (github, bit bucket) contains code.              |
+| 54 | sourcecode_repository_version_controlled |                                              | bool   | Check whether code contains any information about versions/releases/tags. |
+
+
+
+
