@@ -30,7 +30,10 @@ import com.mongodb.MongoClientURI;
 import es.elixir.bsc.elixibilitas.dao.ToolsDAO;
 import es.elixir.bsc.openebench.rest.ext.ContentRange;
 import es.elixir.bsc.openebench.rest.ext.Range;
+import io.swagger.v3.oas.annotations.Hidden;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.parameters.RequestBody;
@@ -140,6 +143,7 @@ public class ToolsServices {
     @GET
     @Path("/tool.json")
     @Produces(MediaType.APPLICATION_JSON)
+    @Hidden
     public Response getToolJsonSchema() {
         return Response.ok(ctx.getResourceAsStream("/META-INF/resources/tool.json")).build();
     }
@@ -148,6 +152,13 @@ public class ToolsServices {
     @GET
     @Path("/")
     @Produces("application/ld+json")
+    @Hidden
+    @Operation(operationId = "getOntology",
+        summary = "Returns all tools as an OWL ontology",
+        responses = {
+            @ApiResponse(content = @Content(mediaType = "application/ld+json"))
+        }
+    )    
     public void getOntology(@Suspended final AsyncResponse asyncResponse) {
         executor.submit(() -> {
             asyncResponse.resume(getOntologyAsync().build());
@@ -187,13 +198,18 @@ public class ToolsServices {
     @GET
     @Path("/")
     @Produces(MediaType.APPLICATION_JSON)
-    @Operation(summary = "Returns all tools descriptions.",
+    @Operation(operationId = "getAllTools",
+        summary = "Returns all tools descriptions.",
+        description = "returns an array of tools which can be restricted by the standard HTTP 'Range' header",
         responses = {
             @ApiResponse(content = @Content(mediaType = MediaType.APPLICATION_JSON,
                                             schema = @Schema(ref="https://openebench.bsc.es/monitor/tool/tool.json")))
         }
     )
-    public void getTools(@HeaderParam("Range") final Range range,
+    public void getTools(@HeaderParam("Range") 
+                         @Parameter(description = "HTTP Range Header (i.g. 'Range: tools=10-30')",
+                                    schema = @Schema(type = "string")) 
+                         final Range range,
                          @Suspended final AsyncResponse asyncResponse) {
         executor.submit(() -> {
             asyncResponse.resume(
@@ -256,13 +272,10 @@ public class ToolsServices {
     @Path("/{id}/{type}/{host}{path:.*}")
     @Produces(MediaType.APPLICATION_JSON)
     @Operation(
-        summary = "Returns one or many tools by the id.",
-//        parameters = {
-//            @Parameter(in = "path", name = "id", description = "prefixed tool id", required = true),
-//            @Parameter(in = "path", name = "type", description = "tool type", required = false),
-//            @Parameter(in = "path", name = "host", description = "tool authority", required = false),
-//            @Parameter(in = "path", name = "path", description = "json pointer", required = false)
-//        },
+        summary = "Returns either entire tool's json document or its subdocument",
+        description = "returns matched tool's document or its property defined by the json path. " +
+                      "if more than one documents found (i.e. more than one version of tool matches the id), " +
+                      "the first matched document is returned.",
         responses = {
             @ApiResponse(content = @Content(mediaType = MediaType.APPLICATION_JSON,
                                             schema = @Schema(ref="https://openebench.bsc.es/monitor/tool/tool.json")
@@ -271,10 +284,10 @@ public class ToolsServices {
         }
     )
 
-    public void getTool(@PathParam("id") final String id,
-                        @PathParam("type") final String type,
-                        @PathParam("host") final String host,
-                        @PathParam("path") final String path,
+    public void getTool(@PathParam("id") @Parameter(description = "prefixed tool id (i.e. 'bio.tools:pmut')") final String id,
+                        @PathParam("type") @Parameter(description = "tool type ('cmd', 'rest', etc.)") final String type,
+                        @PathParam("host") @Parameter(description = "tool authority") final String host,
+                        @PathParam("path") @Parameter(description = "json pointer", required = false) final String path,
                         @Suspended final AsyncResponse asyncResponse) {
         executor.submit(() -> {
             asyncResponse.resume(
@@ -314,7 +327,7 @@ public class ToolsServices {
     }
     
     @GET
-    @Path("/{id}/{type}/{host}{path:.*}")
+    @Path("/{id}/{type}/{host}")
     @Produces("application/ld+json")
     public void getToolOntology(@PathParam("id") final String id,
                                 @PathParam("type") final String type,

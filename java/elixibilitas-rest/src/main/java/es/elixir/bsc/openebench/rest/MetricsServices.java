@@ -29,6 +29,7 @@ import com.mongodb.MongoClient;
 import com.mongodb.MongoClientURI;
 import es.elixir.bsc.elixibilitas.dao.MetricsDAO;
 import es.elixir.bsc.openebench.rest.validator.JsonSchema;
+import io.swagger.v3.oas.annotations.Hidden;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.enums.ParameterIn;
@@ -124,6 +125,7 @@ public class MetricsServices {
     @GET
     @Path("/metrics.json")
     @Produces(MediaType.APPLICATION_JSON)
+    @Hidden
     public Response getMetricsJsonSchema(@Context ServletContext ctx) {
         return Response.ok(ctx.getResourceAsStream("/META-INF/resources/metrics.json")).build();
     }

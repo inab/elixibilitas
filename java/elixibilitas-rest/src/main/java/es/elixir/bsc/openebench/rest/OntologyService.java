@@ -24,6 +24,7 @@
  */
 package es.elixir.bsc.openebench.rest;
 
+import io.swagger.v3.oas.annotations.Hidden;
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 import javax.servlet.ServletContext;
@@ -50,6 +51,7 @@ public class OntologyService {
      */
     @GET
     @Path("/tools.owl")
+    @Hidden
     public Response getToolsOntology() {
         return Response.ok(ctx.getResourceAsStream("/META-INF/resources/tools.owl"), "application/rdf+xml").build();
     }
