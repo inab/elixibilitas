@@ -30,14 +30,17 @@
         "type": "object",
         "properties": {
           "helpdesk": {
+            "description": "helpdesk providing support in using the software",
             "type": "string",
             "format": "uri"
           },
           "issue_tracker": {
+            "description": "tracker for the project issues, bug reports, feature requests etc.",
             "type": "string",
             "format": "uri"
           },
           "mailing_list": {
+            "description": "mailing list for the project announcements, discussions, support etc.",
             "type": "string",
             "format": "uri"
           }
@@ -47,6 +50,7 @@
         "type": "object",
         "properties": {
           "name": {
+            "description": "name of credited entity",
             "type": "string"
           },
           "email": {
@@ -74,6 +78,7 @@
         "type": "object",
         "properties": {
           "manual": {
+            "description": "link to the manual",
             "type": "string",
             "format": "uri"
           },
@@ -110,7 +115,6 @@
             "type": "string",
             "format": "uri"
           },
-
           "api": {
             "type": "string",
             "format": "uri"
