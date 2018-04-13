@@ -154,7 +154,7 @@ public class ToolsServices {
     @Produces("application/ld+json")
     @Hidden
     @Operation(operationId = "getOntology",
-        summary = "Returns all tools as an OWL ontology",
+        summary = "Returns all tools as an OWL ontology.",
         responses = {
             @ApiResponse(content = @Content(mediaType = "application/ld+json"))
         }
@@ -181,6 +181,7 @@ public class ToolsServices {
 
     @OPTIONS
     @Path("/")
+    @Hidden
     public Response getTools() {
          return Response.ok()
                  .header("Access-Control-Allow-Headers", "Range")
@@ -202,12 +203,16 @@ public class ToolsServices {
         summary = "Returns all tools descriptions.",
         description = "returns an array of tools which can be restricted by the standard HTTP 'Range' header",
         responses = {
-            @ApiResponse(content = @Content(mediaType = MediaType.APPLICATION_JSON,
-                                            schema = @Schema(ref="https://openebench.bsc.es/monitor/tool/tool.json")))
+            @ApiResponse(content = @Content(
+               mediaType = MediaType.APPLICATION_JSON,
+               array = @ArraySchema(schema = @Schema(
+                   ref="https://openebench.bsc.es/monitor/tool/tool.json"
+               ))))
         }
     )
     public void getTools(@HeaderParam("Range") 
-                         @Parameter(description = "HTTP Range Header (i.g. 'Range: tools=10-30')",
+                         @Parameter(description = "HTTP Range Header",
+                                    example = "Range: tools=10-30",
                                     schema = @Schema(type = "string")) 
                          final Range range,
                          @Suspended final AsyncResponse asyncResponse) {
@@ -280,14 +285,25 @@ public class ToolsServices {
             @ApiResponse(content = @Content(mediaType = MediaType.APPLICATION_JSON,
                                             schema = @Schema(ref="https://openebench.bsc.es/monitor/tool/tool.json")
             )),
-            @ApiResponse(responseCode = "404", description = "tool(s) not found")
+            @ApiResponse(responseCode = "404", description = "tool not found")
         }
     )
 
-    public void getTool(@PathParam("id") @Parameter(description = "prefixed tool id (i.e. 'bio.tools:pmut')") final String id,
-                        @PathParam("type") @Parameter(description = "tool type ('cmd', 'rest', etc.)") final String type,
-                        @PathParam("host") @Parameter(description = "tool authority") final String host,
-                        @PathParam("path") @Parameter(description = "json pointer", required = false) final String path,
+    public void getTool(@PathParam("id") 
+                        @Parameter(description = "prefixed tool id",
+                                   example = "bio.tools:pmut:2017") 
+                        final String id,
+                        @PathParam("type") 
+                        @Parameter(description = "tool type",
+                                   example = "web")
+                        final String type,
+                        @PathParam("host") 
+                        @Parameter(description = "tool authority",
+                                   example = "mmb.irbbarcelona.org")
+                        final String host,
+                        @PathParam("path")
+                        @Parameter(description = "json pointer")
+                        final String path,
                         @Suspended final AsyncResponse asyncResponse) {
         executor.submit(() -> {
             asyncResponse.resume(

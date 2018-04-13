@@ -26,6 +26,11 @@
 package es.elixir.bsc.openebench.rest;
 
 import io.swagger.v3.jaxrs2.integration.resources.OpenApiResource;
+import io.swagger.v3.oas.annotations.OpenAPIDefinition;
+import io.swagger.v3.oas.annotations.info.Contact;
+import io.swagger.v3.oas.annotations.info.Info;
+import io.swagger.v3.oas.annotations.info.License;
+import io.swagger.v3.oas.annotations.servers.Server;
 import java.util.HashSet;
 import java.util.Set;
 import javax.ws.rs.ApplicationPath;
@@ -46,7 +51,7 @@ public class OpenEBenchMonitorApplication extends Application {
         resources.add(OpenApiResource.class);
         resources.add(ToolsServices.class);
         resources.add(MetricsServices.class);
-        resources.add(OntologyService.class);
+        resources.add(WebProxyService.class);
         resources.add(EdamServices.class);
         resources.add(MonitorRestServices.class);
         resources.add(CorsResponseFilter.class);

@@ -31,11 +31,14 @@ import es.elixir.bsc.elixibilitas.dao.MetricsDAO;
 import es.elixir.bsc.elixibilitas.dao.ToolsDAO;
 import es.elixir.bsc.openebench.rest.ext.ContentRange;
 import es.elixir.bsc.openebench.rest.ext.Range;
+import io.swagger.v3.oas.annotations.Hidden;
 import io.swagger.v3.oas.annotations.OpenAPIDefinition;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.info.Contact;
 import io.swagger.v3.oas.annotations.info.Info;
 import io.swagger.v3.oas.annotations.info.License;
+import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -126,6 +129,7 @@ public class MonitorRestServices {
 
     @OPTIONS
     @Path("/search")
+    @Hidden
     public Response search() {
          return Response.ok()
                  .header("Access-Control-Allow-Headers", "Range")
@@ -137,35 +141,37 @@ public class MonitorRestServices {
     @GET
     @Path("/search")
     @Produces(MediaType.APPLICATION_JSON)
-    @Operation(summary = "Returns all tools descriptions.",
-               description = "Queries the tools with a possibility to limit the response. " +
+    @Operation(summary = "Searches the tools",
+               description = "queries the tools with a possibility to limit the response. " +
                              "The response is grouped by ids and sorted by names.",
-//        parameters = {
-//            @Parameter(in = QUERY, name = "skip", description = "skip 'n' tools"),
-//            @Parameter(in = QUERY, name = "limit", description = "return 'n' tools"),
-//            @Parameter(in = QUERY, name = "projection", description = "tools properties to return"),
-//            @Parameter(in = QUERY, name = "text", description = "text to search"),
-//            @Parameter(in = QUERY, name = "name", description = "text to search in the 'name' property"),
-//            @Parameter(in = QUERY, name = "description", description = "text to search in the 'description' property")
-//        },
-
         responses = {
-            @ApiResponse(content = @Content(mediaType = MediaType.APPLICATION_JSON,
-                                            schema = @Schema(ref="https://openebench.bsc.es/monitor/tool/tool.json")))
+            @ApiResponse(content = @Content(
+               mediaType = MediaType.APPLICATION_JSON,
+               array = @ArraySchema(schema = @Schema(
+                   ref="https://openebench.bsc.es/monitor/tool/tool.json"
+            ))))
         }
-
-//        responses = {
-//            @ApiResponse(content = @Content(mediaType = MediaType.APPLICATION_JSON,
-//                                            array = @ArraySchema(
-//                                            schema = @Schema(ref="https://openebench.bsc.es/monitor/tool/tool.json"))))
-//        }
     )
-    public void search(@HeaderParam("Range") final Range range,
-                       @QueryParam("id") final String id,
-                       @QueryParam("projection") final List<String> projections,
-                       @QueryParam("text") final String text,
-                       @QueryParam("name") final String name,
-                       @QueryParam("description") final String description,
+    public void search(@HeaderParam("Range") 
+                       @Parameter(description = "HTTP Range Header",
+                                  example = "Range: tools=10-30",
+                                  schema = @Schema(type = "string")) 
+                       final Range range,
+                       @QueryParam("id")
+                       @Parameter(description = "prefixed tool id", required = true)
+                       final String id,
+                       @QueryParam("projection")
+                       @Parameter(description = "tools properties to return")
+                       final List<String> projections,
+                       @QueryParam("text") 
+                       @Parameter(description = "text to search")
+                       final String text,
+                       @QueryParam("name")
+                       @Parameter(description = "text to search in the 'name' property")
+                       final String name,
+                       @QueryParam("description")
+                       @Parameter(description = "text to search in the 'description' property")
+                       final String description,
                        @Suspended final AsyncResponse asyncResponse) {
         executor.submit(() -> {
             asyncResponse.resume(searchAsync(id, range != null ? range.getFirstPos() :  null, 
@@ -213,6 +219,7 @@ public class MonitorRestServices {
 
     @OPTIONS
     @Path("/aggregate")
+    @Hidden
     public Response aggregate() {
          return Response.ok()
                  .header("Access-Control-Allow-Headers", "Range")
@@ -224,32 +231,36 @@ public class MonitorRestServices {
     @GET
     @Path("/aggregate")
     @Produces(MediaType.APPLICATION_JSON)
-    @Operation(summary = "Returns all tools descriptions.",
+    @Operation(summary = "Searches and groups tools by their id",
                description = "The same as '/search' with a difference in the output format",
-//        parameters = {
-//            @Parameter(in = QUERY, name = "skip", description = "skip 'n' tools"),
-//            @Parameter(in = QUERY, name = "limit", description = "return 'n' tools"),
-//            @Parameter(in = QUERY, name = "projection", description = "tools properties to return"),
-//            @Parameter(in = QUERY, name = "text", description = "text to search"),
-//            @Parameter(in = QUERY, name = "name", description = "text to search in the 'name' property"),
-//            @Parameter(in = QUERY, name = "description", description = "text to search in the 'description' property")
-//        },
-
         responses = {
             @ApiResponse(content = 
                     @Content(mediaType = MediaType.APPLICATION_JSON,
                              schema = @Schema(ref="https://openebench.bsc.es/monitor/tool/tool.json")))
         }
     )
-
-    public void aggregate(@HeaderParam("Range") final Range range,
-                          @QueryParam("id") final String id,
+    public void aggregate(@HeaderParam("Range")
+                          @Parameter(description = "HTTP Range Header",
+                                     example = "Range: tools=10-30",
+                                     schema = @Schema(type = "string"))
+                          final Range range,
+                          @QueryParam("id") 
+                          @Parameter(description = "prefixed tool id", required = true)
+                          final String id,
                           @QueryParam("skip") final Long skip,
                           @QueryParam("limit") final Long limit,
-                          @QueryParam("projection") final List<String> projections,
-                          @QueryParam("text") final String text,
-                          @QueryParam("name") final String name,
-                          @QueryParam("description") final String description,
+                          @QueryParam("projection")
+                          @Parameter(description = "tools properties to return")
+                          final List<String> projections,
+                          @QueryParam("text")
+                          @Parameter(description = "text to search")
+                          final String text,
+                          @QueryParam("name")
+                          @Parameter(description = "text to search in the 'name' property")
+                          final String name,
+                          @QueryParam("description")
+                          @Parameter(description = "text to search in the 'description' property")
+                          final String description,
                           @Suspended final AsyncResponse asyncResponse) {
         executor.submit(() -> {
             if (range != null) {
@@ -351,6 +362,17 @@ public class MonitorRestServices {
     @GET
     @Path("/widget/tool/{id:.*}")
     @Produces(MediaType.APPLICATION_JSON)
+    @Operation(summary = "Get the 'most suitable' tool by the tool's id",
+               description = "the complete tool id has a form '{prefix}:{id}:{version}/{type}/{authority}'. " +
+                             "providing a partial id (i.e. 'pmut') may result in many tools descriptions, " +
+                             "from those only one is returned.",
+               responses = {
+                   @ApiResponse(content = 
+                       @Content(mediaType = MediaType.APPLICATION_JSON,
+                                schema = @Schema(ref="https://openebench.bsc.es/monitor/tool/tool.json"))),
+                   @ApiResponse(responseCode = "404", description = "tool not found")
+        }
+    )
     public void getToolWidget(@PathParam("id") String id,
                           @Suspended final AsyncResponse asyncResponse) {
         executor.submit(() -> {
@@ -378,6 +400,17 @@ public class MonitorRestServices {
     @GET
     @Path("/widget/metrics/{id:.*}")
     @Produces(MediaType.APPLICATION_JSON)
+    @Operation(summary = "Get the 'most suitable' metrics for the tool's id",
+               description = "the complete tool id has a form '{prefix}:{id}:{version}/{type}/{authority}'. " +
+                             "providing a partial id (i.e. 'pmut') may found many tools, " +
+                             "for those only one metrics is returned.",
+        responses = {
+            @ApiResponse(content = 
+                    @Content(mediaType = MediaType.APPLICATION_JSON,
+                             schema = @Schema(ref="https://openebench.bsc.es/monitor/metrics/metrics.json"))),
+            @ApiResponse(responseCode = "404", description = "metrics not found")
+        }
+    )
     public void getMetricsWidget(@PathParam("id") String id,
                           @Suspended final AsyncResponse asyncResponse) {
         executor.submit(() -> {
@@ -413,13 +446,35 @@ public class MonitorRestServices {
     @GET
     @Path("/homepage/{id}/{type}/{host}{path:.*}")
     @Produces(MediaType.APPLICATION_JSON)
+    @Operation(summary = "Tool's homepage uptime statistics",
+               description = "the complete tool id has a form '{prefix}:{id}:{version}/{type}/{authority}'. " +
+                             "providing a partial id (i.e. 'pmut') may found many tools, " +
+                             "for those only one metrics is returned.",
+        responses = {
+            @ApiResponse(content = 
+                    @Content(mediaType = MediaType.APPLICATION_JSON,
+                             schema = @Schema(ref="https://openebench.bsc.es/monitor/metrics/metrics.json"))),
+            @ApiResponse(responseCode = "404", description = "metrics not found")
+        }
+    )
     public void getHomePageMonitoring(
                            @QueryParam("date1") Long date1,
                            @QueryParam("date2") Long date2,
-                           @PathParam("id") String id,
-                           @PathParam("type") String type,
-                           @PathParam("host") String host,
-                           @PathParam("path") String path,
+                           @PathParam("id")
+                           @Parameter(description = "prefixed tool id",        
+                                      example = "bio.tools:pmut") 
+                           final String id,
+                           @PathParam("type")
+                           @Parameter(description = "tool type",
+                                      example = "web")
+                           final String type,
+                           @PathParam("host")
+                           @Parameter(description = "tool authority",
+                                      example = "mmb.irbbarcelona.org")
+                           final String host,
+                           @PathParam("path")
+                           @Parameter(description = "json pointer")
+                           final String path,
                            @Suspended final AsyncResponse asyncResponse) {
         executor.submit(() -> {
 

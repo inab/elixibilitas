@@ -39,7 +39,7 @@ import javax.ws.rs.core.Response;
 
 @Path("/")
 @ApplicationScoped
-public class OntologyService {
+public class WebProxyService {
     
     @Inject 
     private ServletContext ctx;
@@ -55,4 +55,11 @@ public class OntologyService {
     public Response getToolsOntology() {
         return Response.ok(ctx.getResourceAsStream("/META-INF/resources/tools.owl"), "application/rdf+xml").build();
     }
+    
+//    @GET
+//    @Path("/index.html")
+//    @Hidden
+//    public Response getHomePage() {
+//        return Response.ok(ctx.getResourceAsStream("/META-INF/resources/index.html"), "text/html").build();
+//    }
 }

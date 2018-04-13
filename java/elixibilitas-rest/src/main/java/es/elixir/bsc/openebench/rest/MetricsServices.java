@@ -135,12 +135,6 @@ public class MetricsServices {
     @Produces(MediaType.APPLICATION_JSON)
     @Operation(
         summary = "Returns tools metrics by the tool's id.",
-//        parameters = {
-//            @Parameter(in = ParameterIn.PATH, name = "id", description = "prefixed tool id", required = true),
-//            @Parameter(in = ParameterIn.PATH, name = "type", description = "tool type", required = true),
-//            @Parameter(in = ParameterIn.PATH, name = "host", description = "tool authority", required = true),
-//            @Parameter(in = ParameterIn.PATH, name = "path", description = "json pointer", required = false)
-//        },
         responses = {
             @ApiResponse(content = @Content(mediaType = MediaType.APPLICATION_JSON,
                                             schema = @Schema(ref="https://openebench.bsc.es/monitor/metrics/metrics.json")),
@@ -149,10 +143,10 @@ public class MetricsServices {
             @ApiResponse(responseCode = "404", description = "metrics not found")
         }
     )
-    public void getMetrics(@PathParam("id") String id,
-                           @PathParam("type") String type,
-                           @PathParam("host") String host,
-                           @PathParam("path") String path,
+    public void getMetrics(@PathParam("id") @Parameter(description = "prefixed tool id") String id,
+                           @PathParam("type") @Parameter(description = "tool type") String type,
+                           @PathParam("host") @Parameter(description = "tool authority") String host,
+                           @PathParam("path") @Parameter(description = "json pointer") String path,
                            @Suspended final AsyncResponse asyncResponse) {
 
         if (id == null || id.isEmpty() ||
