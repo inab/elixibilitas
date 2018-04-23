@@ -383,7 +383,7 @@ public class ToolsServices {
 //            @Parameter(in = "path", name = "id", description = "prefixed tool id", required = true)
 //        }
     )
-    @RolesAllowed("admin")
+    @RolesAllowed("tools_submitter")
     public void putTool(@HeaderParam("datasource") final String datasource,
                         @PathParam("id") final String id, 
                         @RequestBody(description = "json tool object",
@@ -413,7 +413,7 @@ public class ToolsServices {
     @Operation(
         summary = "Updates tools in the database."
     )
-    @RolesAllowed("admin")
+    @RolesAllowed("tools_submitter")
     public void patchTools(@HeaderParam("datasource") final String datasource,
                            @RequestBody(description = "batch update of tools properties",
                                 required = true) final Reader reader,
@@ -464,7 +464,7 @@ public class ToolsServices {
 //            @Parameter(in = "path", name = "path", description = "json pointer", required = false)
 //        }
     )
-    @RolesAllowed("admin")
+    @RolesAllowed("tools_submitter")
     public void patchTool(@HeaderParam("datasource") final String datasource,
                           @PathParam("id") final String id,
                           @PathParam("type") final String type,

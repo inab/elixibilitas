@@ -225,7 +225,7 @@ public class MetricsServices {
             @Parameter(in = ParameterIn.PATH, name = "id", description = "prefixed tool id", required = true)
         }
     )
-    @RolesAllowed("admin")
+    @RolesAllowed("metrics_submitter")
     public void putMetrics(@HeaderParam("datasource") final String datasource,
                            @PathParam("id") final String id, 
                            @RequestBody(description = "json metrics object",
@@ -255,7 +255,7 @@ public class MetricsServices {
     @Operation(
         summary = "Updates metrics in the database."
     )
-    @RolesAllowed("admin")
+    @RolesAllowed("metrics_submitter")
     public void patchMetrics(@HeaderParam("datasource") final String datasource,
                              @RequestBody(description = "batch update of metrics properties",
                                 required = true) final Reader reader,
@@ -313,7 +313,7 @@ public class MetricsServices {
 //            @Parameter(in = ParameterIn.PATH, name = "path", description = "json pointer", required = false)
 //        }
     )
-    @RolesAllowed("admin")
+    @RolesAllowed("metrics_submitter")
     public void patchMetrics(@HeaderParam("datasource") final String datasource,
                              @PathParam("id") final String id,
                              @PathParam("type") final String type,
