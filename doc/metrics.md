@@ -89,6 +89,14 @@
 | 53 | sourcecode_repository_accessible         |                                              | bool   | Make sure the repository (github, bit bucket) contains code.              |
 | 54 | sourcecode_repository_version_controlled |                                              | bool   | Check whether code contains any information about versions/releases/tags. |
 
+#### Changeabilty
+
+|    | metrics              | json path                                    | type     | description                                               |
+|----|----------- ----------|----------------------------------------------|----------|-----------------------------------------------------------|
+| 55 | contributions_policy |                                              |          | Whether the project has defined a contributions policy.   |
+| 56 | issue_tracker        | support.issue_tracker.public_tracker         | bool     | Whether the tool has a publicly accessible issue tracker. |
+| 57 | resolve_time         | support.issue_tracker.resolve_time           | duration | How long are issues open.                                 |
+| 58 | governance           | project.governance                           | bool     | Whether the project has defined a governance model.       |
 
 
 
