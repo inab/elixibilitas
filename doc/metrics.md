@@ -92,7 +92,7 @@
 #### Changeabilty
 
 |    | metrics              | json path                                    | type     | description                                               |
-|----|----------- ----------|----------------------------------------------|----------|-----------------------------------------------------------|
+|----|----------------------|----------------------------------------------|----------|-----------------------------------------------------------|
 | 55 | contributions_policy |                                              |          | Whether the project has defined a contributions policy.   |
 | 56 | issue_tracker        | support.issue_tracker.public_tracker         | bool     | Whether the tool has a publicly accessible issue tracker. |
 | 57 | resolve_time         | support.issue_tracker.resolve_time           | duration | How long are issues open.                                 |
