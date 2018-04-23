@@ -42,6 +42,7 @@ public class Project {
     private Documentation documentation;
     private Integer publications;
     private Boolean readme;
+    private Boolean governance;
 
     @JsonbProperty("identity")
     public Identity getIdentity() {
@@ -131,5 +132,15 @@ public class Project {
     @JsonbProperty("readme")
     public void setReadme(Boolean readme) {
         this.readme = readme;
+    }
+    
+    @JsonbProperty("governance")
+    public Boolean getGovernance() {
+        return governance;
+    }
+
+    @JsonbProperty("governance")
+    public void setGovernance(Boolean governance) {
+        this.governance = governance;
     }
 }

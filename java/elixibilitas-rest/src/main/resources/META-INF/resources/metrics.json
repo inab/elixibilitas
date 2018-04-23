@@ -194,6 +194,10 @@
           },
           "readme": {
             "type": "boolean"
+          },
+          "governance": {
+            "description": "whether the project has defined a governance model",
+            "type": "boolean"
           }
         }
       },
