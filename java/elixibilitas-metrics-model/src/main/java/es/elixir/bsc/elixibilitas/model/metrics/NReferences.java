@@ -25,62 +25,34 @@
 
 package es.elixir.bsc.elixibilitas.model.metrics;
 
-import java.util.ArrayList;
-import java.util.List;
 import javax.json.bind.annotation.JsonbProperty;
 
 /**
  * @author Dmitry Repchevsky
  */
 
-public class Publication {
-    
-    private String doi;
-    private String pmid;
-    private String pmcid;
-    
-    private List<PublicationEntry> entries;
-    
-    @JsonbProperty("doi")
-    public String getDOI() {
-        return doi;
-    }
-    
-    @JsonbProperty("doi")
-    public void setDOI(String doi) {
-        this.doi = doi;
-    }
-    
-    @JsonbProperty("pmid")
-    public String getPMID() {
-        return pmid;
-    }
-    
-    @JsonbProperty("pmid")
-    public void setPMID(String pmid) {
-        this.pmid = pmid;
-    }
-    
-    @JsonbProperty("pmcid")
-    public String getPMCID() {
-        return pmcid;
-    }
-    
-    @JsonbProperty("pmcid")
-    public void setPMCID(String pmcid) {
-        this.pmcid = pmcid;
-    }
+public class NReferences {
 
-    @JsonbProperty("entries")
-    public List<PublicationEntry> getEntries() {
-        if (entries == null) {
-            entries = new ArrayList<>();
-        }
-        return entries;
+    private String year;
+    private int count;
+    
+    @JsonbProperty("year")
+    public String getYear() {
+        return year;
     }
-
-    @JsonbProperty("entries")
-    public void setEntries(List<PublicationEntry> entries) {
-        this.entries = entries;
+    
+    @JsonbProperty("year")
+    public void setYear(String year) {
+        this.year = year;
+    }
+    
+    @JsonbProperty("count")
+    public int getCount() {
+        return count;
+    }
+    
+    @JsonbProperty("count")
+    public void setCount(int count) {
+        this.count = count;
     }
 }

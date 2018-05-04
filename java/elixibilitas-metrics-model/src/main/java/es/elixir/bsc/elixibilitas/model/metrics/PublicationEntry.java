@@ -33,54 +33,57 @@ import javax.json.bind.annotation.JsonbProperty;
  * @author Dmitry Repchevsky
  */
 
-public class Publication {
+public class PublicationEntry {
     
-    private String doi;
-    private String pmid;
-    private String pmcid;
+    private int ref_count;
+    private int cit_count;
     
-    private List<PublicationEntry> entries;
+    private List<NReferences> refs;
+    private List<NCitations> citations;
     
-    @JsonbProperty("doi")
-    public String getDOI() {
-        return doi;
-    }
-    
-    @JsonbProperty("doi")
-    public void setDOI(String doi) {
-        this.doi = doi;
-    }
-    
-    @JsonbProperty("pmid")
-    public String getPMID() {
-        return pmid;
-    }
-    
-    @JsonbProperty("pmid")
-    public void setPMID(String pmid) {
-        this.pmid = pmid;
-    }
-    
-    @JsonbProperty("pmcid")
-    public String getPMCID() {
-        return pmcid;
-    }
-    
-    @JsonbProperty("pmcid")
-    public void setPMCID(String pmcid) {
-        this.pmcid = pmcid;
+    @JsonbProperty("ref_count")
+    public Integer getReferencesCount() {
+        return ref_count;
     }
 
-    @JsonbProperty("entries")
-    public List<PublicationEntry> getEntries() {
-        if (entries == null) {
-            entries = new ArrayList<>();
+    @JsonbProperty("ref_count")
+    public void setReferencesCount(Integer ref_count) {
+        this.ref_count = ref_count;
+    }
+
+    @JsonbProperty("cit_count")
+    public Integer getCitationsCount() {
+        return cit_count;
+    }
+
+    @JsonbProperty("cit_count")
+    public void setCitationsCount(Integer cit_count) {
+        this.cit_count = cit_count;
+    }
+
+    @JsonbProperty("refs")
+    public List<NReferences> getReferences() {
+        if (refs == null) {
+            refs = new ArrayList<>();
         }
-        return entries;
+        return refs;
     }
 
-    @JsonbProperty("entries")
-    public void setEntries(List<PublicationEntry> entries) {
-        this.entries = entries;
+    @JsonbProperty("refs")
+    public void setReferences(List<NReferences> refs) {
+        this.refs = refs;
+    }
+    
+    @JsonbProperty("citations")
+    public List<NCitations> getCitations() {
+        if (citations == null) {
+            citations = new ArrayList<>();
+        }
+        return citations;
+    }
+
+    @JsonbProperty("citations")
+    public void setCitations(List<NCitations> citations) {
+        this.citations = citations;
     }
 }
