@@ -164,6 +164,12 @@
           }
         }
       },
+      "Publication": {
+        "type": "object",
+        "properties": {
+                
+        }
+      },
       "Project": {
         "type": "object",
         "properties": {
@@ -182,7 +188,6 @@
           "deployment": {
             "$ref": "#/definitions/Deployment"
           },
-
           "license": {
             "$ref": "#/definitions/License"
           },
@@ -190,7 +195,10 @@
             "$ref": "#/definitions/Documentation"
           },
           "publications": {
-            "type": "integer"
+            "type": "array",
+            "items": {
+              "$ref": "#/definitions/Publication"
+            }
           },
           "readme": {
             "type": "boolean"

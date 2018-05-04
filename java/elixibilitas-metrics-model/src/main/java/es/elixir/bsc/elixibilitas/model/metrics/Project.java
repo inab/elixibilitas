@@ -25,6 +25,8 @@
 
 package es.elixir.bsc.elixibilitas.model.metrics;
 
+import java.util.ArrayList;
+import java.util.List;
 import javax.json.bind.annotation.JsonbProperty;
 
 /**
@@ -40,7 +42,7 @@ public class Project {
     private Deployment deployment;
     private License license;
     private Documentation documentation;
-    private Integer publications;
+    private List<Publication> publications;
     private Boolean readme;
     private Boolean governance;
 
@@ -115,12 +117,15 @@ public class Project {
     }
 
     @JsonbProperty("publications")
-    public Integer getPublications() {
+    public List<Publication> getPublications() {
+        if (publications == null) {
+            publications = new ArrayList<>();
+        }
         return publications;
     }
 
     @JsonbProperty("publications")
-    public void setPublications(Integer publications) {
+    public void setPublications(List<Publication> publications) {
         this.publications = publications;
     }
 

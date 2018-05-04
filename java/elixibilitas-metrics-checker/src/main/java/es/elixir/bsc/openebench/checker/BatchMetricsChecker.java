@@ -38,7 +38,7 @@ public class BatchMetricsChecker {
         Map<String, List<String>> params = parameters(args);
         
         if (params.isEmpty()) {
-            new BatchMetricsChecker(Executors.newCachedThreadPool()).check(new MongoClient("localhost"));
+            new BatchMetricsChecker(Executors.newFixedThreadPool(32)).check(new MongoClient("localhost"));
         } else {
             final List<String> uris = params.get("-uri");
             if (uris == null || uris.isEmpty()) {
@@ -48,7 +48,7 @@ public class BatchMetricsChecker {
             }
 
             final MongoClient mc = new MongoClient(new MongoClientURI(uris.get(0)));
-            new BatchMetricsChecker(Executors.newCachedThreadPool()).check(mc);
+            new BatchMetricsChecker(Executors.newFixedThreadPool(32)).check(mc);
         }
     }
 
