@@ -164,10 +164,73 @@
           }
         }
       },
+      "NReferences": {
+        "type": "object",
+        "properties": {
+          "year": {
+            "description": "the year of the referenced articles",
+            "type": "string"
+          },
+          "count": {
+            "description": "number of referenced articles published in this year",
+            "type": "integer"
+          }
+        }
+      },
+      "NCitations": {
+        "type": "object",
+        "properties": {
+          "year": {
+            "description": "the year citations counted",
+            "type": "string"
+          },
+          "count": {
+            "description": "number of citations for the year",
+            "type": "integer"
+          }
+        }
+      },
+      "PublicationEntry": {
+        "type": "object",
+        "properties": {
+          "ref_count": {
+            "type": "integer"
+          },
+          "cit_count": {
+            "type": "integer"
+          },
+          "refs": {
+            "type": "array",
+            "items": {
+              "$ref": "#/definitions/NReferences"
+            }
+          },
+          "citations": {
+            "type": "array",
+            "items": {
+              "$ref": "#/definitions/NCitations"
+            }
+          }
+        }
+      },
       "Publication": {
         "type": "object",
         "properties": {
-                
+          "doi": {
+            "type": "string"
+          },
+          "pmid": {
+            "type": "string"
+          },
+          "pcmid": {
+            "type": "string"
+          },
+          "entries" : {
+            "type": "array",
+            "items": {
+              "$ref": "#/definitions/PublicationEntry"
+              }
+           }  
         }
       },
       "Project": {
