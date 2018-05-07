@@ -35,11 +35,34 @@ import javax.json.bind.annotation.JsonbProperty;
 
 public class PublicationEntry {
     
+    private String title;
+    private int year;
+    
     private int ref_count;
     private int cit_count;
     
     private List<NReferences> refs;
     private List<NCitations> citations;
+    
+    @JsonbProperty("title")
+    public String getTitle() {
+        return title;
+    }
+
+    @JsonbProperty("title")
+    public void setTitle(String title) {
+        this.title = title;
+    }
+
+    @JsonbProperty("year")
+    public Integer getYear() {
+        return year;
+    }
+
+    @JsonbProperty("year")
+    public void setYear(Integer year) {
+        this.year = year;
+    }
     
     @JsonbProperty("ref_count")
     public Integer getReferencesCount() {

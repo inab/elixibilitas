@@ -193,6 +193,12 @@
       "PublicationEntry": {
         "type": "object",
         "properties": {
+          "title": {
+            "type": "string"
+          },
+          "year": {
+            "type": "integer"
+          },
           "ref_count": {
             "type": "integer"
           },
@@ -222,7 +228,7 @@
           "pmid": {
             "type": "string"
           },
-          "pcmid": {
+          "pmcid": {
             "type": "string"
           },
           "entries" : {
