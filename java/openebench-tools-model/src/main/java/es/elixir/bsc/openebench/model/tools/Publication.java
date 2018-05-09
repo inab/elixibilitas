@@ -25,7 +25,6 @@
 
 package es.elixir.bsc.openebench.model.tools;
 
-import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
 import javax.json.bind.annotation.JsonbProperty;
@@ -39,8 +38,6 @@ public class Publication {
     private String doi;
     private String pmcid;
     private String pmid;
-    
-    private List<NCitations> citations;
     
     @JsonbProperty("doi")
     public String getDOI() {
@@ -70,18 +67,5 @@ public class Publication {
     @JsonbProperty("pmid")
     public void setPMID(String pmid) {
         this.pmid = pmid;
-    }
-    
-    @JsonbProperty("citations")
-    public List<NCitations> getCitations() {
-        if (citations == null) {
-            citations = new ArrayList<>();
-        }
-        return citations;
-    }
-
-    @JsonbProperty("citations")
-    public void setCitations(List<NCitations> citations) {
-        this.citations = citations;
     }
 }
