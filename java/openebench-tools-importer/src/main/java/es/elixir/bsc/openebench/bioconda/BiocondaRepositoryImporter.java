@@ -52,7 +52,6 @@ public class BiocondaRepositoryImporter {
                                 repository.put(tool);
                             } else {
                                 System.out.println("    name: " + tool.getName());
-                                System.out.println("    version: " + tool.getVersion());
                                 System.out.println("    homepage: " + tool.getHomepage());
                                 System.out.println("    description: " + tool.getDescription());
 //                                final Jsonb jsonb = JsonbBuilder.create(
@@ -184,7 +183,6 @@ public class BiocondaRepositoryImporter {
         }
         
         tool.setName(pack.name);
-        tool.setVersion(pack.version);
         tool.setHomepage(homepage);
         tool.setLicense(metadata.license);
         tool.setDescription(metadata.summary);

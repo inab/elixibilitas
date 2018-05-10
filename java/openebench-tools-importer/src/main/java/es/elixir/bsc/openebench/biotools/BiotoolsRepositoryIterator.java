@@ -264,7 +264,6 @@ public class BiotoolsRepositoryIterator implements Iterator<Tool> {
             }
             
             tool.setName(name);
-            tool.setVersion(version);
 
             tool.setHomepage(homepage);
 
