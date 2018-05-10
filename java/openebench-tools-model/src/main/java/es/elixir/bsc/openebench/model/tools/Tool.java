@@ -39,7 +39,6 @@ import javax.json.bind.annotation.JsonbProperty;
 public class Tool extends LD {
     
     private String name;
-    private String version;
     private ZonedDateTime timestamp;
     
     private String xid;
@@ -79,16 +78,6 @@ public class Tool extends LD {
     @JsonbProperty("name")
     public void setName(String name) {
         this.name = name;
-    }
-    
-    @JsonbProperty("version")
-    public String getVersion() {
-        return version;
-    }
-
-    @JsonbProperty("version")
-    public void setVersion(String version) {
-        this.version = version;
     }
 
     @JsonbProperty("@timestamp")
