@@ -261,10 +261,13 @@ public class MonitorRestServices {
                           @QueryParam("description")
                           @Parameter(description = "text to search in the 'description' property")
                           final String description,
+                          @QueryParam("type")
+                          @Parameter(description = "list of filtered types")
+                          final List<String> types,
                           @Suspended final AsyncResponse asyncResponse) {
         executor.submit(() -> {
             if (range != null) {
-                asyncResponse.resume(aggregateAsync(id, range.getFirstPos(), range.getLastPos(), projections, text, name, description)
+                asyncResponse.resume(aggregateAsync(id, range.getFirstPos(), range.getLastPos(), projections, text, name, description, types)
                         .header("Access-Control-Allow-Headers", "Range")
                         .header("Access-Control-Expose-Headers", "Accept-Ranges")
                         .header("Access-Control-Expose-Headers", "Content-Range")
@@ -276,7 +279,7 @@ public class MonitorRestServices {
                     to += limit;
                 }
                 
-                asyncResponse.resume(aggregateAsync(id, from, to, projections, text, name, description)
+                asyncResponse.resume(aggregateAsync(id, from, to, projections, text, name, description, types)
                         .header("Access-Control-Allow-Headers", "Range")
                         .header("Access-Control-Expose-Headers", "Accept-Ranges")
                         .header("Access-Control-Expose-Headers", "Content-Range")
@@ -291,7 +294,8 @@ public class MonitorRestServices {
                               final List<String> projections, 
                               final String text,
                               final String name,
-                              final String description) {
+                              final String description,
+                              final List<String> types) {
 
         StreamingOutput stream = (OutputStream out) -> {
             final Long limit;
@@ -301,10 +305,10 @@ public class MonitorRestServices {
                 limit = to - from;
             }
             try (Writer writer = new BufferedWriter(new OutputStreamWriter(out, "UTF-8"))) {
-                toolsDAO.aggregate(writer, id, from, limit, text, name, description, projections);
+                toolsDAO.aggregate(writer, id, from, limit, text, name, description, types, projections);
             }
         };
-        final long count = toolsDAO.aggregate_count(id, text, name, description);
+        final long count = toolsDAO.aggregate_count(id, text, name, description, types);
         
         final ContentRange range = new ContentRange("items", from, to, count);
         

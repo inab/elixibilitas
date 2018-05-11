@@ -220,10 +220,10 @@ public abstract class AbstractDAO<T> {
     /**
      * Apply Json patch to the mongodb document.
      * 
-     * @param id metrics id
+     * @param id document id
      * @param patch Json patch to apply
      * 
-     * @return resulted Json metrics document.
+     * @return resulted Json document document.
      */
     private String patch(String id, JsonPatch patch) {
         try  {

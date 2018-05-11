@@ -512,7 +512,7 @@ public class ToolsDAO extends AbstractDAO<Document> implements Serializable {
         }
     }
     
-    public int aggregate_count(String id, String text, String name, String description) {
+    public int aggregate_count(String id, String text, String name, String description, List<String> types) {
 
         final MongoCollection<Document> col = database.getCollection(collection);
         final ArrayList<Bson> aggregation = new ArrayList();
@@ -528,7 +528,14 @@ public class ToolsDAO extends AbstractDAO<Document> implements Serializable {
         if (description != null && !description.isEmpty()) {
             aggregation.add(Aggregates.match(Filters.regex("description", description, "i")));
         }
-
+        
+        if (types != null && !types.isEmpty()) {
+            final List<Bson> tlist = new ArrayList<Bson>();
+            for (String type : types) {
+                tlist.add(Filters.eq("_id.type", type));
+            }
+            aggregation.add(Aggregates.match(Filters.or(tlist)));
+        }
 
         if (id != null && !id.isEmpty()) {
             aggregation.add(createIdFilter(id));
@@ -540,14 +547,16 @@ public class ToolsDAO extends AbstractDAO<Document> implements Serializable {
 
         final AggregateIterable<Document> iterator = col.aggregate(aggregation);
         final Document doc = iterator.first();
-        
-        return doc.get("count", Integer.class);
-        
+        if (doc != null) {
+            final Integer count = doc.get("count", Integer.class);
+            return count == null ? 0 : count;
+        }
+        return 0;
     }
         
     public void aggregate(Writer writer, String id, Long skip, 
             Long limit, String text, String name, String description,
-            List<String> projections) {
+            List<String> types, List<String> projections) {
         try {
             final MongoCollection<Document> col = database.getCollection(collection);
             try (JsonWriter jwriter = new JsonWriter(writer, new JsonWriterSettings(true))) {
@@ -575,6 +584,14 @@ public class ToolsDAO extends AbstractDAO<Document> implements Serializable {
                 
                 if (description != null && !description.isEmpty()) {
                     aggregation.add(Aggregates.match(Filters.regex("description", description, "i")));
+                }
+
+                if (types != null && !types.isEmpty()) {
+                    final List<Bson> tlist = new ArrayList<Bson>();
+                    for (String type : types) {
+                        tlist.add(Filters.eq("_id.type", type));
+                    }
+                    aggregation.add(Aggregates.match(Filters.or(tlist)));
                 }
 
                 if (id != null && !id.isEmpty()) {
