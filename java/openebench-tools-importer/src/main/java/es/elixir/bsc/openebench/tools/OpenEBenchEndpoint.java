@@ -73,8 +73,9 @@ public class OpenEBenchEndpoint {
         final URL url = tool.id.toURL();
         final HttpURLConnection con = (HttpURLConnection) url.openConnection();
         con.setDoOutput(true);
-        
-        con.setRequestMethod("PATCH");
+
+        con.setRequestMethod("POST");
+        con.setRequestProperty("X-HTTP-Method-Override", "PATCH");
         con.setRequestProperty("Authorization", "Basic " + credentials);
         con.setRequestProperty("Content-type", "application/json");
         try (OutputStream out = con.getOutputStream()) {
