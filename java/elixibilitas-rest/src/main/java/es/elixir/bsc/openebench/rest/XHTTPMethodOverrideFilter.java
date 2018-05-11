@@ -1,6 +1,6 @@
 /**
  * *****************************************************************************
- * Copyright (C) 2017 ELIXIR ES, Spanish National Bioinformatics Institute (INB)
+ * Copyright (C) 2018 ELIXIR ES, Spanish National Bioinformatics Institute (INB)
  * and Barcelona Supercomputing Center (BSC)
  *
  * Modifications to the initial code base are copyright of their respective
@@ -25,35 +25,25 @@
 
 package es.elixir.bsc.openebench.rest;
 
-import io.swagger.v3.jaxrs2.integration.resources.OpenApiResource;
-import java.util.HashSet;
-import java.util.Set;
-import javax.ws.rs.ApplicationPath;
-import javax.ws.rs.core.Application;
+import java.io.IOException;
+import javax.ws.rs.container.ContainerRequestContext;
+import javax.ws.rs.container.ContainerRequestFilter;
+import javax.ws.rs.container.PreMatching;
+import javax.ws.rs.ext.Provider;
 
 /**
- * Benchmarking JAX-RS configuration (match everything from the root).
- * 
  * @author Dmitry Repchevsky
  */
 
-@ApplicationPath("/")
-public class OpenEBenchMonitorApplication extends Application {
-    @Override
-    public Set<Class<?>> getClasses() {
-        Set<Class<?>> resources = new HashSet();
+@Provider
+@PreMatching
+public class XHTTPMethodOverrideFilter implements ContainerRequestFilter {
 
-        resources.add(OpenApiResource.class);
-        resources.add(ToolsServices.class);
-        resources.add(MetricsServices.class);
-        resources.add(WebProxyService.class);
-        resources.add(EdamServices.class);
-        resources.add(MonitorRestServices.class);
-        resources.add(CorsResponseFilter.class);
-        resources.add(JSONContentTypeFilter.class);
-        resources.add(XHTTPMethodOverrideFilter.class);
-        resources.add(PublicationsService.class);
-        
-        return resources;
+    @Override
+    public void filter(ContainerRequestContext rc) throws IOException {
+        String http_method = rc.getHeaderString("X-HTTP-Method-Override");
+        if (http_method != null && !http_method.isEmpty()) {
+            rc.setMethod(http_method);
+        }
     }
 }
