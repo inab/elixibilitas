@@ -263,7 +263,7 @@ public class MetricsServices {
                              @Context SecurityContext security,
                              @Suspended final AsyncResponse asyncResponse) {
 
-        final String prefix = uriInfo.getBaseUri().getPath();
+        final String prefix = uriInfo.getRequestUri().toString();
         final Principal principal = security.getUserPrincipal();
         final String user = principal != null ? principal.getName() : null;
         
@@ -285,9 +285,8 @@ public class MetricsServices {
                     String id = object.getString("@id");
                     if (id != null) {
                         try {
-                            final String path = URI.create(id).getPath();
-                            if (path.startsWith(prefix)) {
-                                id = path.substring(prefix.length());
+                            if (id.startsWith(prefix)) {
+                                id = id.substring(prefix.length());
                                 metricsDAO.update(user, id, object.toString());
                             }
                             
