@@ -371,8 +371,11 @@ public class ToolsDAO extends AbstractDAO<Document> implements Serializable {
 
         final AggregateIterable<Document> iterator = col.aggregate(aggregation);
         final Document doc = iterator.first();
-        
-        return doc.get("count", Integer.class);
+        if (doc != null) {
+            final Integer count = doc.get("count", Integer.class);
+            return count == null ? 0 : count;
+        }
+        return 0;
     }
     
     public void write(Writer writer) {
