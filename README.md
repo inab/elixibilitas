@@ -91,6 +91,7 @@ curl -v -X PATCH -u user:password -H 'Content-Type: application/json' /
 https://openebench.bsc.es/monitor/metrics/{id} -d '{"support.email": true}'
 ```
 the former patches the json using JSON Patch, while the latter uses mongodb 'upsert' notation.
+
 ---
 It is possible to query tools:
 ```
