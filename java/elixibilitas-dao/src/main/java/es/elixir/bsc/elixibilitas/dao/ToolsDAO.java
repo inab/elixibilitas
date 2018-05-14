@@ -173,9 +173,30 @@ public class ToolsDAO extends AbstractDAO<Document> implements Serializable {
         return tools;
     }
     
+    /**
+     * Finds the tool by its ID.
+     * 
+     * @param id the tool ID
+     * 
+     * @return the Tool object
+     */
     public Tool get(String id) {
-        final List<Document> docs = getBSON(id);
-        return docs.isEmpty() ? null : deserialize(docs.get(0));
+        try {
+            final MongoCollection<Document> col = database.getCollection(collection);
+
+            final Bson query = createFindQuery(id);
+            if (query != null) {
+                try (MongoCursor<Document> cursor = col.find(query).iterator()) {
+                    if(cursor.hasNext()) {
+                        return deserialize(cursor.next());
+                    }
+                }
+            }
+        } catch(Exception ex) {
+            Logger.getLogger(ToolsDAO.class.getName()).log(Level.SEVERE, null, ex);
+        }
+
+        return null;
     }
     
     private Tool deserialize(Document doc) {
