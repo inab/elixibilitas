@@ -33,6 +33,7 @@ import es.elixir.bsc.openebench.rest.ext.Range;
 import io.swagger.v3.oas.annotations.Hidden;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.headers.Header;
 import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -207,7 +208,9 @@ public class ToolsServices {
                mediaType = MediaType.APPLICATION_JSON,
                array = @ArraySchema(schema = @Schema(
                    ref="https://openebench.bsc.es/monitor/tool/tool.json"
-               ))))
+               ))),
+               headers = @Header(name = "Content-Range",
+                                 description = "standart HTTP header ('Content-Range: tools 10-30/20000')"))
         }
     )
     public void getTools(@HeaderParam("Range") 
@@ -255,7 +258,10 @@ public class ToolsServices {
     @GET
     @Path("/{id}")
     @Produces(MediaType.APPLICATION_JSON)
-    public void getTools(@PathParam("id") final String id,
+    public void getTools(@PathParam("id")
+                         @Parameter(description = "prefixed tool id",
+                                    example = "bio.tools:pmut:2017")
+                         final String id,
                          @Suspended final AsyncResponse asyncResponse) {
         executor.submit(() -> {
             asyncResponse.resume(getToolsAsync(id).build());

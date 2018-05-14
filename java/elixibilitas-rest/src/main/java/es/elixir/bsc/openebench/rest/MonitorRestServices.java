@@ -35,6 +35,7 @@ import io.swagger.v3.oas.annotations.Hidden;
 import io.swagger.v3.oas.annotations.OpenAPIDefinition;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.headers.Header;
 import io.swagger.v3.oas.annotations.info.Contact;
 import io.swagger.v3.oas.annotations.info.Info;
 import io.swagger.v3.oas.annotations.info.License;
@@ -149,7 +150,9 @@ public class MonitorRestServices {
                mediaType = MediaType.APPLICATION_JSON,
                array = @ArraySchema(schema = @Schema(
                    ref="https://openebench.bsc.es/monitor/tool/tool.json"
-            ))))
+            ))),
+            headers = @Header(name = "Content-Range",
+                              description = "standart HTTP header ('Content-Range: tools 10-30/20000')"))
         }
     )
     public void search(@HeaderParam("Range") 
@@ -234,14 +237,15 @@ public class MonitorRestServices {
     @Operation(summary = "Searches and groups tools by their id",
                description = "The same as '/search' with a difference in the output format",
         responses = {
-            @ApiResponse(content = 
-                    @Content(mediaType = MediaType.APPLICATION_JSON,
-                             schema = @Schema(ref="https://openebench.bsc.es/monitor/tool/tool.json")))
+            @ApiResponse(content = @Content(mediaType = MediaType.APPLICATION_JSON),
+                headers = @Header(name = "Content-Range",
+                                  description = "standart HTTP header ('Content-Range: items 10-30/20000')"))
+
         }
     )
     public void aggregate(@HeaderParam("Range")
                           @Parameter(description = "HTTP Range Header",
-                                     example = "Range: tools=10-30",
+                                     example = "Range: items=10-30",
                                      schema = @Schema(type = "string"))
                           final Range range,
                           @QueryParam("id") 
