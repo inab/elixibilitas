@@ -33,6 +33,7 @@ import io.swagger.v3.oas.annotations.Hidden;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.enums.ParameterIn;
+import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.parameters.RequestBody;
@@ -43,7 +44,6 @@ import java.io.OutputStreamWriter;
 import java.io.Reader;
 import java.io.StringReader;
 import java.io.Writer;
-import java.net.URI;
 import java.security.Principal;
 import java.util.List;
 import java.util.stream.Stream;
@@ -143,10 +143,22 @@ public class MetricsServices {
             @ApiResponse(responseCode = "404", description = "metrics not found")
         }
     )
-    public void getMetrics(@PathParam("id") @Parameter(description = "prefixed tool id") String id,
-                           @PathParam("type") @Parameter(description = "tool type") String type,
-                           @PathParam("host") @Parameter(description = "tool authority") String host,
-                           @PathParam("path") @Parameter(description = "json pointer") String path,
+    public void getMetrics(@PathParam("id")
+                           @Parameter(description = "prefixed tool id",
+                                      example = "bio.tools:pmut:2017")
+                           final String id,
+                           @PathParam("type")
+                           @Parameter(description = "tool type",
+                                      example = "web") 
+                           final String type,
+                           @PathParam("host")
+                           @Parameter(description = "tool authority",
+                                      example = "mmb.irbbarcelona.org")
+                           final String host,
+                           @PathParam("path")
+                           @Parameter(description = "json pointer",
+                                      example = "project")
+                           final String path,
                            @Suspended final AsyncResponse asyncResponse) {
 
         if (id == null || id.isEmpty() ||
@@ -199,7 +211,10 @@ public class MetricsServices {
             @ApiResponse(responseCode = "404", description = "metrics not found")
         }
     )
-    public void getMetrics(@QueryParam("projection") final List<String> projections,
+    public void getMetrics(@QueryParam("projection")
+                           @Parameter(description = "properties to be returned",
+                                      example = "project.license.open_source")
+                           final List<String> projections,
                            @Suspended final AsyncResponse asyncResponse) {
         executor.submit(() -> {
             asyncResponse.resume(getToolsAsync(projections).build());
@@ -220,14 +235,13 @@ public class MetricsServices {
     @Path("/{id : .*}")
     @Consumes(MediaType.APPLICATION_JSON)
     @Operation(
-        summary = "Inserts the metrics into the database.",
-        parameters = {
-            @Parameter(in = ParameterIn.PATH, name = "id", description = "prefixed tool id", required = true)
-        }
+        summary = "Inserts the metrics into the database."
     )
     @RolesAllowed("metrics_submitter")
-    public void putMetrics(@HeaderParam("datasource") final String datasource,
-                           @PathParam("id") final String id, 
+    public void putMetrics(@PathParam("id")
+                           @Parameter(description = "full tool id",
+                               example = "bio.tools:pmut:2017/web/mmb.irbbarcelona.org") 
+                           final String id,
                            @RequestBody(description = "json metrics object",
                               content = @Content(schema = @Schema(ref="https://openebench.bsc.es/monitor/metrics/metrics.json")),
                               required = true) 
@@ -240,7 +254,7 @@ public class MetricsServices {
         
         executor.submit(() -> {
             asyncResponse.resume(
-                    putMetricsAsync(datasource == null || datasource.isEmpty() ? user : datasource, id, json).build());
+                    putMetricsAsync(user, id, json).build());
         });
     }
 
@@ -253,12 +267,17 @@ public class MetricsServices {
     @Path("/")
     @Consumes(MediaType.APPLICATION_JSON)
     @Operation(
-        summary = "Updates metrics in the database."
+        summary = "Updates metrics in the database.",
+        description = "Accepts an array of JSON documents with defined @id " +
+                      "(i.e. 'https://openebench.bsc.es/monitor/metrics/bio.tools:pmut:2017/web/mmb.irbbarcelona.org'). " +
+                      "Method uses mongodb 'upsert' operation."
     )
     @RolesAllowed("metrics_submitter")
-    public void patchMetrics(@HeaderParam("datasource") final String datasource,
-                             @RequestBody(description = "batch update of metrics properties",
-                                required = true) final Reader reader,
+    public void patchMetrics(@RequestBody(
+                                 description = "batch update of metrics properties",
+                                 content = @Content(
+                                     mediaType = MediaType.APPLICATION_JSON),
+                                 required = true) final Reader reader,
                              @Context final UriInfo uriInfo,
                              @Context SecurityContext security,
                              @Suspended final AsyncResponse asyncResponse) {
@@ -269,7 +288,7 @@ public class MetricsServices {
         
         executor.submit(() -> {
             asyncResponse.resume(
-                    patchMetricsAsync(prefix, datasource == null || datasource.isEmpty() ? user : datasource, reader).build());
+                    patchMetricsAsync(prefix, user, reader).build());
         });
     }
     
@@ -304,21 +323,30 @@ public class MetricsServices {
     @Path("/{id}/{type}/{host}{path:.*}")
     @Consumes(MediaType.APPLICATION_JSON)
     @Operation(
-        summary = "Updates metrics in the database."
-//        parameters = {
-//            @Parameter(in = ParameterIn.PATH, name = "id", description = "prefixed tool id", required = true),
-//            @Parameter(in = ParameterIn.PATH, name = "type", description = "tool type", required = false),
-//            @Parameter(in = ParameterIn.PATH, name = "host", description = "tool authority", required = false),
-//            @Parameter(in = ParameterIn.PATH, name = "path", description = "json pointer", required = false)
-//        }
+        summary = "Updates metrics in the database.",
+        description = "Accepts JSON document as an input. " +
+                      "Uses mongodb 'upsert' if the 'path' is empty or JSON Patch otherwise."
     )
     @RolesAllowed("metrics_submitter")
     public void patchMetrics(@HeaderParam("datasource") final String datasource,
-                             @PathParam("id") final String id,
-                             @PathParam("type") final String type,
-                             @PathParam("host") final String host,
-                             @PathParam("path") final String path,
+                             @PathParam("id")
+                             @Parameter(description = "prefixed tool id",
+                                        example = "bio.tools:pmut:2017") 
+                             final String id,
+                             @PathParam("type")
+                             @Parameter(description = "tool type",
+                                       example = "web") 
+                             final String type,
+                             @PathParam("host")
+                             @Parameter(description = "tool authority",
+                                        example = "mmb.irbbarcelona.org")
+                             final String host,
+                             @PathParam("path")
+                             @Parameter(description = "json pointer",
+                                        example = "project")
+                             final String path,
                              @RequestBody(description = "metrics property value",
+                                    content = @Content(mediaType = MediaType.APPLICATION_JSON),
                                 required = true) final String json,
                              @Context SecurityContext security,
                              @Suspended final AsyncResponse asyncResponse) {
@@ -357,24 +385,15 @@ public class MetricsServices {
     @Produces(MediaType.APPLICATION_JSON)
     @Operation(
         summary = "Retrieves metrics changes log"
-//        parameters = {
-//            @Parameter(in = ParameterIn.PATH , name = "id", description = "prefixed tool id", required = true),
-//            @Parameter(in = ParameterIn.PATH, name = "type", description = "tool type", required = true),
-//            @Parameter(in = ParameterIn.PATH, name = "host", description = "tool authority", required = true),
-//            @Parameter(in = ParameterIn.PATH, name = "path", description = "json pointer", required = true),
-//            @Parameter(in = ParameterIn.QUERY, name = "from", description = "log from the date", required = false),
-//            @Parameter(in = ParameterIn.QUERY, name = "to", description = "log to the date", required = false),
-//            @Parameter(in = ParameterIn.QUERY, name = "limit", description = "return n tools", required = false),
-//        }
     )
     public void getMetricsLog(@PathParam("id") String id,
-                           @PathParam("type") String type,
-                           @PathParam("host") String host,
-                           @PathParam("path") String path,
-                           @QueryParam("from") final String from,
-                           @QueryParam("to") final String to,
-                           @QueryParam("limit") final Integer limit,
-                           @Suspended final AsyncResponse asyncResponse) {
+                              @PathParam("type") String type,
+                              @PathParam("host") String host,
+                              @PathParam("path") String path,
+                              @QueryParam("from") final String from,
+                              @QueryParam("to") final String to,
+                              @QueryParam("limit") final Integer limit,
+                              @Suspended final AsyncResponse asyncResponse) {
         if (path == null || path.isEmpty()) {
             asyncResponse.resume(Response.status(Response.Status.BAD_REQUEST).build());
         }

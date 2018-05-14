@@ -265,8 +265,14 @@ public class ToolsServices {
     @GET
     @Path("/{id}/{type}")
     @Produces(MediaType.APPLICATION_JSON)
-    public void getTools(@PathParam("id") final String id,
-                         @PathParam("type") final String type,
+    public void getTools(@PathParam("id")
+                         @Parameter(description = "prefixed tool id",
+                                    example = "bio.tools:pmut:2017")
+                         final String id,
+                         @PathParam("type")
+                         @Parameter(description = "tool type",
+                                    example = "web")
+                         final String type,
                          @Suspended final AsyncResponse asyncResponse) {
         executor.submit(() -> {
             asyncResponse.resume(getToolsAsync(id + "/" + type).build());
@@ -302,7 +308,8 @@ public class ToolsServices {
                                    example = "mmb.irbbarcelona.org")
                         final String host,
                         @PathParam("path")
-                        @Parameter(description = "json pointer")
+                        @Parameter(description = "json pointer",
+                                   example = "contacts")
                         final String path,
                         @Suspended final AsyncResponse asyncResponse) {
         executor.submit(() -> {
@@ -345,9 +352,18 @@ public class ToolsServices {
     @GET
     @Path("/{id}/{type}/{host}")
     @Produces("application/ld+json")
-    public void getToolOntology(@PathParam("id") final String id,
-                                @PathParam("type") final String type,
-                                @PathParam("host") final String host,
+    public void getToolOntology(@PathParam("id")
+                                @Parameter(description = "prefixed tool id",
+                                           example = "bio.tools:pmut:2017") 
+                                final String id,
+                                @PathParam("type")
+                                @Parameter(description = "tool type",
+                                           example = "web")
+                                final String type,
+                                @PathParam("host")
+                                @Parameter(description = "tool authority",
+                                           example = "mmb.irbbarcelona.org")
+                                final String host,
                                 @Suspended final AsyncResponse asyncResponse) {
         executor.submit(() -> {
             asyncResponse.resume(getToolOntologyAsync(id + "/" + type + "/" + host).build());
@@ -379,13 +395,12 @@ public class ToolsServices {
     @Consumes(MediaType.APPLICATION_JSON)
     @Operation(
         summary = "Inserts the tool into the database."
-//        parameters = {
-//            @Parameter(in = "path", name = "id", description = "prefixed tool id", required = true)
-//        }
     )
     @RolesAllowed("tools_submitter")
-    public void putTool(@HeaderParam("datasource") final String datasource,
-                        @PathParam("id") final String id, 
+    public void putTool(@PathParam("id")
+                        @Parameter(description = "full tool id",
+                            example = "bio.tools:pmut:2017/web/mmb.irbbarcelona.org")
+                        final String id,
                         @RequestBody(description = "json tool object",
                             content = @Content(schema = @Schema(ref="https://openebench.bsc.es/monitor/tool/tool.json")),
                             required = true) final String json,
@@ -398,7 +413,7 @@ public class ToolsServices {
 
         executor.submit(() -> {
             asyncResponse.resume(
-                    putToolAsync(datasource == null || datasource.isEmpty() ? user : datasource, id, json).build());
+                    putToolAsync(user, id, json).build());
         });
     }
     
@@ -414,8 +429,7 @@ public class ToolsServices {
         summary = "Updates tools in the database."
     )
     @RolesAllowed("tools_submitter")
-    public void patchTools(@HeaderParam("datasource") final String datasource,
-                           @RequestBody(description = "batch update of tools properties",
+    public void patchTools(@RequestBody(description = "batch update of tools properties",
                                 required = true) final Reader reader,
                            @Context SecurityContext security,
                            @Suspended final AsyncResponse asyncResponse) {
@@ -426,7 +440,7 @@ public class ToolsServices {
         
         executor.submit(() -> {
             asyncResponse.resume(
-                    patchToolsAsync(datasource == null || datasource.isEmpty() ? user : datasource, reader).build());
+                    patchToolsAsync(user, reader).build());
         });
     }
 
@@ -456,17 +470,9 @@ public class ToolsServices {
                       "[{ 'op': 'replace', 'path': $path, 'value': $json }]\n" +
                       "curl -v -X PATCH -u user:pass -H 'Content-Type: application/json' " +
                       "https://openebench.bsc.es/monitor/tool/{id}/description -d '\"new tool description\"'"
-        
-//        parameters = {
-//            @Parameter(in = "path", name = "id", description = "prefixed tool id", required = true),
-//            @Parameter(in = "path", name = "type", description = "tool type", required = false),
-//            @Parameter(in = "path", name = "host", description = "tool authority", required = false),
-//            @Parameter(in = "path", name = "path", description = "json pointer", required = false)
-//        }
     )
     @RolesAllowed("tools_submitter")
-    public void patchTool(@HeaderParam("datasource") final String datasource,
-                          @PathParam("id") final String id,
+    public void patchTool(@PathParam("id") final String id,
                           @PathParam("type") final String type,
                           @PathParam("host") final String host,
                           @PathParam("path") final String path,
@@ -490,7 +496,7 @@ public class ToolsServices {
         final URI uri = uriInfo.getRequestUri();
         executor.submit(() -> {
             asyncResponse.resume(
-                    patchToolAsync(datasource == null || datasource.isEmpty() ? user : datasource, uri.toString(), path, value).build());
+                patchToolAsync(user, uri.toString(), path, value).build());
         });
     }
 
@@ -504,13 +510,13 @@ public class ToolsServices {
     @Path("/log/{id}/{type}/{host}{path:.*}")
     @Produces(MediaType.APPLICATION_JSON)
     public void getToolsLog(@PathParam("id") String id,
-                           @PathParam("type") String type,
-                           @PathParam("host") String host,
-                           @PathParam("path") String path,
-                           @QueryParam("from") final String  from,
-                           @QueryParam("to") final String  to,
-                           @QueryParam("limit") final Integer limit,
-                           @Suspended final AsyncResponse asyncResponse) {
+                            @PathParam("type") String type,
+                            @PathParam("host") String host,
+                            @PathParam("path") String path,
+                            @QueryParam("from") final String  from,
+                            @QueryParam("to") final String  to,
+                            @QueryParam("limit") final Integer limit,
+                            @Suspended final AsyncResponse asyncResponse) {
         if (path == null || path.isEmpty()) {
             asyncResponse.resume(Response.status(Response.Status.BAD_REQUEST).build());
         }
