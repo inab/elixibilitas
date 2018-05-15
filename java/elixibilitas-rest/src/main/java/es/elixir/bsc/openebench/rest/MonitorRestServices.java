@@ -468,6 +468,7 @@ public class MonitorRestServices {
     public void getHomePageMonitoring(
                            @QueryParam("date1") Long date1,
                            @QueryParam("date2") Long date2,
+                           @QueryParam("limit") Integer limit,
                            @PathParam("id")
                            @Parameter(description = "prefixed tool id",        
                                       example = "bio.tools:pmut") 
@@ -486,24 +487,24 @@ public class MonitorRestServices {
                            @Suspended final AsyncResponse asyncResponse) {
         executor.submit(() -> {
 
-            asyncResponse.resume(getHomePageMonitoringAsync(id + "/" + type + "/" + host, date1, date2)
+            asyncResponse.resume(getHomePageMonitoringAsync(id + "/" + type + "/" + host, date1, date2, limit)
                     .build());
         });
     }
             
-    private Response.ResponseBuilder getHomePageMonitoringAsync(String id, Long date1, Long date2) {
+    private Response.ResponseBuilder getHomePageMonitoringAsync(String id, Long date1, Long date2, Integer limit) {
  
         String from = date1 == null ? null : Instant.ofEpochSecond(date1).toString();
         String to = date2 == null ? null : Instant.ofEpochSecond(date2).toString();
             
-        final JsonArray operational = metricsDAO.findLog(id, "/project/website/operational", from, to, null);
+        final JsonArray operational = metricsDAO.findLog(id, "/project/website/operational", from, to, limit);
         if (operational == null) {
             return Response.status(Response.Status.INTERNAL_SERVER_ERROR);
         } else if (operational.isEmpty()) {
             return Response.status(Response.Status.NOT_FOUND);
         }
         
-        final JsonArray access_time = metricsDAO.findLog(id, "/project/website/access_time", from, to, null);
+        final JsonArray access_time = metricsDAO.findLog(id, "/project/website/access_time", from, to, limit);
         if (access_time == null) {
             return Response.status(Response.Status.INTERNAL_SERVER_ERROR);
         } else if (access_time.isEmpty()) {
