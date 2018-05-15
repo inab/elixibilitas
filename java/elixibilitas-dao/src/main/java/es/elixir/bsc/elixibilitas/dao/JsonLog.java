@@ -36,6 +36,7 @@ import java.io.StringReader;
 import java.io.StringWriter;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -105,12 +106,19 @@ public class JsonLog {
                 query = Filters.and(query, Filters.gte("_id.date", from), Filters.lte("_id.date", to));
             }
 
-            AggregateIterable<Document> iterator = col.aggregate(Arrays.asList(
-                                        Aggregates.match(query),
-                                        Aggregates.limit(limit == null ? Integer.MAX_VALUE : limit),
-                                        Aggregates.unwind("$patch"),
-                                        Aggregates.match(new BasicDBObject("patch.path", jpointer)),
-                                        Aggregates.project(new BasicDBObject("_id.date", 1).append("patch.value", 1))));
+            final ArrayList aggregate = new ArrayList();
+            
+            aggregate.add(Aggregates.match(query));
+            aggregate.add(Aggregates.unwind("$patch"));
+            aggregate.add(Aggregates.match(new Document("patch.path", jpointer)));
+            if (limit != null) {
+                aggregate.add(Aggregates.sort(new Document("_id.date", -1)));
+                aggregate.add(Aggregates.limit(limit));
+                aggregate.add(Aggregates.sort(new Document("_id.date", 1)));
+            }
+            aggregate.add(Aggregates.project(new Document("_id.date", 1).append("patch.value", 1)));
+            
+            AggregateIterable<Document> iterator = col.aggregate(aggregate);
             
             JsonArrayBuilder builder = Json.createArrayBuilder();
             
