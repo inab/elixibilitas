@@ -46,6 +46,8 @@ import java.io.StringReader;
 import java.io.Writer;
 import java.security.Principal;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.stream.Stream;
 import javax.annotation.PostConstruct;
 import javax.annotation.Resource;
@@ -297,22 +299,26 @@ public class MetricsServices {
                 
         if (parser.hasNext() &&
             parser.next() == JsonParser.Event.START_ARRAY) {
-            Stream<JsonValue> stream = parser.getArrayStream();
-            stream.forEach(item->{
-                if (JsonValue.ValueType.OBJECT == item.getValueType()) {
-                    final JsonObject object = item.asJsonObject();
-                    String id = object.getString("@id");
-                    if (id != null) {
-                        try {
-                            if (id.startsWith(prefix)) {
+            try {
+                Stream<JsonValue> stream = parser.getArrayStream();
+                stream.forEach(item->{
+                    if (JsonValue.ValueType.OBJECT == item.getValueType()) {
+                        final JsonObject object = item.asJsonObject();
+                        String id = object.getString("@id");
+                        if (id != null && id.startsWith(prefix)) {
+                            try {
                                 id = id.substring(prefix.length());
                                 metricsDAO.update(user, id, object.toString());
+                            } catch (Exception ex) {
+                                Logger.getLogger(MetricsServices.class.getName()).log(Level.SEVERE, id, ex);
                             }
-                            
-                        } catch (IllegalArgumentException ex) {}
+                        }
                     }
-                }
-            });
+                });
+            } catch (Exception ex) {
+                Response.status(Response.Status.BAD_REQUEST);
+                Logger.getLogger(MetricsServices.class.getName()).log(Level.SEVERE, null, ex);
+            }
         } else {
             Response.status(Response.Status.BAD_REQUEST);
         }
