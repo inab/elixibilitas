@@ -193,6 +193,15 @@
       "PublicationEntry": {
         "type": "object",
         "properties": {
+          "doi": {
+            "type": "string"
+          },
+          "pmid": {
+            "type": "string"
+          },
+          "pmcid": {
+            "type": "string"
+          },
           "title": {
             "type": "string"
           },
@@ -222,15 +231,6 @@
       "Publication": {
         "type": "object",
         "properties": {
-          "doi": {
-            "type": "string"
-          },
-          "pmid": {
-            "type": "string"
-          },
-          "pmcid": {
-            "type": "string"
-          },
           "entries" : {
             "type": "array",
             "items": {

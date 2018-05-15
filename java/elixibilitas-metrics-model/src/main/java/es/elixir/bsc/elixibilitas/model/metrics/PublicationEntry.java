@@ -33,7 +33,11 @@ import javax.json.bind.annotation.JsonbProperty;
  */
 
 public class PublicationEntry {
-    
+
+    private String doi;
+    private String pmid;
+    private String pmcid;
+
     private String title;
     private Integer year;
     
@@ -43,6 +47,36 @@ public class PublicationEntry {
     private List<NReferences> refs;
     private List<NCitations> citations;
     
+    @JsonbProperty("doi")
+    public String getDOI() {
+        return doi;
+    }
+    
+    @JsonbProperty("doi")
+    public void setDOI(String doi) {
+        this.doi = doi;
+    }
+    
+    @JsonbProperty("pmid")
+    public String getPMID() {
+        return pmid;
+    }
+    
+    @JsonbProperty("pmid")
+    public void setPMID(String pmid) {
+        this.pmid = pmid;
+    }
+    
+    @JsonbProperty("pmcid")
+    public String getPMCID() {
+        return pmcid;
+    }
+    
+    @JsonbProperty("pmcid")
+    public void setPMCID(String pmcid) {
+        this.pmcid = pmcid;
+    }
+
     @JsonbProperty("title")
     public String getTitle() {
         return title;

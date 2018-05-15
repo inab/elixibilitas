@@ -35,41 +35,7 @@ import javax.json.bind.annotation.JsonbProperty;
 
 public class Publication {
     
-    private String doi;
-    private String pmid;
-    private String pmcid;
-    
     private List<PublicationEntry> entries;
-    
-    @JsonbProperty("doi")
-    public String getDOI() {
-        return doi;
-    }
-    
-    @JsonbProperty("doi")
-    public void setDOI(String doi) {
-        this.doi = doi;
-    }
-    
-    @JsonbProperty("pmid")
-    public String getPMID() {
-        return pmid;
-    }
-    
-    @JsonbProperty("pmid")
-    public void setPMID(String pmid) {
-        this.pmid = pmid;
-    }
-    
-    @JsonbProperty("pmcid")
-    public String getPMCID() {
-        return pmcid;
-    }
-    
-    @JsonbProperty("pmcid")
-    public void setPMCID(String pmcid) {
-        this.pmcid = pmcid;
-    }
 
     @JsonbProperty("entries")
     public List<PublicationEntry> getEntries() {
