@@ -124,8 +124,18 @@ public class MetricsDAO extends AbstractDAO<BsonString> implements Serializable 
     }
     
     public Metrics get(String id) {
-        final Document doc = getBSON(id);
-        return doc != null ? deserialize(doc) : null;
+        try {
+            final MongoCollection<Document> col = database.getCollection(collection);
+
+            final Document doc = col.find(Filters.eq("_id", id)).first();
+            if (doc != null) {
+                return deserialize(doc);
+            }
+        } catch(Exception ex) {
+            Logger.getLogger(ToolsDAO.class.getName()).log(Level.SEVERE, null, ex);
+        }
+
+        return null;
     }
     
     public String getJSON(String id) {
