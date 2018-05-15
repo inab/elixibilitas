@@ -25,7 +25,6 @@
 
 package es.elixir.bsc.elixibilitas.model.metrics;
 
-import java.util.ArrayList;
 import java.util.List;
 import javax.json.bind.annotation.JsonbProperty;
 
@@ -36,10 +35,10 @@ import javax.json.bind.annotation.JsonbProperty;
 public class PublicationEntry {
     
     private String title;
-    private int year;
+    private Integer year;
     
-    private int ref_count;
-    private int cit_count;
+    private Integer ref_count;
+    private Integer cit_count;
     
     private List<NReferences> refs;
     private List<NCitations> citations;
@@ -86,9 +85,6 @@ public class PublicationEntry {
 
     @JsonbProperty("refs")
     public List<NReferences> getReferences() {
-        if (refs == null) {
-            refs = new ArrayList<>();
-        }
         return refs;
     }
 
@@ -99,9 +95,6 @@ public class PublicationEntry {
     
     @JsonbProperty("citations")
     public List<NCitations> getCitations() {
-        if (citations == null) {
-            citations = new ArrayList<>();
-        }
         return citations;
     }
 
