@@ -27,7 +27,9 @@ package es.elixir.bsc.openebench.bioconda;
 
 import java.io.BufferedInputStream;
 import java.io.IOException;
+import java.net.HttpURLConnection;
 import java.net.URI;
+import java.net.URL;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -108,28 +110,59 @@ public class BiocondaPackage {
     }
     
     private Metadata load() throws IOException {
-        try (BufferedInputStream in = 
-                new BufferedInputStream(URI.create(toString()).toURL().openStream())) {
-            try (BZip2CompressorInputStream bzip = new BZip2CompressorInputStream(in);
-                 TarArchiveInputStream tar = new TarArchiveInputStream(bzip)) {
+        
+        String cookies = null;
+        URI uri = URI.create(toString());
+        
+        for (int i = 0; i < 10; i++) {
+            URL url = uri.toURL();
+            HttpURLConnection con = (HttpURLConnection)url.openConnection();
+            con.addRequestProperty("User-Agent", "Mozilla");
+            if (cookies != null && !cookies.isEmpty()) {
+                con.setRequestProperty("Cookie", cookies);
+            }
+            final int status = con.getResponseCode();
+            switch(status) {
+                case HttpURLConnection.HTTP_OK: 
+                case HttpURLConnection.HTTP_NOT_MODIFIED:
+                    try (BufferedInputStream in = new BufferedInputStream(con.getInputStream())) {
+                        try (BZip2CompressorInputStream bzip = new BZip2CompressorInputStream(in);
+                            TarArchiveInputStream tar = new TarArchiveInputStream(bzip)) {
 
-                TarArchiveEntry entry;
-                while((entry = tar.getNextTarEntry()) != null) {
-                    if (entry.isFile() && "info/recipe/meta.yaml".equals(entry.getName())) {
-                        try {
-                            final Metadata meta = loadYaml(tar);
-                            if (meta != null) {
-                                return meta;
+                            TarArchiveEntry entry;
+                            while((entry = tar.getNextTarEntry()) != null) {
+                                if (entry.isFile() && "info/recipe/meta.yaml".equals(entry.getName())) {
+                                    try {
+                                        final Metadata meta = loadYaml(tar);
+                                        if (meta != null) {
+                                            return meta;
+                                        }
+                                    } catch(Exception ex) {
+                                        System.out.println(toString() + "\n" + ex.getMessage());
+                                    }
+                                }
                             }
-                        } catch(Exception ex) {
-                            System.out.println(toString() + "\n" + ex.getMessage());
+                        } catch (IOException ex) {
+                            // tar can't detect the EOF - do nothing...
                         }
                     }
-                }
-            } catch (IOException ex) {
-                // tar can't detect the EOF - do nothing...
+                    break;
+                    
+                case HttpURLConnection.HTTP_MOVED_TEMP:
+                case HttpURLConnection.HTTP_MOVED_PERM:
+                case 307: // Temporary Redirect
+                case 308: // Permanent Redirect
+                case HttpURLConnection.HTTP_SEE_OTHER:
+                    final String location = con.getHeaderField("Location");
+                    if (location == null || location.isEmpty()) {
+                        return null;
+                    }
+                    cookies = con.getHeaderField("Set-Cookie");
+                    URI redirect = URI.create(location);
+                    uri = redirect.isAbsolute() ? uri : uri.resolve(redirect);
             }
         }
+        
         return null;
     }
             
