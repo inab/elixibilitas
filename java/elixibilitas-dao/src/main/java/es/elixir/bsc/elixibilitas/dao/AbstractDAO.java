@@ -9,6 +9,7 @@ import com.mongodb.client.model.Projections;
 import com.mongodb.client.model.ReturnDocument;
 import java.io.StringReader;
 import java.io.StringWriter;
+import java.io.Writer;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.logging.Level;
@@ -19,6 +20,8 @@ import javax.json.JsonObject;
 import javax.json.JsonPatch;
 import org.bson.Document;
 import org.bson.conversions.Bson;
+import org.bson.json.JsonWriter;
+import org.bson.json.JsonWriterSettings;
 
 /**
  * @author Dmitry Repchevsky
@@ -264,5 +267,17 @@ public abstract class AbstractDAO<T> {
             Logger.getLogger(MetricsDAO.class.getName()).log(Level.SEVERE, null, ex);
         }
         return null;
+    }
+    
+    public static class ReusableJsonWriter extends JsonWriter {
+        
+        public ReusableJsonWriter(Writer writer) {
+            super(writer, new JsonWriterSettings(true));
+        }
+
+        @Override
+        protected boolean checkState(final State[] validStates) {
+            return true;
+        }
     }
 }

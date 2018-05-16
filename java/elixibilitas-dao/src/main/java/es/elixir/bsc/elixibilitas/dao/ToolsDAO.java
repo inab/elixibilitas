@@ -77,7 +77,6 @@ import org.bson.codecs.DocumentCodec;
 import org.bson.codecs.EncoderContext;
 import org.bson.conversions.Bson;
 import org.bson.json.JsonWriter;
-import org.bson.json.JsonWriterSettings;
 
 /**
  * @author Dmitry Repchevsky
@@ -402,7 +401,7 @@ public class ToolsDAO extends AbstractDAO<Document> implements Serializable {
     public void write(Writer writer) {
         try {
             final MongoCollection<Document> col = database.getCollection(collection);
-            try (JsonWriter jwriter = new JsonWriter(writer, new JsonWriterSettings(true))) {
+            try (JsonWriter jwriter = new ReusableJsonWriter(writer)) {
 
                 final DocumentCodec codec = new DocumentCodec() {
                     @Override
@@ -457,7 +456,7 @@ public class ToolsDAO extends AbstractDAO<Document> implements Serializable {
             String text, String name, String description, List<String> projections) {
         try {
             final MongoCollection<Document> col = database.getCollection(collection);
-            try (JsonWriter jwriter = new JsonWriter(writer, new JsonWriterSettings(true))) {
+            try (JsonWriter jwriter = new ReusableJsonWriter(writer)) {
 
                 final DocumentCodec codec = new DocumentCodec() {
                     @Override
@@ -583,7 +582,7 @@ public class ToolsDAO extends AbstractDAO<Document> implements Serializable {
             List<String> types, List<String> projections) {
         try {
             final MongoCollection<Document> col = database.getCollection(collection);
-            try (JsonWriter jwriter = new JsonWriter(writer, new JsonWriterSettings(true))) {
+            try (JsonWriter jwriter = new ReusableJsonWriter(writer)) {
 
                 final DocumentCodec codec = new DocumentCodec() {
                     @Override

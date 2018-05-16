@@ -50,7 +50,6 @@ import org.bson.Document;
 import org.bson.codecs.DocumentCodec;
 import org.bson.codecs.EncoderContext;
 import org.bson.json.JsonWriter;
-import org.bson.json.JsonWriterSettings;
 
 /**
  * Utility class to get/put Metrics into MongoDB.
@@ -196,7 +195,7 @@ public class MetricsDAO extends AbstractDAO<BsonString> implements Serializable 
     public void write(Writer writer, List<String> projections) {
         try {
             final MongoCollection<Document> col = database.getCollection(collection);
-            try (JsonWriter jwriter = new JsonWriter(writer, new JsonWriterSettings(true))) {
+            try (JsonWriter jwriter = new ReusableJsonWriter(writer)) {
 
                 final DocumentCodec codec = new DocumentCodec() {
                     @Override
