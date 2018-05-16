@@ -385,7 +385,7 @@ public class BiotoolsRepositoryIterator implements Iterator<Tool> {
 //            } catch(IllegalArgumentException ex) {}
 
             publication.setDOI(jpublication.getString("doi", null));
-            publication.setPMID(jpublication.getString("pmid", null));
+            publication.setPmid(jpublication.getString("pmid", null));
             publication.setPMCID(jpublication.getString("pmcid", null));
             
             tool.getPublications().add(publication);

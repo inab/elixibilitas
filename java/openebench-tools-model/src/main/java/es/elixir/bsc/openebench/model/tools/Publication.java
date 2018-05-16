@@ -25,8 +25,6 @@
 
 package es.elixir.bsc.openebench.model.tools;
 
-import java.util.ArrayList;
-import java.util.List;
 import javax.json.bind.annotation.JsonbProperty;
 
 /**
@@ -60,12 +58,12 @@ public class Publication {
     }
     
     @JsonbProperty("pmid")
-    public String getPMID() {
+    public String getPmid() {
         return pmid;
     }
     
     @JsonbProperty("pmid")
-    public void setPMID(String pmid) {
+    public void setPmid(String pmid) {
         this.pmid = pmid;
     }
 }

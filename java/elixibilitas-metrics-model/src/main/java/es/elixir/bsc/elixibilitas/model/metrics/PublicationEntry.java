@@ -58,12 +58,12 @@ public class PublicationEntry {
     }
     
     @JsonbProperty("pmid")
-    public String getPMID() {
+    public String getPmid() {
         return pmid;
     }
     
     @JsonbProperty("pmid")
-    public void setPMID(String pmid) {
+    public void setPmid(String pmid) {
         this.pmid = pmid;
     }
     

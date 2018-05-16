@@ -93,7 +93,7 @@ public class PublicationChecker implements MetricsChecker {
                     continue;
                 }
 
-                final String pmid = publication.getPMID();
+                final String pmid = publication.getPmid();
                 if (pmid != null && checkPMID(pmid)) {
                     n++;
                     continue;
