@@ -412,30 +412,27 @@ public class ToolsDAO extends AbstractDAO<Document> implements Serializable {
                     }
                 };
 
-                writer.write("[");
+                jwriter.writeStartArray();
                 
                 FindIterable iterator = col.find();
 
                 try (MongoCursor<Document> cursor = iterator.iterator()) {
-                    if (cursor.hasNext()) {
-                        do {
-                            final Document doc = cursor.next();
+                    while (cursor.hasNext()) {
+                        final Document doc = cursor.next();
 
-                            Document _id = (Document) doc.remove("_id");
-                            doc.append("@id", getURI(_id));
-                            doc.append("@type", getType(_id));
-                            doc.append("@label", getLabel(_id));
-                            doc.append("@version", getVersion(_id));
-                            doc.append("@license", LICENSE);
+                        Document _id = (Document) doc.remove("_id");
+                        doc.append("@id", getURI(_id));
+                        doc.append("@type", getType(_id));
+                        doc.append("@label", getLabel(_id));
+                        doc.append("@version", getVersion(_id));
+                        doc.append("@license", LICENSE);
 
-                            doc.toJson(codec);
-                            jwriter.flush();
-                        } while (cursor.hasNext() && writer.append(",\n") != null);
+                        doc.toJson(codec);
                     }
                 }
-                writer.write("]\n");
+                jwriter.writeEndArray();
             }
-        } catch(IOException ex) {
+        } catch(Exception ex) {
             Logger.getLogger(ToolsDAO.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
@@ -467,7 +464,7 @@ public class ToolsDAO extends AbstractDAO<Document> implements Serializable {
                     }
                 };
 
-                writer.write("[");
+                jwriter.writeStartArray();
                 
                 ArrayList<Bson> aggregation = new ArrayList();
                 if (text != null && !text.isEmpty()) {
@@ -512,25 +509,22 @@ public class ToolsDAO extends AbstractDAO<Document> implements Serializable {
                 AggregateIterable<Document> iterator = col.aggregate(aggregation).useCursor(true);
 
                 try (MongoCursor<Document> cursor = iterator.iterator()) {
-                    if (cursor.hasNext()) {
-                        do {
-                            final Document doc = cursor.next();
+                    while (cursor.hasNext()) {
+                        final Document doc = cursor.next();
 
-                            Document _id = (Document) doc.remove("_id");
-                            doc.append("@id", getURI(_id));
-                            doc.append("@type", getType(_id));
-                            doc.append("@label", getLabel(_id));
-                            doc.append("@version", getVersion(_id));
-                            doc.append("@license", LICENSE);
+                        Document _id = (Document) doc.remove("_id");
+                        doc.append("@id", getURI(_id));
+                        doc.append("@type", getType(_id));
+                        doc.append("@label", getLabel(_id));
+                        doc.append("@version", getVersion(_id));
+                        doc.append("@license", LICENSE);
 
-                            doc.toJson(codec);
-                            jwriter.flush();
-                        } while (cursor.hasNext() && writer.append(",\n") != null);
+                        doc.toJson(codec);
                     }
                 }
-                writer.write("]\n");
+                jwriter.writeEndArray();
             }
-        } catch(IOException ex) {
+        } catch(Exception ex) {
             Logger.getLogger(ToolsDAO.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
@@ -593,7 +587,7 @@ public class ToolsDAO extends AbstractDAO<Document> implements Serializable {
                     }
                 };
 
-                writer.write("[");
+                jwriter.writeStartArray();
 
                 ArrayList<Bson> aggregation = new ArrayList();
                 if (text != null && !text.isEmpty()) {
@@ -649,10 +643,11 @@ public class ToolsDAO extends AbstractDAO<Document> implements Serializable {
                         do {
                             final Document doc = cursor.next();
 
-                            writer.append("{\"id\": \"");
+                            jwriter.writeStartDocument();
+                            
                             final String tid = doc.get("_id", Document.class).get("_id", String.class);
-                            writer.append(tid);
-                            writer.append("\",\n\"entities\": [");
+                            jwriter.writeString("id", tid);
+                            jwriter.writeStartArray("entities");
                             
                             Map<String, List<Document>> map = new TreeMap<>();
                             
@@ -677,26 +672,29 @@ public class ToolsDAO extends AbstractDAO<Document> implements Serializable {
                             Iterator<Map.Entry<String, List<Document>>> groups = map.entrySet().iterator();
                             do {
                                 final Map.Entry<String, List<Document>> entry = groups.next();
-                                writer.append("{ \"type\": \"");
-                                writer.append(entry.getKey());
-                                writer.append("\",\n\"tools\":[");
+                                
+                                jwriter.writeStartDocument();
+                                jwriter.writeString("type", entry.getKey());
+                                jwriter.writeStartArray("tools");
                             
                                 final Iterator<Document> iter = entry.getValue().iterator();
                                 do {
                                     iter.next().toJson(codec);
-                                    jwriter.flush();
-                                } while (iter.hasNext() && writer.append(",\n") != null);
-                                writer.append("]\n}");
-                            } while (groups.hasNext() && writer.append(",\n") != null);
-                            writer.append("]\n}");
+                                } while (iter.hasNext());
+                                jwriter.writeEndArray();
+                                jwriter.writeEndDocument();
+                            } while (groups.hasNext());
                             
-                        } while (cursor.hasNext() && writer.append(",\n") != null);
+                            jwriter.writeEndArray();
+                            jwriter.writeEndDocument();
+                            
+                        } while (cursor.hasNext());
                     }
                 }
-                writer.write("]\n");
+                jwriter.writeEndArray();
             }
 
-        } catch(IOException ex) {
+        } catch(Exception ex) {
             Logger.getLogger(ToolsDAO.class.getName()).log(Level.SEVERE, null, ex);
         }
     }

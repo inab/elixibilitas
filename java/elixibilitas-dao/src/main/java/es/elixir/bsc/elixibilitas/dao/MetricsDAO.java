@@ -205,8 +205,7 @@ public class MetricsDAO extends AbstractDAO<BsonString> implements Serializable 
                             super.encode(jwriter, document, encoderContext);
                     }
                 };
-
-                writer.write("[");
+                jwriter.writeStartArray();
                 
                 FindIterable<Document> iterator = col.find();
 
@@ -220,23 +219,19 @@ public class MetricsDAO extends AbstractDAO<BsonString> implements Serializable 
                 }
 
                 try (MongoCursor<Document> cursor = iterator.iterator()) {
-                    if (cursor.hasNext()) {
-                        do {
-                            final Document doc = cursor.next();
+                    while (cursor.hasNext()) {
+                        final Document doc = cursor.next();
 
-                            doc.append("@id", baseURI + doc.remove("_id"));
-                            doc.append("@type", "metrics");
-                            doc.append("@license", LICENSE);
+                        doc.append("@id", baseURI + doc.remove("_id"));
+                        doc.append("@type", "metrics");
+                        doc.append("@license", LICENSE);
 
-                            doc.toJson(codec);
-                            jwriter.flush();
-                        } while (cursor.hasNext() && writer.append(",\n") != null);
+                        doc.toJson(codec);
                     }
                 }
-                writer.write("]\n");
+                jwriter.writeEndArray();
             }
-
-        } catch(IOException ex) {
+        } catch(Exception ex) {
             Logger.getLogger(MetricsDAO.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
