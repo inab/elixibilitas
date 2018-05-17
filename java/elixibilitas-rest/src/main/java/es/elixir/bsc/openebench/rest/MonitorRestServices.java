@@ -497,7 +497,7 @@ public class MonitorRestServices {
         String from = date1 == null ? null : Instant.ofEpochSecond(date1).toString();
         String to = date2 == null ? null : Instant.ofEpochSecond(date2).toString();
             
-        final JsonArray operational = metricsDAO.findLog(id, "/project/website/operational", from, to, limit);
+        final JsonArray operational = metricsDAO.findLog(id, "/project/website/operational", from, to, null);
         if (operational == null) {
             return Response.status(Response.Status.INTERNAL_SERVER_ERROR);
         } else if (operational.isEmpty()) {
@@ -515,25 +515,25 @@ public class MonitorRestServices {
             try (JsonGenerator writer = Json.createGenerator(out)) {
                 writer.writeStartArray();
 
-                String code = "0";
-                String date = "1970-01-01T00:00:00.000Z";
                 JsonObject obj = operational.getJsonObject(0);
-
-                for (int i = 0, j = 1, m = access_time.size(), n = operational.size(); i < m; i++) {
+                String code = obj.getString("value", "0");
+                String date = obj.getString("date", null); 
+                        
+                for (int i = 0, j = 0, m = access_time.size(), n = operational.size(); i < m; i++) {
                     writer.writeStartObject();
 
                     final JsonObject o = access_time.getJsonObject(i);
                     final String adate = o.getString("date", null);
                     final String time = o.getString("value", "0");
 
-                    if (adate.compareTo(date) >= 0) {
+                    while(j <= n && adate.compareTo(date) >= 0) {
                         code = obj.getString("value", "0");
-                        if (j < n) {
-                            obj = operational.getJsonObject(j++);
+                        if (++j < n) {
+                            obj = operational.getJsonObject(j);
                             date = obj.getString("date", null);
                         }
                     }
-
+                    
                     writer.write("date", adate);
                     writer.write("code", Integer.parseInt(code));
                     writer.write("access_time", Integer.parseInt(time));
