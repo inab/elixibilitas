@@ -565,35 +565,6 @@
         </owl:equivalentClass>
     </owl:Class>
 
-    <owl:Class rdf:about="#NCitations">
-        <owl:equivalentClass>
-            <owl:Class>
-                <owl:intersectionOf rdf:parseType="Collection">
-                    <owl:Restriction>
-                        <owl:onProperty rdf:resource="#year"/>
-                        <owl:allValuesFrom rdf:resource="&xsd;dateTime"/>
-                    </owl:Restriction>
-                    <owl:Restriction>
-                        <owl:onProperty rdf:resource="#year"/>
-                        <owl:qualifiedCardinality rdf:datatype="&xsd;nonNegativeInteger">1</owl:qualifiedCardinality>
-                        <owl:onDataRange rdf:resource="&xsd;dateTime"/>
-                    </owl:Restriction>
-
-                    <owl:Restriction>
-                        <owl:onProperty rdf:resource="#cited"/>
-                        <owl:allValuesFrom rdf:resource="&xsd;nonNegativeInteger"/>
-                    </owl:Restriction>
-                    <owl:Restriction>
-                        <owl:onProperty rdf:resource="#cited"/>
-                        <owl:qualifiedCardinality rdf:datatype="&xsd;nonNegativeInteger">1</owl:qualifiedCardinality>
-                        <owl:onDataRange rdf:resource="&xsd;onNegativeInteger"/>
-                    </owl:Restriction>
-
-                </owl:intersectionOf>
-            </owl:Class>
-        </owl:equivalentClass>
-    </owl:Class>
-
     <owl:Class rdf:about="#Publication">
         <owl:equivalentClass>
             <owl:Class>
@@ -626,11 +597,6 @@
                         <owl:onProperty rdf:resource="#pmid"/>
                         <owl:qualifiedCardinality rdf:datatype="&xsd;nonNegativeInteger">1</owl:qualifiedCardinality>
                         <owl:onDataRange rdf:resource="&xsd;string"/>
-                    </owl:Restriction>
-
-                    <owl:Restriction>
-                        <owl:onProperty rdf:resource="#citations"/>
-                        <owl:allValuesFrom rdf:resource="#NCitations"/>
                     </owl:Restriction>
                 </owl:intersectionOf>
             </owl:Class>
