@@ -1,5 +1,5 @@
 {
-  "realm": "openebench",
+  "realm": "tmonitor",
   "auth-server-url": "https://inb.bsc.es/auth",
   "ssl-required": "external",
   "resource": "elixir_bench",
