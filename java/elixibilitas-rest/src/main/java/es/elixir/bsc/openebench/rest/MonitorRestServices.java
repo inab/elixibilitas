@@ -618,7 +618,7 @@ public class MonitorRestServices {
     
     public void addMetricsStatistics(JsonObjectBuilder builder, String field) {
         builder.add(field, Json.createObjectBuilder()
-                     .add("total", getStatistics(field))
+                     .add("total", getMetricsTotal(field))
                      .add("operational", getMetricsStatistics(field)));
     }
     
@@ -645,6 +645,10 @@ public class MonitorRestServices {
         return Long.MIN_VALUE;
     }
 
+    private long getMetricsTotal(final String type) {
+        return metricsDAO.count("{'_id': { $regex: '/" + type + "/'}}");
+    }
+    
     private long getMetricsStatistics(final String type) {
         return metricsDAO.count("{'project.website.operational' : {$in: [200, 202]}, '_id': { $regex: '/" + type + "/'}}");
     }
