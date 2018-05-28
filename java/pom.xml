@@ -25,6 +25,7 @@
         <module>elixibilitas-metrics-model</module>
         <module>elixibilitas-dao</module>
         <module>elixibilitas-rest</module>
+        <module>biotools-schema-parser</module>
         <module>openebench-tools-importer</module>
         <module>elixibilitas-metrics-checker</module>
     </modules>
