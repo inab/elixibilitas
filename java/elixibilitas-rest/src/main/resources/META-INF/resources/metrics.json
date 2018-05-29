@@ -53,6 +53,10 @@
       "Copyright" : {
         "type": "object",
         "properties": {
+          "description": {
+            "description": "copyright text on the webpage (excerpt)",
+            "type": "string"
+          }
         }
       },
       "Website" : {

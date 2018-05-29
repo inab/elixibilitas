@@ -25,10 +25,23 @@
 
 package es.elixir.bsc.elixibilitas.model.metrics;
 
+import javax.json.bind.annotation.JsonbProperty;
+
 /**
  * @author Dmitry Repchevsky
  */
 
 public class Copyright {
+    private String declaration;
+
+    @JsonbProperty("declaration")
+    public String getDeclaration() {
+        return declaration;
+    }
+
+    @JsonbProperty("declaration")
+    public void setDeclaration(String declaration) {
+        this.declaration = declaration;
+    }
 
 }
