@@ -335,7 +335,7 @@ public class ToolsServices {
             JsonStructure structure = Json.createReader(new StringReader(json)).read();
             try {
                 if (!pointer.containsValue(structure)) {
-                    return Response.status(Response.Status.NOT_FOUND);
+                    return Response.ok("null");
                 }
             } catch(JsonException ex) {
                 return Response.ok("null");
@@ -486,34 +486,39 @@ public class ToolsServices {
     public void patchTool(@PathParam("id") final String id,
                           @PathParam("type") final String type,
                           @PathParam("host") final String host,
-                          @PathParam("path") final String path,
-                          @Context final UriInfo uriInfo, 
+                          @PathParam("path") final String path, 
                           @RequestBody(description = "tool´s property value",
                                 required = true) final String json,
                           @Context SecurityContext security,
                           @Suspended final AsyncResponse asyncResponse) {
-
-        final JsonValue value;
-        try {
-            value = Json.createReader(new StringReader(json)).readValue();
-        } catch(Exception ex) {
-            asyncResponse.resume(Response.status(Response.Status.BAD_REQUEST.getStatusCode(), ex.getMessage()));
-            return;
-        }
         
         final Principal principal = security.getUserPrincipal();
         final String user = principal != null ? principal.getName() : null;
-        
-        final URI uri = uriInfo.getRequestUri();
+
         executor.submit(() -> {
             asyncResponse.resume(
-                patchToolAsync(user, uri.toString(), path, value).build());
+                patchToolAsync(user, id + '/' + type + '/' + host, path, json).build());
         });
     }
 
-    private ResponseBuilder patchToolAsync(String user, String id, String path, JsonValue value) {
-        final JsonPatch patch = Json.createPatchBuilder().replace(path, value).build();
-        final String result = toolsDAO.patch(user, id, patch);
+    private ResponseBuilder patchToolAsync(String user, String id, String path, String json) {
+        
+        final String result;
+        
+        if (path == null || path.isEmpty()) {
+            result = toolsDAO.update(user, id, json);
+        } else {
+            final JsonValue value;
+            try {
+                value = Json.createReader(new StringReader(json)).readValue();
+            } catch(Exception ex) {
+                return Response.status(Response.Status.BAD_REQUEST.getStatusCode(), ex.getMessage());
+            }
+
+            final JsonPatch patch = Json.createPatchBuilder().replace(path, value).build();
+            result = toolsDAO.patch(user, id, patch);
+        }
+        
         return Response.status(result == null ? Status.NOT_MODIFIED : Status.OK).entity(result);
     }
     
