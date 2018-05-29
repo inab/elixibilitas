@@ -37,6 +37,8 @@ import javax.json.bind.annotation.JsonbProperty;
 public class Documentation {
     
     private List<URI> docLinks;
+    private URI help;
+    private URI faq;
     private URI general;
     private URI build;
     private URI manual;
@@ -59,6 +61,26 @@ public class Documentation {
         this.docLinks = docLinks;
     }
 
+    @JsonbProperty("faq")
+    public URI getFaq() {
+        return faq;
+    }
+
+    @JsonbProperty("faq")
+    public void setFaq(URI faq) {
+        this.faq = faq;
+    }
+
+    @JsonbProperty("help")
+    public URI getHelp() {
+        return help;
+    }
+
+    @JsonbProperty("help")
+    public void setHelp(URI help) {
+        this.help = help;
+    }
+    
     @JsonbProperty("general")
     public URI getGeneralDocumentation() {
         return general;

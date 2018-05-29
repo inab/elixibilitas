@@ -105,6 +105,14 @@
             "type": "string",
             "format": "uri"
           },
+          "help": {
+            "type": "string",
+            "format": "uri"
+          },
+          "faq": {
+            "type": "string",
+            "format": "uri"
+          },
           "tutorial": {
             "description": "link to the tutorial",
             "type": "string",
