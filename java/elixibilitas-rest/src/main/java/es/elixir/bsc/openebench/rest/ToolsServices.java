@@ -62,6 +62,7 @@ import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 import javax.json.Json;
 import javax.json.JsonArray;
+import javax.json.JsonException;
 import javax.json.JsonPatch;
 import javax.json.JsonPointer;
 import javax.json.JsonStructure;
@@ -332,8 +333,12 @@ public class ToolsServices {
         if (path != null && path.length() > 0) {
             JsonPointer pointer = Json.createPointer(path);
             JsonStructure structure = Json.createReader(new StringReader(json)).read();
-            if (!pointer.containsValue(structure)) {
-                return Response.status(Response.Status.NOT_FOUND);
+            try {
+                if (!pointer.containsValue(structure)) {
+                    return Response.status(Response.Status.NOT_FOUND);
+                }
+            } catch(JsonException ex) {
+                return Response.ok("null");
             }
             final JsonValue value = pointer.getValue(structure);
             StreamingOutput stream = (OutputStream out) -> {

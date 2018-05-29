@@ -57,6 +57,7 @@ import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 import javax.json.Json;
 import javax.json.JsonArray;
+import javax.json.JsonException;
 import javax.json.JsonObject;
 import javax.json.JsonPatch;
 import javax.json.JsonPointer;
@@ -67,7 +68,6 @@ import javax.json.stream.JsonParser;
 import javax.servlet.ServletContext;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
-import javax.ws.rs.HeaderParam;
 import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
@@ -140,9 +140,9 @@ public class MetricsServices {
         responses = {
             @ApiResponse(content = @Content(mediaType = MediaType.APPLICATION_JSON,
                                             schema = @Schema(ref="https://openebench.bsc.es/monitor/metrics/metrics.json")),
-                         description = "Metrics JSON description"
+                         description = "Metrics JSON description or 'null' if no metrics found"
             ),
-            @ApiResponse(responseCode = "404", description = "metrics not found")
+            @ApiResponse(responseCode = "404", description = "metrics object not found")
         }
     )
     public void getMetrics(@PathParam("id")
@@ -182,8 +182,12 @@ public class MetricsServices {
         if (path != null && path.length() > 0) {
             JsonPointer pointer = Json.createPointer(path);
             JsonStructure structure = Json.createReader(new StringReader(json)).read();
-            if (!pointer.containsValue(structure)) {
-                return Response.status(Response.Status.NOT_FOUND);
+            try {
+                if (!pointer.containsValue(structure)) {
+                    return Response.ok("null");
+                }
+            } catch(JsonException ex) {
+                return Response.ok("null");
             }
             final JsonValue value = pointer.getValue(structure);
             StreamingOutput stream = (OutputStream out) -> {
@@ -334,8 +338,7 @@ public class MetricsServices {
                       "Uses mongodb 'upsert' if the 'path' is empty or JSON Patch otherwise."
     )
     @RolesAllowed("metrics_submitter")
-    public void patchMetrics(@HeaderParam("datasource") final String datasource,
-                             @PathParam("id")
+    public void patchMetrics(@PathParam("id")
                              @Parameter(description = "prefixed tool id",
                                         example = "bio.tools:pmut:2017") 
                              final String id,
@@ -361,7 +364,7 @@ public class MetricsServices {
         final String user = principal != null ? principal.getName() : null;
         
         executor.submit(() -> {
-            asyncResponse.resume(patchMetricsAsync(datasource == null || datasource.isEmpty() ? user : datasource, id + '/' + type + '/' + host, path, json).build());
+            asyncResponse.resume(patchMetricsAsync(user, id + '/' + type + '/' + host, path, json).build());
         });
     }
     
