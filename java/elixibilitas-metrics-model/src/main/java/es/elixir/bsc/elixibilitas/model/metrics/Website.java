@@ -60,7 +60,7 @@ public class Website {
     }
 
     @JsonbProperty("robots")
-    public void setRobotsAllowedL(Boolean robots) {
+    public void setRobotsAllowed(Boolean robots) {
         this.robots = robots;
     }
     
