@@ -62,25 +62,30 @@ public class BatchMetricsChecker {
 
         tools.forEach(tool -> {
             
-            final String id = tool.id.toString().substring(toolsDAO.baseURI.length());
-            
-            Metrics metrics = metricsDAO.get(id);
-            if (metrics == null) {
-                metrics = new Metrics();
-            }
-            
-            final Future<Metrics> future = executor.submit(new MetricsCheckTask(tool, metrics));
-            executor.submit(new Runnable() {
-                @Override
-                public void run() {
-                    try {
-                        metricsDAO.update("biotools", id, future.get());
-                    } catch (InterruptedException | ExecutionException ex) {
-                        Logger.getLogger(BatchMetricsChecker.class.getName()).log(Level.SEVERE, null, ex);
-                    }
-                    latch.countDown();
+            try {
+                final String id = tool.id.toString().substring(toolsDAO.baseURI.length());
+
+                Metrics metrics = metricsDAO.get(id);
+                if (metrics == null) {
+                    metrics = new Metrics();
                 }
-            });
+
+                final Future<Metrics> future = executor.submit(new MetricsCheckTask(tool, metrics));
+                executor.submit(new Runnable() {
+                    @Override
+                    public void run() {
+                        try {
+                            metricsDAO.update("biotools", id, future.get());
+                        } catch (Throwable th) {
+                            Logger.getLogger(BatchMetricsChecker.class.getName()).log(Level.SEVERE, null, th);
+                        }
+                        latch.countDown();
+                    }
+                });
+            } catch(Throwable th) {
+                Logger.getLogger(BatchMetricsChecker.class.getName()).log(Level.SEVERE, null, th);
+                latch.countDown();
+            }
         });
         
         // ensure that all taksks executed.
@@ -107,5 +112,4 @@ public class BatchMetricsChecker {
         }
         return parameters;
     }
-
 }
