@@ -200,7 +200,7 @@ public class HomepageChecker implements MetricsChecker {
         website.setSSL("https".equals(homepage.getScheme()) ? security.length() == 0 : null);
             
         website.setOperational(code);
-        website.setAccessTime(timeout);
+        website.setAccessTime(operational ? timeout : null);
         website.setLastCheck(ZonedDateTime.now(ZoneId.of("Z")));
         
         return operational;
