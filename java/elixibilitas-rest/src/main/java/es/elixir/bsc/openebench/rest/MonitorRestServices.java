@@ -48,6 +48,7 @@ import java.io.BufferedWriter;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.Writer;
+import java.net.HttpURLConnection;
 import java.time.Instant;
 import java.util.List;
 import javax.annotation.PostConstruct;
@@ -524,7 +525,7 @@ public class MonitorRestServices {
 
                     final JsonObject o = access_time.getJsonObject(i);
                     final String adate = o.getString("date", null);
-                    final String time = o.getString("value", "0");
+                    final String time = o.getString("value", "null");
 
                     while(j <= n && adate.compareTo(date) >= 0) {
                         code = obj.getString("value", "0");
@@ -535,8 +536,24 @@ public class MonitorRestServices {
                     }
                     
                     writer.write("date", adate);
-                    writer.write("code", Integer.parseInt(code));
-                    writer.write("access_time", Integer.parseInt(time));
+                    
+                    try {
+                        final int c = Integer.parseInt(code);
+                        writer.write("code", c);
+                        if (c == HttpURLConnection.HTTP_CLIENT_TIMEOUT ||
+                            "null".equals(time)) {
+                            writer.writeNull("access_time");
+                        } else {
+                            try {
+                                writer.write("access_time", Integer.parseInt(time));
+                            } catch(NumberFormatException ex) {
+                                writer.writeNull("access_time");
+                            }
+                        }                    
+                    } catch(NumberFormatException ex) {
+                        writer.write("code", 0);
+                        writer.writeNull("access_time");
+                    }
 
                     writer.writeEnd();
                 }
