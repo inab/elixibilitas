@@ -11,7 +11,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
@@ -36,20 +35,29 @@ public class BatchMetricsChecker {
     
     public static void main(String[] args) {
         Map<String, List<String>> params = parameters(args);
-        
-        if (params.isEmpty()) {
-            new BatchMetricsChecker(Executors.newFixedThreadPool(32)).check(new MongoClient("localhost"));
-        } else {
-            final List<String> uris = params.get("-uri");
-            if (uris == null || uris.isEmpty()) {
-                System.out.println("missed 'url' parameter");
-                System.out.println(HELP);
-                System.exit(1);
-            }
 
-            final MongoClient mc = new MongoClient(new MongoClientURI(uris.get(0)));
-            new BatchMetricsChecker(Executors.newFixedThreadPool(32)).check(mc);
+        final ExecutorService executor = Executors.newFixedThreadPool(32);
+        
+        try {
+            if (params.isEmpty()) {
+                new BatchMetricsChecker(executor).check(new MongoClient("localhost"));
+            } else {
+                final List<String> uris = params.get("-uri");
+                if (uris == null || uris.isEmpty()) {
+                    System.out.println("missed 'url' parameter");
+                    System.out.println(HELP);
+                    System.exit(1);
+                }
+
+                final MongoClient mc = new MongoClient(new MongoClientURI(uris.get(0)));
+                new BatchMetricsChecker(executor).check(mc);
+            } 
+        } finally {
+            executor.shutdown();
         }
+        
+        System.out.println("finished...");
+        System.exit(0);
     }
 
     public void check(MongoClient mc) {
@@ -87,7 +95,7 @@ public class BatchMetricsChecker {
                 latch.countDown();
             }
         });
-        
+
         // ensure that all taksks executed.
         try {
             latch.await();
