@@ -38,6 +38,13 @@ public class Documentation {
     private Boolean howto;
     private Boolean tutorial;
     private Boolean citation;
+    private Boolean help;
+    private Boolean faq;
+    private Boolean general;
+    private Boolean build;
+    private Boolean manual;
+    private Boolean termsOfUse;
+    private Boolean trainingMaterial;
     
     @JsonbProperty("api")
     public Boolean getAPI() {
@@ -87,5 +94,75 @@ public class Documentation {
     @JsonbProperty("citation")
     public void setCitationInstructions(Boolean citation) {
         this.citation = citation;
+    }
+    
+    @JsonbProperty("help")
+    public Boolean getHelp() {
+        return help;
+    }
+
+    @JsonbProperty("help")
+    public void setHelp(Boolean help) {
+        this.help = help;
+    }
+    
+    @JsonbProperty("faq")
+    public Boolean getFaq() {
+        return faq;
+    }
+
+    @JsonbProperty("faq")
+    public void setFaq(Boolean faq) {
+        this.faq = faq;
+    }
+
+    @JsonbProperty("general")
+    public Boolean getGeneral() {
+        return general;
+    }
+
+    @JsonbProperty("general")
+    public void setGeneral(Boolean general) {
+        this.general = general;
+    }
+
+    @JsonbProperty("build")
+    public Boolean getBuild() {
+        return build;
+    }
+
+    @JsonbProperty("build")
+    public void setBuild(Boolean build) {
+        this.build = build;
+    }
+    
+    @JsonbProperty("manual")
+    public Boolean getManual() {
+        return manual;
+    }
+
+    @JsonbProperty("manual")
+    public void setManual(Boolean manual) {
+        this.manual = manual;
+    }
+
+    @JsonbProperty("terms_of_use")
+    public Boolean getTermsOfUse() {
+        return termsOfUse;
+    }
+
+    @JsonbProperty("terms_of_use")
+    public void setTermsOfUse(Boolean termsOfUse) {
+        this.termsOfUse = termsOfUse;
+    }
+
+    @JsonbProperty("training_material")
+    public Boolean getTrainingMaterial() {
+        return trainingMaterial;
+    }
+
+    @JsonbProperty("training_material")
+    public void setTrainingMaterial(Boolean trainingMaterial) {
+        this.trainingMaterial = trainingMaterial;
     }
 }
