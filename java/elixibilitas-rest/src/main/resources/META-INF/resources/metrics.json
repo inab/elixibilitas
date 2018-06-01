@@ -165,6 +165,27 @@
           },
           "citation": {
             "type": "boolean"
+          },
+          "help": {
+            "type": "boolean"
+          },
+          "faq": {
+            "type": "boolean"
+          },
+          "general": {
+            "type": "boolean"
+          },
+          "build": {
+            "type": "boolean"
+          },
+          "manual": {
+            "type": "boolean"
+          },
+          "terms_of_use": {
+            "type": "boolean"
+          },
+          "training_material": {
+            "type": "boolean"
           }
         }
       },
