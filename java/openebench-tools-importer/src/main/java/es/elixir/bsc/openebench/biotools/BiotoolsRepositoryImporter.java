@@ -53,6 +53,8 @@ public class BiotoolsRepositoryImporter {
     
     public void load() {
         
+        boolean exception = false;
+        
         final Set<URI> ids = new HashSet<>();
         
         BiotoolsRepositoryIterator iter = new BiotoolsRepositoryIterator();
@@ -65,37 +67,40 @@ public class BiotoolsRepositoryImporter {
                 }
                 ids.add(tool.id);
             } catch (IOException ex) {
+                exception = true;
                 Logger.getLogger(BiotoolsRepositoryImporter.class.getName()).log(Level.SEVERE, null, ex);
             }
         }
 
-        for (Tool tool : OpenEBenchRepository.getTools().values()) {
-            final Boolean deprecated = tool.getDepricated();
-            
-            final String id = tool.id.toString();
-            if (!id.startsWith(OpenEBenchEndpoint.URI_BASE)) {
-                Logger.getLogger(BiotoolsRepositoryImporter.class.getName()).log(Level.WARNING, "dubious id: {0}", id);
-                continue;
-            }
-            if (id.regionMatches(OpenEBenchEndpoint.URI_BASE.length(), "bio.tools:", 0, 10)) {
-                try {
-                    if (ids.contains(tool.id)) {
-                        if (Boolean.TRUE.equals(deprecated)) {
-                            tool.setDepricated(null);
+        if (!exception) {
+            for (Tool tool : OpenEBenchRepository.getTools().values()) {
+                final Boolean deprecated = tool.getDepricated();
+
+                final String id = tool.id.toString();
+                if (!id.startsWith(OpenEBenchEndpoint.URI_BASE)) {
+                    Logger.getLogger(BiotoolsRepositoryImporter.class.getName()).log(Level.WARNING, "dubious id: {0}", id);
+                    continue;
+                }
+                if (id.regionMatches(OpenEBenchEndpoint.URI_BASE.length(), "bio.tools:", 0, 10)) {
+                    try {
+                        if (ids.contains(tool.id)) {
+                            if (Boolean.TRUE.equals(deprecated)) {
+                                tool.setDepricated(null);
+                                if (repository != null) {
+                                    repository.put(tool);
+                                }
+                            }
+                        } else if (!Boolean.TRUE.equals(deprecated)) {
+                            tool.setDepricated(true);
+
+                            System.out.println("> DEPRICATE: " + tool.id);
                             if (repository != null) {
-                                repository.put(tool);
+                                repository.patch(tool);
                             }
                         }
-                    } else if (!Boolean.TRUE.equals(deprecated)) {
-                        tool.setDepricated(true);
-
-                        System.out.println("> DEPRICATE: " + tool.id);
-                        if (repository != null) {
-                            repository.patch(tool);
-                        }
+                    } catch (IOException ex) {
+                        Logger.getLogger(BiotoolsRepositoryImporter.class.getName()).log(Level.SEVERE, null, ex);
                     }
-                } catch (IOException ex) {
-                    Logger.getLogger(BiotoolsRepositoryImporter.class.getName()).log(Level.SEVERE, null, ex);
                 }
             }
         }
