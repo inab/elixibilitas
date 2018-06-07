@@ -135,8 +135,11 @@ public abstract class AbstractDAO<T> {
     }
     
     public void update(String user, JsonObject json) {
-        final String id = json.getString("@id");
-        update(user, id, json.toString());
+        String id = json.getString("@id", null);
+        if (id != null && id.startsWith(baseURI)) {
+            id = id.substring(baseURI.length());
+            update(user, id, json.toString());
+        }
     }
 
     /**
