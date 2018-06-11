@@ -171,11 +171,11 @@ public class BiotoolsRepositoryIterator implements Iterator<Tool> {
         if (id == null || id.isEmpty()) {
             return;
         }
-        final String _id = id.toLowerCase();
+        final String _id = id.toLowerCase().trim();
         
         final String version = jtool.getString("version", null);
 
-        StringBuilder idTemplate = new StringBuilder("https://openebench.bsc.es/monitor/tool/").append("bio.tools:").append(_id);
+        StringBuilder idTemplate = new StringBuilder("https://openebench.bsc.es/monitor/tool/").append("biotools:").append(_id);
         
         if (version != null) {
             idTemplate.append(':').append(version.replace(' ', '_'));

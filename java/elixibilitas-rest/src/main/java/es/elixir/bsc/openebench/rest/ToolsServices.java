@@ -49,7 +49,6 @@ import java.io.OutputStreamWriter;
 import java.io.Reader;
 import java.io.StringReader;
 import java.io.Writer;
-import java.net.URI;
 import java.security.Principal;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -261,7 +260,7 @@ public class ToolsServices {
     @Produces(MediaType.APPLICATION_JSON)
     public void getTools(@PathParam("id")
                          @Parameter(description = "prefixed tool id",
-                                    example = "bio.tools:pmut:2017")
+                                    example = "biotools:pmut:2017")
                          final String id,
                          @Suspended final AsyncResponse asyncResponse) {
         executor.submit(() -> {
@@ -274,7 +273,7 @@ public class ToolsServices {
     @Produces(MediaType.APPLICATION_JSON)
     public void getTools(@PathParam("id")
                          @Parameter(description = "prefixed tool id",
-                                    example = "bio.tools:pmut:2017")
+                                    example = "biotools:pmut:2017")
                          final String id,
                          @PathParam("type")
                          @Parameter(description = "tool type",
@@ -304,7 +303,7 @@ public class ToolsServices {
 
     public void getTool(@PathParam("id") 
                         @Parameter(description = "prefixed tool id",
-                                   example = "bio.tools:pmut:2017") 
+                                   example = "biotools:pmut:2017") 
                         final String id,
                         @PathParam("type") 
                         @Parameter(description = "tool type",
@@ -365,7 +364,7 @@ public class ToolsServices {
     @Produces("application/ld+json")
     public void getToolOntology(@PathParam("id")
                                 @Parameter(description = "prefixed tool id",
-                                           example = "bio.tools:pmut:2017") 
+                                           example = "biotools:pmut:2017") 
                                 final String id,
                                 @PathParam("type")
                                 @Parameter(description = "tool type",
@@ -410,7 +409,7 @@ public class ToolsServices {
     @RolesAllowed("tools_submitter")
     public void putTool(@PathParam("id")
                         @Parameter(description = "full tool id",
-                            example = "bio.tools:pmut:2017/web/mmb.irbbarcelona.org")
+                            example = "biotools:pmut:2017/web/mmb.irbbarcelona.org")
                         final String id,
                         @RequestBody(description = "json tool object",
                             content = @Content(schema = @Schema(ref="https://openebench.bsc.es/monitor/tool/tool.json")),

@@ -81,7 +81,7 @@ public class BiotoolsRepositoryImporter {
                     Logger.getLogger(BiotoolsRepositoryImporter.class.getName()).log(Level.WARNING, "dubious id: {0}", id);
                     continue;
                 }
-                if (id.regionMatches(OpenEBenchEndpoint.URI_BASE.length(), "bio.tools:", 0, 10)) {
+                if (id.regionMatches(OpenEBenchEndpoint.URI_BASE.length(), "biotools:", 0, 10)) {
                     try {
                         if (ids.contains(tool.id)) {
                             if (Boolean.TRUE.equals(deprecated)) {

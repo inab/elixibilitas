@@ -33,7 +33,6 @@ import io.swagger.v3.oas.annotations.Hidden;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.enums.ParameterIn;
-import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.parameters.RequestBody;
@@ -147,7 +146,7 @@ public class MetricsServices {
     )
     public void getMetrics(@PathParam("id")
                            @Parameter(description = "prefixed tool id",
-                                      example = "bio.tools:pmut:2017")
+                                      example = "biotools:pmut:2017")
                            final String id,
                            @PathParam("type")
                            @Parameter(description = "tool type",
@@ -246,7 +245,7 @@ public class MetricsServices {
     @RolesAllowed("metrics_submitter")
     public void putMetrics(@PathParam("id")
                            @Parameter(description = "full tool id",
-                               example = "bio.tools:pmut:2017/web/mmb.irbbarcelona.org") 
+                               example = "biotools:pmut:2017/web/mmb.irbbarcelona.org") 
                            final String id,
                            @RequestBody(description = "json metrics object",
                               content = @Content(schema = @Schema(ref="https://openebench.bsc.es/monitor/metrics/metrics.json")),
@@ -275,7 +274,7 @@ public class MetricsServices {
     @Operation(
         summary = "Updates metrics in the database.",
         description = "Accepts an array of JSON documents with defined @id " +
-                      "(i.e. 'https://openebench.bsc.es/monitor/metrics/bio.tools:pmut:2017/web/mmb.irbbarcelona.org'). " +
+                      "(i.e. 'https://openebench.bsc.es/monitor/metrics/biotools:pmut:2017/web/mmb.irbbarcelona.org'). " +
                       "Method uses mongodb 'upsert' operation."
     )
     @RolesAllowed("metrics_submitter")
@@ -284,21 +283,19 @@ public class MetricsServices {
                                  content = @Content(
                                      mediaType = MediaType.APPLICATION_JSON),
                                  required = true) final Reader reader,
-                             @Context final UriInfo uriInfo,
                              @Context SecurityContext security,
                              @Suspended final AsyncResponse asyncResponse) {
 
-        final String prefix = uriInfo.getRequestUri().toString();
         final Principal principal = security.getUserPrincipal();
         final String user = principal != null ? principal.getName() : null;
         
         executor.submit(() -> {
             asyncResponse.resume(
-                    patchMetricsAsync(prefix, user, reader).build());
+                    patchMetricsAsync(user, reader).build());
         });
     }
     
-    private ResponseBuilder patchMetricsAsync(final String prefix, final String user, final Reader reader) {
+    private ResponseBuilder patchMetricsAsync(final String user, final Reader reader) {
         final JsonParser parser = Json.createParser(reader);
                 
         if (parser.hasNext() &&
@@ -308,15 +305,7 @@ public class MetricsServices {
                 stream.forEach(item->{
                     if (JsonValue.ValueType.OBJECT == item.getValueType()) {
                         final JsonObject object = item.asJsonObject();
-                        String id = object.getString("@id");
-                        if (id != null && id.startsWith(prefix)) {
-                            try {
-                                id = id.substring(prefix.length());
-                                metricsDAO.update(user, id, object.toString());
-                            } catch (Exception ex) {
-                                Logger.getLogger(MetricsServices.class.getName()).log(Level.SEVERE, id, ex);
-                            }
-                        }
+                        metricsDAO.update(user, object);
                     }
                 });
             } catch (Exception ex) {
@@ -340,7 +329,7 @@ public class MetricsServices {
     @RolesAllowed("metrics_submitter")
     public void patchMetrics(@PathParam("id")
                              @Parameter(description = "prefixed tool id",
-                                        example = "bio.tools:pmut:2017") 
+                                        example = "biotools:pmut:2017") 
                              final String id,
                              @PathParam("type")
                              @Parameter(description = "tool type",

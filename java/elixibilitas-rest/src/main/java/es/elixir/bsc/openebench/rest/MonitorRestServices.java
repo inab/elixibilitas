@@ -472,7 +472,7 @@ public class MonitorRestServices {
                            @QueryParam("limit") Integer limit,
                            @PathParam("id")
                            @Parameter(description = "prefixed tool id",        
-                                      example = "bio.tools:pmut") 
+                                      example = "biotools:pmut") 
                            final String id,
                            @PathParam("type")
                            @Parameter(description = "tool type",
