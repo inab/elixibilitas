@@ -486,6 +486,7 @@ public class ToolsDAO extends AbstractDAO<Document> implements Serializable {
 
                 if (projections != null && projections.size() > 0) {
                     BasicDBObject bson = new BasicDBObject();
+                    bson.append("name", true);
                     bson.append("@timestamp", true);
                     for (String field : projections) {
                         bson.append(field, true);
@@ -617,6 +618,7 @@ public class ToolsDAO extends AbstractDAO<Document> implements Serializable {
 
                 if (projections != null && projections.size() > 0) {
                     BasicDBObject bson = new BasicDBObject();
+                    bson.append("name", true);
                     bson.append("@timestamp", true);
                     for (String field : projections) {
                         bson.append(field, true);
