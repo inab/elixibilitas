@@ -206,30 +206,34 @@ public class ToolsDAO extends AbstractDAO<Document> implements Serializable {
         doc.append("@type", type);
         doc.append("@label", getLabel(_id));
         doc.append("@version", getVersion(_id));
-                        
-        final Jsonb jsonb = JsonbBuilder.create(
-                new JsonbConfig().withPropertyNamingStrategy(PropertyNamingStrategy.UPPER_CAMEL_CASE));
+                 
+        try (Jsonb jsonb = JsonbBuilder.create(
+                new JsonbConfig().withPropertyNamingStrategy(PropertyNamingStrategy.UPPER_CAMEL_CASE))) {
         
-        final String json = doc.toJson();
-        
-        switch(type) {
-            case CommandLineTool.TYPE: return jsonb.fromJson(json, CommandLineTool.class);
-            case WebApplication.TYPE: return jsonb.fromJson(json, WebApplication.class);
-            case DatabasePortal.TYPE: return jsonb.fromJson(json, DatabasePortal.class);
-            case DesktopApplication.TYPE: return jsonb.fromJson(json, DesktopApplication.class);
-            case Library.TYPE: return jsonb.fromJson(json, Library.class);
-            case Ontology.TYPE: return jsonb.fromJson(json, Ontology.class);
-            case Workflow.TYPE: return jsonb.fromJson(json, Workflow.class);
-            case Plugin.TYPE: return jsonb.fromJson(json, Plugin.class);
-            case SPARQLEndpoint.TYPE: return jsonb.fromJson(json, SPARQLEndpoint.class);
-            case SOAPServices.TYPE: return jsonb.fromJson(json, SOAPServices.class);
-            case Script.TYPE: return jsonb.fromJson(json, Script.class);
-            case WebAPI.TYPE: return jsonb.fromJson(json, WebAPI.class);
-            case Workbench.TYPE: return jsonb.fromJson(json, Workbench.class);
-            case Suite.TYPE: return jsonb.fromJson(json, Suite.class);
+            final String json = doc.toJson();
+
+            switch(type) {
+                case CommandLineTool.TYPE: return jsonb.fromJson(json, CommandLineTool.class);
+                case WebApplication.TYPE: return jsonb.fromJson(json, WebApplication.class);
+                case DatabasePortal.TYPE: return jsonb.fromJson(json, DatabasePortal.class);
+                case DesktopApplication.TYPE: return jsonb.fromJson(json, DesktopApplication.class);
+                case Library.TYPE: return jsonb.fromJson(json, Library.class);
+                case Ontology.TYPE: return jsonb.fromJson(json, Ontology.class);
+                case Workflow.TYPE: return jsonb.fromJson(json, Workflow.class);
+                case Plugin.TYPE: return jsonb.fromJson(json, Plugin.class);
+                case SPARQLEndpoint.TYPE: return jsonb.fromJson(json, SPARQLEndpoint.class);
+                case SOAPServices.TYPE: return jsonb.fromJson(json, SOAPServices.class);
+                case Script.TYPE: return jsonb.fromJson(json, Script.class);
+                case WebAPI.TYPE: return jsonb.fromJson(json, WebAPI.class);
+                case Workbench.TYPE: return jsonb.fromJson(json, Workbench.class);
+                case Suite.TYPE: return jsonb.fromJson(json, Suite.class);
+            }
+            return jsonb.fromJson(json, Tool.class);
+        } catch(Exception ex) {
+            Logger.getLogger(ToolsDAO.class.getName()).log(Level.SEVERE, null, ex);
         }
-        
-        return jsonb.fromJson(json, Tool.class);
+
+        return null;
     }
     
     public String getJSON(String id) {
@@ -302,20 +306,26 @@ public class ToolsDAO extends AbstractDAO<Document> implements Serializable {
     }
 
     public String put(String user, Tool tool) {
-        final Jsonb jsonb = JsonbBuilder.create(
-                new JsonbConfig().withPropertyNamingStrategy(PropertyNamingStrategy.UPPER_CAMEL_CASE));
-        final String json = jsonb.toJson(tool);
-        
-        return put(user, tool.id.toString().substring(baseURI.length()), json);
+        try (Jsonb jsonb = JsonbBuilder.create(
+                new JsonbConfig().withPropertyNamingStrategy(PropertyNamingStrategy.UPPER_CAMEL_CASE))) {
+            final String json = jsonb.toJson(tool);
+            return put(user, tool.id.toString().substring(baseURI.length()), json);
+        } catch(Exception ex) {
+            Logger.getLogger(ToolsDAO.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return null;
     }
 
 
     public String update(String user, Tool tool, String id) {
-        final Jsonb jsonb = JsonbBuilder.create(
-                new JsonbConfig().withPropertyNamingStrategy(PropertyNamingStrategy.UPPER_CAMEL_CASE));
-        final String json = jsonb.toJson(tool);
-        
-        return update(user, id, json);
+        try (Jsonb jsonb = JsonbBuilder.create(
+                new JsonbConfig().withPropertyNamingStrategy(PropertyNamingStrategy.UPPER_CAMEL_CASE))) {
+            final String json = jsonb.toJson(tool);
+            return update(user, id, json);
+        } catch(Exception ex) {
+            Logger.getLogger(ToolsDAO.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return null;
     }
 
     private Bson createFindQuery(String id) {

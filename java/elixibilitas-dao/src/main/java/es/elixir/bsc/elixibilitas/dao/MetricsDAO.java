@@ -41,7 +41,6 @@ import java.util.logging.Logger;
 import javax.json.bind.Jsonb;
 import javax.json.bind.JsonbBuilder;
 import javax.json.bind.JsonbConfig;
-import javax.json.bind.JsonbException;
 import javax.json.bind.config.PropertyNamingStrategy;
 import org.bson.BsonString;
 import org.bson.BsonWriter;
@@ -160,11 +159,14 @@ public class MetricsDAO extends AbstractDAO<BsonString> implements Serializable 
     }
 
     public String update(String user, String id, Metrics metrics) {
-        final Jsonb jsonb = JsonbBuilder.create(
-                new JsonbConfig().withPropertyNamingStrategy(PropertyNamingStrategy.UPPER_CAMEL_CASE));
-        final String json = jsonb.toJson(metrics);
-        
-        return update(user, id, json);
+        try (Jsonb jsonb = JsonbBuilder.create(
+                new JsonbConfig().withPropertyNamingStrategy(PropertyNamingStrategy.UPPER_CAMEL_CASE))) {            
+            final String json = jsonb.toJson(metrics);
+            return update(user, id, json);
+        } catch (Exception ex) {
+            Logger.getLogger(MetricsDAO.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return null;
     }
     
     private Metrics deserialize(Document doc) {
@@ -172,14 +174,10 @@ public class MetricsDAO extends AbstractDAO<BsonString> implements Serializable 
         doc.append("@id", baseURI + doc.remove("_id"));
         doc.append("@type", "metrics");
                         
-        final Jsonb jsonb = JsonbBuilder.create(
-                new JsonbConfig().withPropertyNamingStrategy(PropertyNamingStrategy.UPPER_CAMEL_CASE));
-
-        final String json = doc.toJson();
-        
-        try {
-            return jsonb.fromJson(json, Metrics.class);
-        } catch(JsonbException ex) {
+        try (Jsonb jsonb = JsonbBuilder.create(
+                new JsonbConfig().withPropertyNamingStrategy(PropertyNamingStrategy.UPPER_CAMEL_CASE))) {
+            return jsonb.fromJson(doc.toJson(), Metrics.class);
+        } catch(Exception ex) {
             Logger.getLogger(MetricsDAO.class.getName()).log(Level.SEVERE, null, ex);
         }
         return null;
