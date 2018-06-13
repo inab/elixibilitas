@@ -158,11 +158,11 @@ public class MetricsDAO extends AbstractDAO<BsonString> implements Serializable 
         return null;
     }
 
-    public String update(String user, String id, Metrics metrics) {
+    public String upsert(String user, String id, Metrics metrics) {
         try (Jsonb jsonb = JsonbBuilder.create(
                 new JsonbConfig().withPropertyNamingStrategy(PropertyNamingStrategy.UPPER_CAMEL_CASE))) {            
             final String json = jsonb.toJson(metrics);
-            return update(user, id, json);
+            return upsert(user, id, json);
         } catch (Exception ex) {
             Logger.getLogger(MetricsDAO.class.getName()).log(Level.SEVERE, null, ex);
         }

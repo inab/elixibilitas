@@ -462,7 +462,7 @@ public class ToolsServices {
             Stream<JsonValue> stream = parser.getArrayStream();
             stream.forEach(item->{
                 if (JsonValue.ValueType.OBJECT == item.getValueType()) {
-                    toolsDAO.update(user, item.asJsonObject());
+                    toolsDAO.upsert(user, item.asJsonObject());
                 }
             });
         } else {
@@ -505,7 +505,7 @@ public class ToolsServices {
         final String result;
         
         if (path == null || path.isEmpty()) {
-            result = toolsDAO.update(user, id, json);
+            result = toolsDAO.merge(user, id, json);
         } else {
             final JsonValue value;
             try {

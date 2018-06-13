@@ -67,6 +67,7 @@ import javax.json.stream.JsonParser;
 import javax.servlet.ServletContext;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
+import javax.ws.rs.POST;
 import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
@@ -268,6 +269,56 @@ public class MetricsServices {
         return Response.ok();
     }
 
+    @POST
+    @Path("/")
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Operation(
+        summary = "Updates metrics in the database.",
+        description = "Accepts an array of JSON documents with defined @id " +
+                      "(i.e. 'https://openebench.bsc.es/monitor/metrics/biotools:pmut:2017/web/mmb.irbbarcelona.org'). " +
+                      "If metrics document is already exists - properties are merged."
+    )
+    @RolesAllowed("metrics_submitter")
+    public void updateMetrics(@RequestBody(
+                                  description = "batch update of metrics properties",
+                                  content = @Content(
+                                      mediaType = MediaType.APPLICATION_JSON),
+                                  required = true) final Reader reader,
+                              @Context SecurityContext security,
+                              @Suspended final AsyncResponse asyncResponse) {
+
+        final Principal principal = security.getUserPrincipal();
+        final String user = principal != null ? principal.getName() : null;
+        
+        executor.submit(() -> {
+            asyncResponse.resume(
+                updateMetricsAsync(user, reader).build());
+        });
+    }
+
+    private ResponseBuilder updateMetricsAsync(final String user, final Reader reader) {
+        final JsonParser parser = Json.createParser(reader);
+                
+        if (parser.hasNext() &&
+            parser.next() == JsonParser.Event.START_ARRAY) {
+            try {
+                Stream<JsonValue> stream = parser.getArrayStream();
+                stream.forEach(item->{
+                    if (JsonValue.ValueType.OBJECT == item.getValueType()) {
+                        final JsonObject object = item.asJsonObject();
+                        metricsDAO.merge(user, object);
+                    }
+                });
+            } catch (Exception ex) {
+                Response.status(Response.Status.BAD_REQUEST);
+                Logger.getLogger(MetricsServices.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        } else {
+            Response.status(Response.Status.BAD_REQUEST);
+        }
+        return Response.ok();
+    }
+
     @PATCH
     @Path("/")
     @Consumes(MediaType.APPLICATION_JSON)
@@ -291,7 +342,7 @@ public class MetricsServices {
         
         executor.submit(() -> {
             asyncResponse.resume(
-                    patchMetricsAsync(user, reader).build());
+                patchMetricsAsync(user, reader).build());
         });
     }
     
@@ -305,7 +356,7 @@ public class MetricsServices {
                 stream.forEach(item->{
                     if (JsonValue.ValueType.OBJECT == item.getValueType()) {
                         final JsonObject object = item.asJsonObject();
-                        metricsDAO.update(user, object);
+                        metricsDAO.upsert(user, object);
                     }
                 });
             } catch (Exception ex) {
@@ -324,7 +375,7 @@ public class MetricsServices {
     @Operation(
         summary = "Updates metrics in the database.",
         description = "Accepts JSON document as an input. " +
-                      "Uses mongodb 'upsert' if the 'path' is empty or JSON Patch otherwise."
+                      "Merges the documents if the 'path' is empty or uses JSON Patch otherwise."
     )
     @RolesAllowed("metrics_submitter")
     public void patchMetrics(@PathParam("id")
@@ -362,7 +413,7 @@ public class MetricsServices {
         final String result;
         
         if (path == null || path.isEmpty()) {
-            result = metricsDAO.update(user, id, json);
+            result = metricsDAO.merge(user, id, json);
         } else {
             final JsonValue value;
             try {

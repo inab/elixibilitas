@@ -12,6 +12,8 @@ import java.io.StringWriter;
 import java.io.Writer;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
+import java.util.List;
+import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.json.Json;
@@ -134,17 +136,16 @@ public abstract class AbstractDAO<T> {
         return null;
     }
     
-    public void update(String user, JsonObject json) {
+    public void upsert(String user, JsonObject json) {
         String id = json.getString("@id", null);
         if (id != null && id.startsWith(baseURI)) {
             id = id.substring(baseURI.length());
-            update(user, id, json.toString());
+            AbstractDAO.this.upsert(user, id, json.toString());
         }
     }
 
     /**
      * Updates the document using mongodb 'upsert' operation.
-     * If 
      * 
      * @param user origin of the update operation
      * @param id ID of the document
@@ -152,7 +153,7 @@ public abstract class AbstractDAO<T> {
      * 
      * @return updated JSON document or null if no update were performed.
      */
-    public String update(String user, String id, String json) {
+    public String upsert(String user, String id, String json) {
         try {
             MongoCollection<Document> col = database.getCollection(collection);
 
@@ -215,6 +216,92 @@ public abstract class AbstractDAO<T> {
         return null;
     }
     
+    public void merge(String user, JsonObject json) {
+        String id = json.getString("@id", null);
+        if (id != null && id.startsWith(baseURI)) {
+            id = id.substring(baseURI.length());
+            merge(user, id, json.toString());
+        }
+    }
+    
+    /**
+     * Updates the document merging all properties.
+     * 
+     * @param user origin of the update operation
+     * @param id ID of the document
+     * @param json JSON document to update
+     * 
+     * @return updated JSON document or null if no update were performed.
+     */
+    public String merge(String user, String id, String json) {
+        try {
+            MongoCollection<Document> col = database.getCollection(collection);
+
+            Document bson = Document.parse(json);
+
+            final T pk = createPK(id);
+            //bson.append("_id", pk);
+            
+            final String timestamp = ZonedDateTime.now(ZoneId.of("Z")).toString();
+            bson.append("@timestamp", timestamp);
+
+            bson.remove("@id");
+            bson.remove("@type");
+            bson.remove("@label");
+            bson.remove("@version");
+
+            Document doc = col.find(Filters.eq("_id", pk))
+                    .projection(Projections.excludeId()).first();
+            
+            Document before;
+            
+            if (doc == null) {
+                before = new Document();
+                FindOneAndUpdateOptions opt = new FindOneAndUpdateOptions().upsert(true)
+                    .projection(Projections.excludeId()).returnDocument(ReturnDocument.AFTER);
+                doc = col.findOneAndUpdate(Filters.eq("_id", pk), new Document("$set", bson), opt);
+            } else {
+                merge(doc, bson);
+                
+                FindOneAndReplaceOptions opt = new FindOneAndReplaceOptions()
+                        .projection(Projections.excludeId()).returnDocument(ReturnDocument.BEFORE);
+                before = col.findOneAndReplace(Filters.eq("_id", pk), doc, opt);
+                if (before == null) {
+                    before = new Document();
+                }
+            }
+            
+            final String uri = getURI(pk);
+            final String type = getType(pk);
+            final String label = getLabel(pk);
+            final String version = getVersion(pk);
+
+            before.append("@id", uri);
+            before.append("@type", type);
+            before.append("@label", label);
+            before.append("@version", version);
+            before.append("@license", LICENSE);
+            before.append("@timestamp", timestamp);
+
+            doc.append("@id", uri);
+            doc.append("@type", type);
+            doc.append("@label", label);
+            doc.append("@version", version);
+
+            doc.append("@license", LICENSE);
+
+            final String result = doc.toJson();
+            log.log(user, id, before.toJson(), result);
+            return result;
+
+        } catch (IllegalArgumentException ex) {
+            Logger.getLogger(MetricsDAO.class.getName()).log(Level.SEVERE, null, ex);
+        } catch(Exception ex) {
+            Logger.getLogger(MetricsDAO.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return null;
+    }
+    
     public String patch(String user, String id, JsonPatch patch) {
         final String result = patch(id, patch);
         if (result != null) {
@@ -270,6 +357,42 @@ public abstract class AbstractDAO<T> {
             Logger.getLogger(MetricsDAO.class.getName()).log(Level.SEVERE, null, ex);
         }
         return null;
+    }
+    
+    /**
+     * Deep documents merge
+     * 
+     * @param doc1 original document
+     * @param doc2 merging document
+     */
+    private void merge(Map<String, Object> doc1, Map<String, Object> doc2) {
+        for (Document.Entry<String, Object> entry : doc2.entrySet()) {
+            final String key = entry.getKey();
+            final Object val2 = entry.getValue();
+            final Object val1 = doc1.get(key);
+            if (val1 != null) {
+                if (val1 instanceof Map && val2 instanceof Map) {
+                    merge((Map<String, Object>)val1, (Map<String, Object>)val2);
+                    continue;
+                }
+                if (val1 instanceof List && val2 instanceof List) {
+                    final List list1 = (List)val1;
+                    final List list2 = (List)val2;
+                    for (Object val : list2) {
+                        if (val instanceof Map || val instanceof List) {
+                            // if the list has objects - replace the entire list
+                            doc1.put(key, val2);
+                            break;
+                        }
+                        if (!list1.contains(val)) {
+                            list1.add(val);
+                        }
+                    }
+                    continue;
+                }    
+            }
+            doc1.put(key, val2);
+        }
     }
     
     public static class ReusableJsonWriter extends JsonWriter {

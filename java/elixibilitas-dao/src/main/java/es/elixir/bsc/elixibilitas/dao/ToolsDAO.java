@@ -317,11 +317,11 @@ public class ToolsDAO extends AbstractDAO<Document> implements Serializable {
     }
 
 
-    public String update(String user, Tool tool, String id) {
+    public String upsert(String user, Tool tool, String id) {
         try (Jsonb jsonb = JsonbBuilder.create(
                 new JsonbConfig().withPropertyNamingStrategy(PropertyNamingStrategy.UPPER_CAMEL_CASE))) {
             final String json = jsonb.toJson(tool);
-            return update(user, id, json);
+            return upsert(user, id, json);
         } catch(Exception ex) {
             Logger.getLogger(ToolsDAO.class.getName()).log(Level.SEVERE, null, ex);
         }
