@@ -49,6 +49,7 @@ public class OpenEBenchMonitorApplication extends Application {
         resources.add(WebProxyService.class);
         resources.add(EdamServices.class);
         resources.add(MonitorRestServices.class);
+        resources.add(StatisticsServices.class);
         resources.add(CorsResponseFilter.class);
         resources.add(JSONContentTypeFilter.class);
         resources.add(XHTTPMethodOverrideFilter.class);

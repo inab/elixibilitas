@@ -1,6 +1,8 @@
 package es.elixir.bsc.elixibilitas.dao;
 
+import com.mongodb.client.FindIterable;
 import com.mongodb.client.MongoCollection;
+import com.mongodb.client.MongoCursor;
 import com.mongodb.client.MongoDatabase;
 import com.mongodb.client.model.Filters;
 import com.mongodb.client.model.FindOneAndReplaceOptions;
@@ -12,14 +14,20 @@ import java.io.StringWriter;
 import java.io.Writer;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.json.Json;
 import javax.json.JsonArray;
 import javax.json.JsonObject;
 import javax.json.JsonPatch;
+import javax.json.JsonString;
+import javax.json.JsonValue;
 import org.bson.Document;
 import org.bson.conversions.Bson;
 import org.bson.json.JsonWriter;
@@ -211,7 +219,7 @@ public abstract class AbstractDAO<T> {
                 return result;
             }
         } catch(Exception ex) {
-            Logger.getLogger(MetricsDAO.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(AbstractDAO.class.getName()).log(Level.SEVERE, null, ex);
         }
         return null;
     }
@@ -240,7 +248,6 @@ public abstract class AbstractDAO<T> {
             Document bson = Document.parse(json);
 
             final T pk = createPK(id);
-            //bson.append("_id", pk);
             
             final String timestamp = ZonedDateTime.now(ZoneId.of("Z")).toString();
             bson.append("@timestamp", timestamp);
@@ -295,9 +302,9 @@ public abstract class AbstractDAO<T> {
             return result;
 
         } catch (IllegalArgumentException ex) {
-            Logger.getLogger(MetricsDAO.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(AbstractDAO.class.getName()).log(Level.SEVERE, null, ex);
         } catch(Exception ex) {
-            Logger.getLogger(MetricsDAO.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(AbstractDAO.class.getName()).log(Level.SEVERE, null, ex);
         }
         return null;
     }
@@ -352,9 +359,9 @@ public abstract class AbstractDAO<T> {
                 return result.toJson();
             }
         } catch (IllegalArgumentException ex) {
-            Logger.getLogger(MetricsDAO.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(AbstractDAO.class.getName()).log(Level.SEVERE, null, ex);
         } catch(Exception ex) {
-            Logger.getLogger(MetricsDAO.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(AbstractDAO.class.getName()).log(Level.SEVERE, null, ex);
         }
         return null;
     }
@@ -393,6 +400,73 @@ public abstract class AbstractDAO<T> {
             }
             doc1.put(key, val2);
         }
+    }
+    
+    public void statistics(Writer writer) {
+        final HashMap<String, HashSet<String>> map = new HashMap<>();
+        
+        try {
+            MongoCollection<Document> col = database.getCollection(collection);
+            FindIterable<Document> itarable = col.find();
+            try (MongoCursor<Document> cursor = itarable.iterator()) {
+                while (cursor.hasNext()) {
+                    final Document doc = cursor.next();
+                    final T _id = (T)doc.remove("_id");
+                    final String id = getLabel(_id);
+                    HashSet<String> metrics = map.get(id);
+                    if (metrics == null) {
+                        map.put(id, metrics = new HashSet<>());
+                    }
+                    final JsonObject obj = Json.createObjectBuilder(doc).build();
+                    travers(metrics, "/", obj);
+                }
+            }
+        }
+        catch(Exception ex) {
+            Logger.getLogger(AbstractDAO.class.getName()).log(Level.SEVERE, null, ex);
+        }
+
+        final HashMap<String, AtomicInteger> metrics = new HashMap<>();
+        for (HashSet<String> set : map.values()) {
+            for (String path : set) {
+                final AtomicInteger count = metrics.get(path);
+                if (count == null) {
+                    metrics.put(path, new AtomicInteger(0));
+                } else {
+                    count.addAndGet(1);
+                }
+            }
+        }
+        
+        try (JsonWriter jwriter = new ReusableJsonWriter(writer)) {
+            jwriter.writeStartDocument();
+            
+            for (Map.Entry<String, AtomicInteger> entry : metrics.entrySet()) {
+                jwriter.writeInt32(entry.getKey(), entry.getValue().get());
+            }
+            jwriter.writeEndDocument();
+        }
+    }
+    
+    private void travers(HashSet<String> metrics, String path, JsonValue value) {
+        final JsonValue.ValueType type = value.getValueType();
+        if (type == JsonValue.ValueType.OBJECT) {
+            final JsonObject object = value.asJsonObject();
+            for (Entry<String, JsonValue> entry : object.entrySet()) {
+                travers(metrics, path + entry.getKey() + "/", entry.getValue());
+            }
+        } else if (type == JsonValue.ValueType.ARRAY){
+            final JsonArray array = value.asJsonArray();
+            if (!array.isEmpty()) {
+                metrics.add(path);
+            }
+        } else if (type == JsonValue.ValueType.NUMBER ||
+                   type ==JsonValue.ValueType.TRUE ||
+                  (value instanceof JsonString && 
+                  ((JsonString)value).getChars().length() > 0)) {
+            metrics.add(path);
+        }
+        // if the value == 'NULL' or 'FALSE' or empty string dont' add.
     }
     
     public static class ReusableJsonWriter extends JsonWriter {

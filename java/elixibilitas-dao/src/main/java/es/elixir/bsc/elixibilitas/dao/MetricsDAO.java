@@ -42,7 +42,6 @@ import javax.json.bind.Jsonb;
 import javax.json.bind.JsonbBuilder;
 import javax.json.bind.JsonbConfig;
 import javax.json.bind.config.PropertyNamingStrategy;
-import org.bson.BsonString;
 import org.bson.BsonWriter;
 import org.bson.Document;
 import org.bson.codecs.DocumentCodec;
@@ -55,7 +54,7 @@ import org.bson.json.JsonWriter;
  * @author Dmitry Repchevsky
  */
 
-public class MetricsDAO extends AbstractDAO<BsonString> implements Serializable {
+public class MetricsDAO extends AbstractDAO<String> implements Serializable {
     
     public final static String COLLECTION = "metrics";
     
@@ -64,23 +63,23 @@ public class MetricsDAO extends AbstractDAO<BsonString> implements Serializable 
     }
 
     @Override
-    protected BsonString createPK(String id) {
-        return new BsonString(id);
+    protected String createPK(String id) {
+        return id;
     }
     
     @Override
-    protected String getURI(BsonString pk) {
-        return baseURI + pk.getValue();
+    protected String getURI(String pk) {
+        return baseURI + pk;
     }
-
+    
     @Override
-    protected String getType(BsonString pk) {
+    protected String getType(String pk) {
         return "metrics";
     }
 
     @Override
-    protected String getLabel(BsonString pk) {
-        final String[] nodes = pk.getValue().split("/");
+    protected String getLabel(String pk) {
+        final String[] nodes = pk.split("/");
         if (nodes.length > 0) {
             final String[] _id = nodes[0].split(":");
             if (_id.length > 1) {
@@ -92,8 +91,8 @@ public class MetricsDAO extends AbstractDAO<BsonString> implements Serializable 
     }
 
     @Override
-    protected String getVersion(BsonString pk) {
-        final String[] nodes = pk.getValue().split("/");
+    protected String getVersion(String pk) {
+        final String[] nodes = pk.split("/");
         if (nodes.length > 0) {
             final String[] _id = nodes[0].split(":");
             if (_id.length > 2) {
