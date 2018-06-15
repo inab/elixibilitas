@@ -138,7 +138,7 @@ public class ToolsDAO extends AbstractDAO<Document> implements Serializable {
         
         return sb.toString();
     }
-
+    
     @Override
     protected String getType(Document pk) {
         return pk.getString("type");
@@ -494,12 +494,18 @@ public class ToolsDAO extends AbstractDAO<Document> implements Serializable {
                     aggregation.add(createIdFilter(id));
                 }
 
+                boolean injectName = false;
                 if (projections != null && projections.size() > 0) {
+                    injectName = !projections.contains("name");
+                    
                     BasicDBObject bson = new BasicDBObject();
-                    bson.append("name", true);
                     bson.append("@timestamp", true);
                     for (String field : projections) {
                         bson.append(field, true);
+                    }
+                    if (injectName) {
+                        // need "name" to sort!
+                        bson.append("name", true);
                     }
                     aggregation.add(Aggregates.project(bson));
                 }
@@ -530,6 +536,9 @@ public class ToolsDAO extends AbstractDAO<Document> implements Serializable {
                         doc.append("@version", getVersion(_id));
                         doc.append("@license", LICENSE);
 
+                        if (injectName) {
+                            doc.remove("name");
+                        }
                         doc.toJson(codec);
                     }
                 }
