@@ -40,6 +40,7 @@ public class CommandLineTool extends Tool {
     public final static String TYPE = "cmd";
     
     private String executable;
+    private List<String> languages;
     private List<String> operatingSystems;
 
     @JsonbCreator
@@ -47,6 +48,19 @@ public class CommandLineTool extends Tool {
         super(id, TYPE);
     }
     
+    @JsonbProperty("languages")
+    public List<String> getLanguages() {
+        if (languages == null) {
+            languages = new ArrayList<>();
+        }
+        return languages;
+    }
+
+    @JsonbProperty("languages")
+    public void setLanguages(List<String> languages) {
+        this.languages = languages;
+    }
+
     @JsonbProperty("os")
     public List<String> getOperatingSystems() {
         if (operatingSystems == null) {

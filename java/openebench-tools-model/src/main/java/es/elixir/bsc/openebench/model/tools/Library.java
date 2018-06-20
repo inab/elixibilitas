@@ -26,6 +26,8 @@
 package es.elixir.bsc.openebench.model.tools;
 
 import java.net.URI;
+import java.util.ArrayList;
+import java.util.List;
 import javax.json.bind.annotation.JsonbCreator;
 import javax.json.bind.annotation.JsonbProperty;
 
@@ -37,8 +39,23 @@ public class Library extends Tool {
 
     public final static String TYPE = "lib";
     
+    private List<String> languages;
+
     @JsonbCreator
     public Library(@JsonbProperty("@id") URI id) {
         super(id, TYPE);
+    }
+    
+    @JsonbProperty("languages")
+    public List<String> getLanguages() {
+        if (languages == null) {
+            languages = new ArrayList<>();
+        }
+        return languages;
+    }
+
+    @JsonbProperty("languages")
+    public void setLanguages(List<String> languages) {
+        this.languages = languages;
     }
 }
