@@ -98,24 +98,29 @@ public class ToolsDAO extends AbstractDAO<Document> implements Serializable {
      */
     @Override
     protected Document createPK(String id) {
+        final Document document;
+        
         final String[] nodes = id.split("/");
-        if (nodes.length > 2) {
-            final String[] _id = nodes[0].split(":");
-            if (_id.length > 2) {
-                return new Document("id", _id[1])
+        
+        final String[] _id = nodes[0].split(":");        
+        if (_id.length > 2) {
+            document = new Document("id", _id[1])
                     .append("nmsp", _id[0])
-                    .append("version", _id[2])
-                    .append("type", nodes[1])
-                    .append("host", nodes[2]);                
-            } else if (_id.length > 1) {
-                return new Document("id", _id[1])
-                    .append("nmsp", _id[0])
-                    .append("type", nodes[1])
-                    .append("host", nodes[2]);
-            }
-
+                    .append("version", _id[2]);              
+        } else if (_id.length > 1) {
+            document = new Document("id", _id[1])
+                    .append("nmsp", _id[0]);
+        } else {
+            document = new Document("id", _id[0]);
         }
-        return null;
+
+        if (nodes.length > 2) {
+            document.append("type", nodes[1]).append("host", nodes[2]);
+        } else if (nodes.length > 1) {
+            document.append("type", nodes[1]);
+        }
+
+        return document;
     }
 
     @Override
@@ -123,7 +128,11 @@ public class ToolsDAO extends AbstractDAO<Document> implements Serializable {
 
         StringBuilder sb = new StringBuilder(baseURI);
         
-        sb.append(pk.get("nmsp")).append(':');
+        final String nmsp = pk.getString("nmsp");
+        if (nmsp != null) {
+            sb.append(nmsp).append(':');
+        }
+        
         sb.append(pk.get("id"));
         
         final String version = pk.get("version", String.class);
@@ -131,10 +140,14 @@ public class ToolsDAO extends AbstractDAO<Document> implements Serializable {
             sb.append(':').append(version);
         }
 
-        sb.append('/');
-        sb.append(pk.get("type")).append('/');
-        sb.append(pk.get("host"));
-        
+        final String type = pk.getString("type");
+        if (type != null) {
+            sb.append('/').append(type);
+        }
+        final String host = pk.getString("host");
+        if (host != null) {
+            sb.append('/').append(host);
+        }
         
         return sb.toString();
     }
@@ -206,27 +219,29 @@ public class ToolsDAO extends AbstractDAO<Document> implements Serializable {
         doc.append("@type", type);
         doc.append("@label", getLabel(_id));
         doc.append("@version", getVersion(_id));
-                 
+        
         try (Jsonb jsonb = JsonbBuilder.create(
                 new JsonbConfig().withPropertyNamingStrategy(PropertyNamingStrategy.UPPER_CAMEL_CASE))) {
         
             final String json = doc.toJson();
 
-            switch(type) {
-                case CommandLineTool.TYPE: return jsonb.fromJson(json, CommandLineTool.class);
-                case WebApplication.TYPE: return jsonb.fromJson(json, WebApplication.class);
-                case DatabasePortal.TYPE: return jsonb.fromJson(json, DatabasePortal.class);
-                case DesktopApplication.TYPE: return jsonb.fromJson(json, DesktopApplication.class);
-                case Library.TYPE: return jsonb.fromJson(json, Library.class);
-                case Ontology.TYPE: return jsonb.fromJson(json, Ontology.class);
-                case Workflow.TYPE: return jsonb.fromJson(json, Workflow.class);
-                case Plugin.TYPE: return jsonb.fromJson(json, Plugin.class);
-                case SPARQLEndpoint.TYPE: return jsonb.fromJson(json, SPARQLEndpoint.class);
-                case SOAPServices.TYPE: return jsonb.fromJson(json, SOAPServices.class);
-                case Script.TYPE: return jsonb.fromJson(json, Script.class);
-                case WebAPI.TYPE: return jsonb.fromJson(json, WebAPI.class);
-                case Workbench.TYPE: return jsonb.fromJson(json, Workbench.class);
-                case Suite.TYPE: return jsonb.fromJson(json, Suite.class);
+            if (type != null) {
+                switch(type) {
+                    case CommandLineTool.TYPE: return jsonb.fromJson(json, CommandLineTool.class);
+                    case WebApplication.TYPE: return jsonb.fromJson(json, WebApplication.class);
+                    case DatabasePortal.TYPE: return jsonb.fromJson(json, DatabasePortal.class);
+                    case DesktopApplication.TYPE: return jsonb.fromJson(json, DesktopApplication.class);
+                    case Library.TYPE: return jsonb.fromJson(json, Library.class);
+                    case Ontology.TYPE: return jsonb.fromJson(json, Ontology.class);
+                    case Workflow.TYPE: return jsonb.fromJson(json, Workflow.class);
+                    case Plugin.TYPE: return jsonb.fromJson(json, Plugin.class);
+                    case SPARQLEndpoint.TYPE: return jsonb.fromJson(json, SPARQLEndpoint.class);
+                    case SOAPServices.TYPE: return jsonb.fromJson(json, SOAPServices.class);
+                    case Script.TYPE: return jsonb.fromJson(json, Script.class);
+                    case WebAPI.TYPE: return jsonb.fromJson(json, WebAPI.class);
+                    case Workbench.TYPE: return jsonb.fromJson(json, Workbench.class);
+                    case Suite.TYPE: return jsonb.fromJson(json, Suite.class);
+                }
             }
             return jsonb.fromJson(json, Tool.class);
         } catch(Exception ex) {
@@ -682,9 +697,9 @@ public class ToolsDAO extends AbstractDAO<Document> implements Serializable {
                                 tool.append("@license", LICENSE);
                                 
                                 final String type = getType(_id);
-                                List<Document> list = map.get(type);
+                                List<Document> list = map.get(type != null ? type : "");
                                 if (list == null) {
-                                    map.put(type, list = new ArrayList<>());
+                                    map.put(type != null ? type : "", list = new ArrayList<>());
                                 }
                                 list.add(tool);
                             }
@@ -693,9 +708,15 @@ public class ToolsDAO extends AbstractDAO<Document> implements Serializable {
                             Iterator<Map.Entry<String, List<Document>>> groups = map.entrySet().iterator();
                             do {
                                 final Map.Entry<String, List<Document>> entry = groups.next();
-                                
+                                final String type = entry.getKey();
                                 jwriter.writeStartDocument();
-                                jwriter.writeString("type", entry.getKey());
+                                
+                                if (type.isEmpty()) {
+                                    jwriter.writeNull("type");
+                                } else {
+                                    jwriter.writeString("type", type);
+                                }
+                                
                                 jwriter.writeStartArray("tools");
                             
                                 final Iterator<Document> iter = entry.getValue().iterator();
