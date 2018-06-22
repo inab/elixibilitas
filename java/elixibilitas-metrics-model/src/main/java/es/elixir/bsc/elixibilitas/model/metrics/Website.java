@@ -43,6 +43,7 @@ public class Website {
     private Boolean acknowledgement;
     private Boolean license;
     private Boolean resources;
+    private Boolean bioschemas;
     
     @JsonbProperty("operational")
     public Integer getOperational() {
@@ -132,5 +133,15 @@ public class Website {
     @JsonbProperty("resources")
     public void setResources(Boolean resources) {
         this.resources = resources;
+    }
+    
+    @JsonbProperty("bioschemas")
+    public Boolean getBioschemas() {
+        return bioschemas;
+    }
+
+    @JsonbProperty("bioschemas")
+    public void setBioschemas(Boolean bioschemas) {
+        this.bioschemas = bioschemas;
     }
 }
