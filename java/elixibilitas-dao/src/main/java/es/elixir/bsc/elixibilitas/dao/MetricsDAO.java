@@ -168,6 +168,17 @@ public class MetricsDAO extends AbstractDAO<String> implements Serializable {
         return null;
     }
     
+    public String merge(String user, String id, Metrics metrics) {
+        try (Jsonb jsonb = JsonbBuilder.create(
+                new JsonbConfig().withPropertyNamingStrategy(PropertyNamingStrategy.UPPER_CAMEL_CASE))) {            
+            final String json = jsonb.toJson(metrics);
+            return merge(user, id, json);
+        } catch (Exception ex) {
+            Logger.getLogger(MetricsDAO.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return null;        
+    }
+    
     private Metrics deserialize(Document doc) {
 
         doc.append("@id", baseURI + doc.remove("_id"));
