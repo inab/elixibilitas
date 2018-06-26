@@ -142,7 +142,7 @@ public class JsonLog {
             }
             return builder.build();
         } catch(Exception ex) {
-            Logger.getLogger(MetricsDAO.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(JsonLog.class.getName()).log(Level.SEVERE, null, ex);
         }
         return null;
     }

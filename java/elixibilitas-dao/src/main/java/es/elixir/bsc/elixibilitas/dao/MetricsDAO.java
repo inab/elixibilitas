@@ -128,7 +128,7 @@ public class MetricsDAO extends AbstractDAO<String> implements Serializable {
                 return deserialize(doc);
             }
         } catch(Exception ex) {
-            Logger.getLogger(ToolsDAO.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(MetricsDAO.class.getName()).log(Level.SEVERE, null, ex);
         }
 
         return null;

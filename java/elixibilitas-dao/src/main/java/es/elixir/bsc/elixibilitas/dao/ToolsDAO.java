@@ -376,8 +376,9 @@ public class ToolsDAO extends AbstractDAO<Document> implements Serializable {
                             Filters.eq("_id.type", nodes[1]));
                 }
                 return Filters.and(Filters.eq("_id.id", _id[1]), Filters.eq("_id.nmsp", _id[0]));
-           } else {
-               return Filters.eq("_id.id", _id[0]);
+            } else {
+                return Filters.eq("_id",
+                    new BasicDBObject("id", _id[0]));
            }
         }
         
@@ -538,7 +539,7 @@ public class ToolsDAO extends AbstractDAO<Document> implements Serializable {
 
                 aggregation.add(Aggregates.unwind("$tools"));
                 aggregation.add(Aggregates.replaceRoot("$tools"));
-                AggregateIterable<Document> iterator = col.aggregate(aggregation).useCursor(true);
+                AggregateIterable<Document> iterator = col.aggregate(aggregation).allowDiskUse(true);
 
                 try (MongoCursor<Document> cursor = iterator.iterator()) {
                     while (cursor.hasNext()) {
@@ -672,7 +673,7 @@ public class ToolsDAO extends AbstractDAO<Document> implements Serializable {
                     aggregation.add(Aggregates.limit(limit.intValue()));
                 }
 
-                AggregateIterable<Document> iterator = col.aggregate(aggregation).useCursor(true);
+                AggregateIterable<Document> iterator = col.aggregate(aggregation).allowDiskUse(true);
 
                 try (MongoCursor<Document> cursor = iterator.iterator()) {
                     if (cursor.hasNext()) {
