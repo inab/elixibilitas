@@ -62,6 +62,7 @@ import javax.inject.Inject;
 import javax.json.Json;
 import javax.json.JsonArray;
 import javax.json.JsonException;
+import javax.json.JsonObject;
 import javax.json.JsonPatch;
 import javax.json.JsonPointer;
 import javax.json.JsonStructure;
@@ -73,6 +74,7 @@ import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
 import javax.ws.rs.HeaderParam;
 import javax.ws.rs.OPTIONS;
+import javax.ws.rs.POST;
 import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
@@ -256,15 +258,15 @@ public class ToolsServices {
     }
 
     @GET
-    @Path("/{id}")
+    @Path("/{id}/")
     @Produces(MediaType.APPLICATION_JSON)
-    public void getTools(@PathParam("id")
-                         @Parameter(description = "prefixed tool id",
-                                    example = "biotools:pmut:2017")
-                         final String id,
-                         @Suspended final AsyncResponse asyncResponse) {
+    public void getTool(@PathParam("id")
+                        @Parameter(description = "prefixed tool id",
+                                   example = "biotools:pmut:2017")
+                        final String id,
+                        @Suspended final AsyncResponse asyncResponse) {
         executor.submit(() -> {
-            asyncResponse.resume(getToolsAsync(id).build());
+            asyncResponse.resume(getToolAsync(id, null).build());
         });
     }
 
@@ -432,6 +434,51 @@ public class ToolsServices {
         return Response.status(result == null ? Status.NOT_MODIFIED : Status.OK);
     }
 
+    @POST
+    @Path("/")
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Operation(
+        summary = "Updates tools in the database."
+    )
+    @RolesAllowed("tools_submitter")
+    public void updateTools(@RequestBody(description = "batch update of tools properties",
+                                required = true) final Reader reader,
+                            @Context SecurityContext security,
+                            @Suspended final AsyncResponse asyncResponse) {
+
+        
+        final Principal principal = security.getUserPrincipal();
+        final String user = principal != null ? principal.getName() : null;
+        
+        executor.submit(() -> {
+            asyncResponse.resume(
+                    updateToolsAsync(user, reader).build());
+        });
+    }
+
+    private ResponseBuilder updateToolsAsync(final String user, final Reader reader) {
+        final JsonParser parser = Json.createParser(reader);
+                
+        if (parser.hasNext() &&
+            parser.next() == JsonParser.Event.START_ARRAY) {
+            try {
+                Stream<JsonValue> stream = parser.getArrayStream();
+                stream.forEach(item->{
+                    if (JsonValue.ValueType.OBJECT == item.getValueType()) {
+                        final JsonObject object = item.asJsonObject();
+                        toolsDAO.upsert(user, object);
+                    }
+                });
+            } catch (Exception ex) {
+                Response.status(Response.Status.BAD_REQUEST);
+                Logger.getLogger(ToolsServices.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        } else {
+            Response.status(Response.Status.BAD_REQUEST);
+        }
+        return Response.ok();
+    }
+
     @PATCH
     @Path("/")
     @Consumes(MediaType.APPLICATION_JSON)
@@ -462,7 +509,7 @@ public class ToolsServices {
             Stream<JsonValue> stream = parser.getArrayStream();
             stream.forEach(item->{
                 if (JsonValue.ValueType.OBJECT == item.getValueType()) {
-                    toolsDAO.upsert(user, item.asJsonObject());
+                    toolsDAO.merge(user, item.asJsonObject());
                 }
             });
         } else {
@@ -472,11 +519,36 @@ public class ToolsServices {
     }
 
     @PATCH
+    @Path("/{id}/")
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Operation(
+        summary = "Updates the tool in the database.",
+        description = "merges the data into the stored tool.")
+    @RolesAllowed("tools_submitter")
+    public void patchTool(@PathParam("id")
+                          @Parameter(description = "unprefixed tool id",
+                                     example = "pmut") final String id,
+                          @RequestBody(description = "tool´s property value",
+                                required = true) final String json,
+                          @Context SecurityContext security,
+                          @Suspended final AsyncResponse asyncResponse) {
+        
+        final Principal principal = security.getUserPrincipal();
+        final String user = principal != null ? principal.getName() : null;
+
+        executor.submit(() -> {
+            asyncResponse.resume(
+                patchToolAsync(user, id, null, json).build());
+        });
+    }
+
+    @PATCH
     @Path("/{id}/{type}/{host}{path:.*}")
     @Consumes(MediaType.APPLICATION_JSON)
     @Operation(
         summary = "Updates the tool in the database.",
-        description = "generates and applies JSON PATCH (RFC 6902):\n" +
+        description = "If no $path defined, merges the data into the stored tool,\n " +
+                      "otherwise, generates and applies JSON PATCH (RFC 6902):\n" +
                       "[{ 'op': 'replace', 'path': $path, 'value': $json }]\n" +
                       "curl -v -X PATCH -u user:pass -H 'Content-Type: application/json' " +
                       "https://openebench.bsc.es/monitor/tool/{id}/description -d '\"new tool description\"'"
