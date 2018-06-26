@@ -46,7 +46,7 @@ public class Tool extends LD {
 
     private Boolean depricated;
 
-    private URI homepage;
+    private Web web;
     private List<URI> repositories;
     private String brief;
     private String description;
@@ -64,7 +64,7 @@ public class Tool extends LD {
     private List<Publication> publications;
     private List<Contact> contacts;
     private List<Credit> credits;
-
+    
     @JsonbCreator
     public Tool(@JsonbProperty("@id") URI id, @JsonbProperty("@type") String type) {
         super(id, type);
@@ -123,14 +123,14 @@ public class Tool extends LD {
         this.depricated = depricated;
     }
 
-    @JsonbProperty("homepage")
-    public URI getHomepage() {
-        return homepage;
+    @JsonbProperty("web")
+    public Web getWeb() {
+        return web;
     }
 
-    @JsonbProperty("homepage")
-    public void setHomepage(URI homepage) {
-        this.homepage = homepage;
+    @JsonbProperty("web")
+    public void setWeb(Web web) {
+        this.web = web;
     }
     
     @JsonbProperty("repositories")
