@@ -39,7 +39,7 @@ public class Website {
     private Boolean ssl;
     private Long accessTime;
     private ZonedDateTime lastCheck;
-    private Copyright copyright;
+    private Boolean copyright;
     private Boolean acknowledgement;
     private Boolean license;
     private Boolean resources;
@@ -96,12 +96,12 @@ public class Website {
     }
     
     @JsonbProperty("copyright")
-    public Copyright getCopyright() {
+    public Boolean getCopyright() {
         return copyright;
     }
 
     @JsonbProperty("copyright")
-    public void setCopyright(Copyright copyright) {
+    public void setCopyright(Boolean copyright) {
         this.copyright = copyright;
     }
 
