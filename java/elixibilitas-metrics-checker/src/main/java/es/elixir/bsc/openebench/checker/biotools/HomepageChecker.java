@@ -30,6 +30,8 @@ import es.elixir.bsc.elixibilitas.model.metrics.Project;
 import es.elixir.bsc.elixibilitas.model.metrics.Website;
 import es.elixir.bsc.openebench.model.tools.Tool;
 import es.elixir.bsc.openebench.checker.MetricsChecker;
+import es.elixir.bsc.openebench.model.tools.Web;
+import java.io.StringReader;
 import java.net.HttpURLConnection;
 import java.net.URI;
 import java.security.KeyManagementException;
@@ -43,6 +45,10 @@ import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.json.Json;
+import javax.json.JsonObject;
+import javax.json.JsonReader;
+import javax.json.JsonValue;
 import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLSession;
@@ -53,6 +59,9 @@ import javax.ws.rs.client.Client;
 import javax.ws.rs.client.ClientBuilder;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import org.jsoup.Jsoup;
+import org.jsoup.nodes.Document;
+import org.jsoup.nodes.Element;
 
 /**
  * @author Dmitry Repchevsky
@@ -93,7 +102,12 @@ public class HomepageChecker implements MetricsChecker {
     @Override
     public Boolean check(Tool tool, Metrics metrics) {
         
-        URI homepage = tool.getHomepage();
+        Web web = tool.getWeb();
+        if (web == null) {
+            return false;
+        }
+        
+        URI homepage = web.getHomepage();
         if(homepage == null) {
             return false;
         }
@@ -133,8 +147,10 @@ public class HomepageChecker implements MetricsChecker {
         }
 
         int code = HttpURLConnection.HTTP_CLIENT_TIMEOUT;
+        boolean bioschemas = false;
         
         final long time = System.currentTimeMillis();
+        long timeout = 0;
         try {
             loop:
             for (int i = 0; i < 10; i++) {
@@ -145,7 +161,9 @@ public class HomepageChecker implements MetricsChecker {
                         code = response.getStatus();
 
                         switch (code) {
-                            case HttpURLConnection.HTTP_OK: 
+                            case HttpURLConnection.HTTP_OK:           timeout = (System.currentTimeMillis() - time);
+                                                                      bioschemas = checkBioschemas(response.readEntity(String.class));
+                                                                      
                             case HttpURLConnection.HTTP_NOT_MODIFIED: break loop;
                             case HttpURLConnection.HTTP_MOVED_PERM:
                             case HttpURLConnection.HTTP_MOVED_TEMP:
@@ -155,6 +173,7 @@ public class HomepageChecker implements MetricsChecker {
                                 URI redirect = response.getLocation();
                                 if (redirect == null) {
                                     Logger.getLogger(HomepageChecker.class.getName()).log(Level.INFO, String.format("\n-----> %1$s %2$s redirect to null", tool.id.toString(), homepage));
+                                    timeout = (System.currentTimeMillis() - time);
                                     break loop;
                                 }
 
@@ -162,6 +181,7 @@ public class HomepageChecker implements MetricsChecker {
 
                                 continue;
                             default: Logger.getLogger(HomepageChecker.class.getName()).log(Level.INFO, String.format("\n-----> %1$s %2$s %3$s", tool.id.toString(), homepage, code));
+                                     timeout = (System.currentTimeMillis() - time);
                                      break loop;
                         }
                     } finally {
@@ -178,8 +198,6 @@ public class HomepageChecker implements MetricsChecker {
         } catch (Exception ex) {
             Logger.getLogger(HomepageChecker.class.getName()).log(Level.INFO, String.format("\n-----> %1$s %2$s error loading home page: %3$s", tool.id.toString(), homepage, ex.getMessage()));
         }
-        
-        final long timeout = (System.currentTimeMillis() - time);
 
         final boolean operational = isOperational(code);
         
@@ -203,11 +221,59 @@ public class HomepageChecker implements MetricsChecker {
         website.setAccessTime(operational ? timeout : null);
         website.setLastCheck(ZonedDateTime.now(ZoneId.of("Z")));
         
+        website.setBioschemas(bioschemas);
+
         return operational;
     }
     
     private boolean isOperational(Integer code) {
         return code != null && code == HttpURLConnection.HTTP_OK ||
                 code == HttpURLConnection.HTTP_NOT_MODIFIED;
+    }
+    
+    private boolean checkBioschemas(final String html) {
+        final Document doc = Jsoup.parse(html);
+        
+        // json-ld
+        for(Element script : doc.select("script")) {
+            if ("application/ld+json".equals(script.attr("type"))) {
+                final String json = script.html();
+                try (JsonReader reader = Json.createReader(new StringReader(json))) {
+                    final JsonValue value = reader.readValue();
+                    if (value != null && JsonValue.ValueType.OBJECT == value.getValueType()) {
+                        final JsonObject obj = value.asJsonObject();
+                        final String context = obj.getString("@context", null);
+                        if (context != null && context.equals("http://schema.org")) {
+                            final String type = obj.getString("@type", null);
+                            if (type != null && type.equals("SoftwareApplication")) {
+                                return true;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        
+        // microdata
+        for(Element elements : doc.getElementsByAttribute("itemscope")) {
+            for (Element items : elements.getElementsByAttribute("itemtype")) {
+                final String itemtype = items.attr("itemtype");
+                if (itemtype != null && itemtype.equals("http://schema.org/SoftwareApplication")) {
+                    return true;
+                }
+            }
+        }
+        
+        for(Element elements : doc.getElementsByAttribute("vocab")) {
+            final String vocab = elements.attr("vocab");
+            if (vocab != null && vocab.equals("http://schema.org")) {
+                final String typeof = elements.attr("typeof");
+                if (typeof != null && typeof.equals("SoftwareApplication")) {
+                    return true;
+                }
+            }
+        }
+        
+        return false;
     }
 }
