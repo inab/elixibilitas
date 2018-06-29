@@ -26,14 +26,14 @@
 package es.elixir.bsc.openebench.checker.biotools;
 
 import es.elixir.bsc.elixibilitas.model.metrics.Metrics;
-import es.elixir.bsc.elixibilitas.model.metrics.Project;
 import es.elixir.bsc.openebench.model.tools.Publication;
 import es.elixir.bsc.openebench.model.tools.Tool;
 import es.elixir.bsc.openebench.checker.MetricsChecker;
+import java.io.IOException;
+import java.net.HttpURLConnection;
 import java.net.URI;
 import java.util.List;
-import javax.ws.rs.client.ClientBuilder;
-import javax.ws.rs.core.MediaType;
+
 
 /**
  * @author Dmitry Repchevsky
@@ -110,20 +110,29 @@ public class PublicationChecker implements MetricsChecker {
     }
     
     private static boolean checkDOI(String doi) {
-        URI uri = DOI_RESOLVER_URI.resolve(doi);
-        final int code = ClientBuilder.newClient().target(uri).request(MediaType.WILDCARD).get().getStatus();
-        return code != 404;
+        return check(DOI_RESOLVER_URI.resolve(doi));
     }
     
     private static boolean checkPMID(String pmid) {
-        URI uri = PMID_RESOLVER_URI.resolve(pmid);
-        final int code = ClientBuilder.newClient().target(uri).request(MediaType.WILDCARD).get().getStatus();
-        return code != 404;
+        return check(PMID_RESOLVER_URI.resolve(pmid));
     }
     
     private static boolean checkPMCID(String pmid) {
-        URI uri = PMCID_RESOLVER_URI.resolve(pmid);
-        final int code = ClientBuilder.newClient().target(uri).request(MediaType.WILDCARD).get().getStatus();
-        return code != 404;
+        return check(PMCID_RESOLVER_URI.resolve(pmid));
+    }
+    
+    private static boolean check(final URI uri) {
+        try {
+            HttpURLConnection con = (HttpURLConnection)uri.toURL().openConnection();
+            
+            con.setReadTimeout(120000);
+            con.setConnectTimeout(300000);
+            con.setInstanceFollowRedirects(true);
+            
+            con.addRequestProperty("User-Agent", "Mozilla/5.0 Gecko/20100101 Firefox/54.0");
+            return con.getResponseCode() < 300;                        
+        } catch (IOException ex) {}
+        
+        return false;
     }
 }

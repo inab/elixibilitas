@@ -31,9 +31,15 @@ import es.elixir.bsc.elixibilitas.model.metrics.Website;
 import es.elixir.bsc.openebench.model.tools.Tool;
 import es.elixir.bsc.openebench.checker.MetricsChecker;
 import es.elixir.bsc.openebench.model.tools.Web;
+import java.io.BufferedInputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.io.StringReader;
 import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
 import java.net.URI;
+import java.net.URL;
+import java.net.URLConnection;
 import java.security.KeyManagementException;
 import java.security.KeyStore;
 import java.security.KeyStoreException;
@@ -50,15 +56,12 @@ import javax.json.JsonObject;
 import javax.json.JsonReader;
 import javax.json.JsonValue;
 import javax.net.ssl.HostnameVerifier;
+import javax.net.ssl.HttpsURLConnection;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLSession;
 import javax.net.ssl.TrustManager;
 import javax.net.ssl.TrustManagerFactory;
 import javax.net.ssl.X509TrustManager;
-import javax.ws.rs.client.Client;
-import javax.ws.rs.client.ClientBuilder;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
@@ -133,19 +136,14 @@ public class HomepageChecker implements MetricsChecker {
             }
         };
 
-        HostnameVerifier allVerifier = (String h, SSLSession s) -> true;
-
-        ClientBuilder cb;
         try {
             SSLContext sc = SSLContext.getInstance("TLSv1.2");
             sc.init(null, trustAllManager, new SecureRandom());
+        } catch (NoSuchAlgorithmException | KeyManagementException ex) {}
+        
+        final HostnameVerifier allVerifier = (String h, SSLSession s) -> true;
 
-            cb = ClientBuilder.newBuilder().sslContext(sc)
-                                        .hostnameVerifier(allVerifier);
-        } catch (NoSuchAlgorithmException | KeyManagementException ex) {
-            cb = ClientBuilder.newBuilder();
-        }
-
+        String cookies = null;
         int code = HttpURLConnection.HTTP_CLIENT_TIMEOUT;
         boolean bioschemas = false;
         
@@ -154,50 +152,74 @@ public class HomepageChecker implements MetricsChecker {
         try {
             loop:
             for (int i = 0; i < 10; i++) {
-                final Client client = cb.build();
-                try {
-                    final Response response = client.target(homepage).request(MediaType.WILDCARD).header("User-Agent", "Mozilla/5.0 Gecko/20100101 Firefox/54.0").get();
+                final URL url = homepage.toURL();
+                
+                final String protocol = url.getProtocol();
+                if ("ftp".equals(protocol)) {
                     try {
-                        code = response.getStatus();
+                        url.openStream().close();
+                        code = 205;
+                    } catch (IOException ex) {
+                        code = 404;
+                    }
+                }
+                HttpURLConnection con = null;
+                try {
+                    con = (HttpURLConnection)url.openConnection();
+                    if (con instanceof HttpsURLConnection) {
+                        ((HttpsURLConnection)con).setHostnameVerifier(allVerifier);
+                    }
 
-                        switch (code) {
+                    con.setReadTimeout(120000);
+                    con.setConnectTimeout(300000);
+                    
+                    // redirect manually to bypass SSL verifier.
+                    con.setInstanceFollowRedirects(false);
+
+                    con.addRequestProperty("User-Agent", "Mozilla/5.0 Gecko/20100101 Firefox/54.0");
+                    if (cookies != null && !cookies.isEmpty()) {
+                        con.setRequestProperty("Cookie", cookies);
+                    }
+                    
+                    try (BufferedInputStream in = new BufferedInputStream(con.getInputStream())) {
+                        code = con.getResponseCode();
+                        switch(code) {
                             case HttpURLConnection.HTTP_OK:           timeout = (System.currentTimeMillis() - time);
-                                                                      bioschemas = checkBioschemas(response.readEntity(String.class));
-                                                                      
+                                                                      bioschemas = checkBioschemas(con, in);
                             case HttpURLConnection.HTTP_NOT_MODIFIED: break loop;
                             case HttpURLConnection.HTTP_MOVED_PERM:
                             case HttpURLConnection.HTTP_MOVED_TEMP:
                             case 307: // Temporary Redirect
                             case 308: // Permanent Redirect
                             case HttpURLConnection.HTTP_SEE_OTHER:
-                                URI redirect = response.getLocation();
-                                if (redirect == null) {
-                                    Logger.getLogger(HomepageChecker.class.getName()).log(Level.INFO, String.format("\n-----> %1$s %2$s redirect to null", tool.id.toString(), homepage));
-                                    timeout = (System.currentTimeMillis() - time);
-                                    break loop;
+                                final String location = con.getHeaderField("Location");
+                                if (location == null || location.isEmpty()) {
+                                    return null;
                                 }
-
-                                homepage = redirect.isAbsolute() ? redirect : homepage.resolve(redirect);
-
-                                continue;
+                                cookies = con.getHeaderField("Set-Cookie");
+                                URI redirect = URI.create(location);
+                                homepage = redirect.isAbsolute() ? homepage : homepage.resolve(redirect);
+                                break;
                             default: Logger.getLogger(HomepageChecker.class.getName()).log(Level.INFO, String.format("\n-----> %1$s %2$s %3$s", tool.id.toString(), homepage, code));
-                                     timeout = (System.currentTimeMillis() - time);
-                                     break loop;
+                                timeout = (System.currentTimeMillis() - time);
+                                break loop;
                         }
-                    } finally {
-                        response.close();
                     }
-                } finally {
-                    client.close();
+                } catch (IOException ex) {
+                    Logger.getLogger(HomepageChecker.class.getName()).log(Level.INFO, String.format("\n-----> %1$s %2$s error loading home page: %3$s", tool.id.toString(), homepage, ex.getMessage()));
+                    if (con != null) {
+                        con.getErrorStream().close();
+                    }
+                    break;
                 }
             }
 
             if (security.length() > 0) {
                 Logger.getLogger(HomepageChecker.class.getName()).log(Level.INFO, String.format("\n-----> %1$s %2$s ssl error: %3$s", tool.id.toString(), homepage, security.toString()));
             }
-        } catch (Exception ex) {
+        } catch (MalformedURLException ex) {
             Logger.getLogger(HomepageChecker.class.getName()).log(Level.INFO, String.format("\n-----> %1$s %2$s error loading home page: %3$s", tool.id.toString(), homepage, ex.getMessage()));
-        }
+        } catch (IOException ex) {}
 
         final boolean operational = isOperational(code);
         
@@ -231,49 +253,66 @@ public class HomepageChecker implements MetricsChecker {
                 code == HttpURLConnection.HTTP_NOT_MODIFIED;
     }
     
-    private boolean checkBioschemas(final String html) {
-        final Document doc = Jsoup.parse(html);
-        
-        // json-ld
-        for(Element script : doc.select("script")) {
-            if ("application/ld+json".equals(script.attr("type"))) {
-                final String json = script.html();
-                try (JsonReader reader = Json.createReader(new StringReader(json))) {
-                    final JsonValue value = reader.readValue();
-                    if (value != null && JsonValue.ValueType.OBJECT == value.getValueType()) {
-                        final JsonObject obj = value.asJsonObject();
-                        final String context = obj.getString("@context", null);
-                        if (context != null && context.equals("http://schema.org")) {
-                            final String type = obj.getString("@type", null);
-                            if (type != null && type.equals("SoftwareApplication")) {
-                                return true;
+    private boolean checkBioschemas(final HttpURLConnection con, InputStream in) {
+        String charset;
+        final String contentType = con.getContentType();
+        if (contentType != null) {
+            final int idx = contentType.indexOf("charset=");
+            if (idx >= 0) {
+                charset = contentType.substring(idx + 8).split(";")[0].trim();
+            } else {
+                charset = "UTF-8";
+            }
+        } else {
+            charset = "UTF-8";
+        }
+
+        try {
+            final Document doc = Jsoup.parse(in, charset, con.getURL().toString());
+
+            // json-ld
+            for(Element script : doc.select("script")) {
+                if ("application/ld+json".equals(script.attr("type"))) {
+                    final String json = script.html();
+                    try (JsonReader reader = Json.createReader(new StringReader(json))) {
+                        final JsonValue value = reader.readValue();
+                        if (value != null && JsonValue.ValueType.OBJECT == value.getValueType()) {
+                            final JsonObject obj = value.asJsonObject();
+                            final String context = obj.getString("@context", null);
+                            if (context != null && context.equals("http://schema.org")) {
+                                final String type = obj.getString("@type", null);
+                                if (type != null && type.equals("SoftwareApplication")) {
+                                    return true;
+                                }
                             }
                         }
                     }
                 }
             }
-        }
-        
-        // microdata
-        for(Element elements : doc.getElementsByAttribute("itemscope")) {
-            for (Element items : elements.getElementsByAttribute("itemtype")) {
-                final String itemtype = items.attr("itemtype");
-                if (itemtype != null && itemtype.equals("http://schema.org/SoftwareApplication")) {
-                    return true;
+
+            // microdata
+            for(Element elements : doc.getElementsByAttribute("itemscope")) {
+                for (Element items : elements.getElementsByAttribute("itemtype")) {
+                    final String itemtype = items.attr("itemtype");
+                    if (itemtype != null && itemtype.equals("http://schema.org/SoftwareApplication")) {
+                        return true;
+                    }
                 }
             }
-        }
-        
-        for(Element elements : doc.getElementsByAttribute("vocab")) {
-            final String vocab = elements.attr("vocab");
-            if (vocab != null && vocab.equals("http://schema.org")) {
-                final String typeof = elements.attr("typeof");
-                if (typeof != null && typeof.equals("SoftwareApplication")) {
-                    return true;
+
+            for(Element elements : doc.getElementsByAttribute("vocab")) {
+                final String vocab = elements.attr("vocab");
+                if (vocab != null && vocab.equals("http://schema.org")) {
+                    final String typeof = elements.attr("typeof");
+                    if (typeof != null && typeof.equals("SoftwareApplication")) {
+                        return true;
+                    }
                 }
             }
+        } catch (IOException ex) {
+            // html parsing error
         }
-        
+
         return false;
     }
 }
