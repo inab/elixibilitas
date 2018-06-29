@@ -133,75 +133,6 @@ public class MetricsServices {
     }
 
     @GET
-    @Path("/{id}/{type}/{host}{path:.*}")
-    @Produces(MediaType.APPLICATION_JSON)
-    @Operation(
-        summary = "Returns tools metrics by the tool's id.",
-        responses = {
-            @ApiResponse(content = @Content(mediaType = MediaType.APPLICATION_JSON,
-                                            schema = @Schema(ref="https://openebench.bsc.es/monitor/metrics/metrics.json")),
-                         description = "Metrics JSON description or 'null' if no metrics found"
-            ),
-            @ApiResponse(responseCode = "404", description = "metrics object not found")
-        }
-    )
-    public void getMetrics(@PathParam("id")
-                           @Parameter(description = "prefixed tool id",
-                                      example = "biotools:pmut:2017")
-                           final String id,
-                           @PathParam("type")
-                           @Parameter(description = "tool type",
-                                      example = "web") 
-                           final String type,
-                           @PathParam("host")
-                           @Parameter(description = "tool authority",
-                                      example = "mmb.irbbarcelona.org")
-                           final String host,
-                           @PathParam("path")
-                           @Parameter(description = "json pointer",
-                                      example = "project")
-                           final String path,
-                           @Suspended final AsyncResponse asyncResponse) {
-
-        if (id == null || id.isEmpty() ||
-            type == null || type.isEmpty() ||
-            host == null || host.isEmpty()) {
-            asyncResponse.resume(Response.status(Response.Status.NOT_FOUND).build());
-        }
-                    
-        executor.submit(() -> {
-            asyncResponse.resume(getMetricsAsync(id + '/' + type + '/' + host, path).build());
-        });
-    }
-
-    private ResponseBuilder getMetricsAsync(String id, String path) {
-        final String json = metricsDAO.getJSON(id);
-        if (json == null || json.isEmpty()) {
-            return Response.status(Response.Status.NOT_FOUND);
-        }
-        if (path != null && path.length() > 0) {
-            JsonPointer pointer = Json.createPointer(path);
-            JsonStructure structure = Json.createReader(new StringReader(json)).read();
-            try {
-                if (!pointer.containsValue(structure)) {
-                    return Response.ok("null");
-                }
-            } catch(JsonException ex) {
-                return Response.ok("null");
-            }
-            final JsonValue value = pointer.getValue(structure);
-            StreamingOutput stream = (OutputStream out) -> {
-                try (JsonWriter writer = Json.createWriter(out)) {
-                    writer.write(value);
-                }
-            };
-            return Response.ok(stream);
-        }
-        
-        return Response.ok(json);
-    }
-    
-    @GET
     @Path("/")
     @Produces(MediaType.APPLICATION_JSON)
     @Operation(
@@ -235,6 +166,91 @@ public class MetricsServices {
         };
                 
         return Response.ok(stream);
+    }
+    
+    @GET
+    @Path("/{id}/")
+    @Produces(MediaType.APPLICATION_JSON)
+    @Operation(
+        summary = "Returns tool's metrics by the unprefixed tool's id.",
+        responses = {
+            @ApiResponse(content = @Content(mediaType = MediaType.APPLICATION_JSON,
+                                            schema = @Schema(ref="https://openebench.bsc.es/monitor/metrics/metrics.json")),
+                         description = "Metrics JSON description"
+            ),
+            @ApiResponse(responseCode = "404", description = "metrics object not found")
+        }
+    )
+    public void getMetrics(@PathParam("id")
+                           @Parameter(description = "unprefixed tool id",
+                                      example = "pmut")
+                           final String id,
+                           @Suspended final AsyncResponse asyncResponse) {
+        executor.submit(() -> {
+            asyncResponse.resume(getMetricsAsync(id, null).build());
+        });
+    }
+
+    @GET
+    @Path("/{id}/{type}/{host}{path:.*}")
+    @Produces(MediaType.APPLICATION_JSON)
+    @Operation(
+        summary = "Returns tools metrics by the tool's id.",
+        responses = {
+            @ApiResponse(content = @Content(mediaType = MediaType.APPLICATION_JSON,
+                                            schema = @Schema(ref="https://openebench.bsc.es/monitor/metrics/metrics.json")),
+                         description = "Metrics JSON description or 'null' if no metrics found"
+            ),
+            @ApiResponse(responseCode = "404", description = "metrics object not found")
+        }
+    )
+    public void getMetrics(@PathParam("id")
+                           @Parameter(description = "prefixed tool id",
+                                      example = "biotools:pmut:2017")
+                           final String id,
+                           @PathParam("type")
+                           @Parameter(description = "tool type",
+                                      example = "web") 
+                           final String type,
+                           @PathParam("host")
+                           @Parameter(description = "tool authority",
+                                      example = "mmb.irbbarcelona.org")
+                           final String host,
+                           @PathParam("path")
+                           @Parameter(description = "json pointer",
+                                      example = "project")
+                           final String path,
+                           @Suspended final AsyncResponse asyncResponse) {
+        executor.submit(() -> {
+            asyncResponse.resume(getMetricsAsync(id + '/' + type + '/' + host, path).build());
+        });
+    }
+
+    private ResponseBuilder getMetricsAsync(String id, String path) {
+        final String json = metricsDAO.getJSON(id);
+        if (json == null || json.isEmpty()) {
+            return Response.status(Response.Status.NOT_FOUND);
+        }
+        if (path != null && path.length() > 0) {
+            JsonPointer pointer = Json.createPointer(path);
+            JsonStructure structure = Json.createReader(new StringReader(json)).read();
+            try {
+                if (!pointer.containsValue(structure)) {
+                    return Response.ok("null");
+                }
+            } catch(JsonException ex) {
+                return Response.ok("null");
+            }
+            final JsonValue value = pointer.getValue(structure);
+            StreamingOutput stream = (OutputStream out) -> {
+                try (JsonWriter writer = Json.createWriter(out)) {
+                    writer.write(value);
+                }
+            };
+            return Response.ok(stream);
+        }
+        
+        return Response.ok(json);
     }
     
     @PUT
@@ -306,7 +322,7 @@ public class MetricsServices {
                 stream.forEach(item->{
                     if (JsonValue.ValueType.OBJECT == item.getValueType()) {
                         final JsonObject object = item.asJsonObject();
-                        metricsDAO.merge(user, object);
+                        metricsDAO.upsert(user, object);
                     }
                 });
             } catch (Exception ex) {
@@ -356,7 +372,7 @@ public class MetricsServices {
                 stream.forEach(item->{
                     if (JsonValue.ValueType.OBJECT == item.getValueType()) {
                         final JsonObject object = item.asJsonObject();
-                        metricsDAO.upsert(user, object);
+                        metricsDAO.merge(user, object);
                     }
                 });
             } catch (Exception ex) {
@@ -367,6 +383,32 @@ public class MetricsServices {
             Response.status(Response.Status.BAD_REQUEST);
         }
         return Response.ok();
+    }
+
+    @PATCH
+    @Path("/{id}/")
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Operation(
+        summary = "Updates metrics in the database.",
+        description = "Accepts JSON document as an input."
+    )
+    @RolesAllowed("metrics_submitter")
+    public void patchMetrics(@PathParam("id")
+                             @Parameter(description = "prefixed tool id",
+                                        example = "biotools:pmut:2017") 
+                             final String id,
+                             @RequestBody(description = "partial metrics document",
+                                    content = @Content(mediaType = MediaType.APPLICATION_JSON),
+                                required = true) final String json,
+                             @Context SecurityContext security,
+                             @Suspended final AsyncResponse asyncResponse) {
+
+        final Principal principal = security.getUserPrincipal();
+        final String user = principal != null ? principal.getName() : null;
+        
+        executor.submit(() -> {
+            asyncResponse.resume(patchMetricsAsync(user, id, null, json).build());
+        });
     }
 
     @PATCH
