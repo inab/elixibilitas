@@ -50,15 +50,6 @@
           }
         }
       },
-      "Copyright" : {
-        "type": "object",
-        "properties": {
-          "description": {
-            "description": "copyright text on the webpage (excerpt)",
-            "type": "string"
-          }
-        }
-      },
       "Website" : {
         "type": "object",
         "properties": {
@@ -72,7 +63,8 @@
             "format": "date-time"
           },
           "copyright": {
-            "$ref": "#/definitions/Copyright"
+            "description": "web site states copyright",
+            "type": "boolean"
           },
           "acknowledgement": {
             "description": "web site states who developed/develops the software, funders etc.",
@@ -96,6 +88,10 @@
           "access_time": {
             "description": "homepage load time in ms.",
             "type": "integer"
+          },
+          "bioschemas": {
+            "description": "whether the homepage is annotated with 'bioschemas'",
+            "type": "boolean"
           }
         }
       },
