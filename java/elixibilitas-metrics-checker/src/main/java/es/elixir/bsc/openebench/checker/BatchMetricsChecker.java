@@ -10,10 +10,13 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
+import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
+import java.util.concurrent.RejectedExecutionHandler;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -36,7 +39,23 @@ public class BatchMetricsChecker {
     public static void main(String[] args) {
         Map<String, List<String>> params = parameters(args);
 
-        final ExecutorService executor = Executors.newFixedThreadPool(32);
+        //final ExecutorService executor = Executors.newFixedThreadPool(32);
+        final ExecutorService executor = new ThreadPoolExecutor(32, 32, 0L, TimeUnit.MILLISECONDS, 
+                                          new ArrayBlockingQueue<>(1), 
+                                          new RejectedExecutionHandler() {
+            @Override
+            public void rejectedExecution(Runnable runnable, ThreadPoolExecutor executor) {
+                if (!executor.isShutdown()) {
+                    try {
+                        executor.getQueue().put(runnable);
+                    } catch (InterruptedException ex) {
+                        Thread.currentThread().interrupt();
+                        Logger.getLogger(BatchMetricsChecker.class.getName()).log(Level.SEVERE, null, ex);
+                    }
+                }
+            }
+        });
+
         
         try {
             if (params.isEmpty()) {
@@ -53,6 +72,7 @@ public class BatchMetricsChecker {
                 new BatchMetricsChecker(executor).check(mc);
             } 
         } finally {
+            System.out.println("shutting down...");
             executor.shutdown();
         }
         
@@ -83,15 +103,15 @@ public class BatchMetricsChecker {
                     @Override
                     public void run() {
                         try {
-                            metricsDAO.update("biotools", id, future.get());
+                            metricsDAO.merge("biotools", id, future.get());
                         } catch (Throwable th) {
-                            Logger.getLogger(BatchMetricsChecker.class.getName()).log(Level.SEVERE, null, th);
+                            Logger.getLogger(BatchMetricsChecker.class.getName()).log(Level.SEVERE, "update failed", th);
                         }
                         latch.countDown();
                     }
                 });
             } catch(Throwable th) {
-                Logger.getLogger(BatchMetricsChecker.class.getName()).log(Level.SEVERE, null, th);
+                Logger.getLogger(BatchMetricsChecker.class.getName()).log(Level.SEVERE, "submit failed", th);
                 latch.countDown();
             }
         });
