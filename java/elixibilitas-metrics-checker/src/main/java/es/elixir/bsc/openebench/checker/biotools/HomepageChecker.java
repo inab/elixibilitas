@@ -194,11 +194,13 @@ public class HomepageChecker implements MetricsChecker {
                             case HttpURLConnection.HTTP_SEE_OTHER:
                                 final String location = con.getHeaderField("Location");
                                 if (location == null || location.isEmpty()) {
-                                    return null;
+                                    Logger.getLogger(HomepageChecker.class.getName()).log(Level.INFO, String.format("\n-----> %1$s %2$s invalid redirect", tool.id.toString(), homepage));
+                                    code = 418;
+                                    break loop;
                                 }
                                 cookies = con.getHeaderField("Set-Cookie");
                                 URI redirect = URI.create(location);
-                                homepage = redirect.isAbsolute() ? homepage : homepage.resolve(redirect);
+                                homepage = redirect.isAbsolute() ? redirect : homepage.resolve(redirect);
                                 break;
                             default: Logger.getLogger(HomepageChecker.class.getName()).log(Level.INFO, String.format("\n-----> %1$s %2$s %3$s", tool.id.toString(), homepage, code));
                                 timeout = (System.currentTimeMillis() - time);
@@ -208,7 +210,7 @@ public class HomepageChecker implements MetricsChecker {
                 } catch (IOException ex) {
                     Logger.getLogger(HomepageChecker.class.getName()).log(Level.INFO, String.format("\n-----> %1$s %2$s error loading home page: %3$s", tool.id.toString(), homepage, ex.getMessage()));
                     if (con != null) {
-                        con.getErrorStream().close();
+                        try (InputStream in = con.getErrorStream()) {}
                     }
                     break;
                 }
