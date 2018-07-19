@@ -113,8 +113,6 @@ public class MonitorRestServices {
     private ToolsDAO toolsDAO;
     private MetricsDAO metricsDAO;
     
-//    private Map<String, MetricsChecker> checkers;
-    
     @PostConstruct
     public void init() {
         
@@ -125,8 +123,6 @@ public class MonitorRestServices {
         
         toolsDAO = new ToolsDAO(mc.getDatabase(mongodbURI.getDatabase()), toolsBaseURI);
         metricsDAO = new MetricsDAO(mc.getDatabase(mongodbURI.getDatabase()), metricsBaseURI);
-        
-//        checkers = MetricsChecker.checkers();
     }
 
     @OPTIONS
@@ -323,50 +319,6 @@ public class MonitorRestServices {
         return response.header("Accept-Ranges", "items")
                        .header("Content-Range", range.toString()).entity(stream);
     }
-
-//    @GET
-//    @Path("/metrics/{id}/{type}/{host}{path:.*}")
-//    @Produces(MediaType.APPLICATION_JSON)
-//    public void metrics(@PathParam("id") String id,
-//                        @PathParam("type") String type,
-//                        @PathParam("host") String host,
-//                        @PathParam("path") String path,
-//                        @Suspended final AsyncResponse asyncResponse) {
-//        
-//        if (path == null || path.isEmpty()) {
-//            asyncResponse.resume(Response.status(Response.Status.BAD_REQUEST).build());
-//        }
-//        
-//        executor.submit(() -> {
-//            asyncResponse.resume(getMetricsAsync(id + '/' + type + '/' + host, path).build());
-//        });
-//    }
-//    
-//    private Response.ResponseBuilder getMetricsAsync(String id, String path) {        
-//        final MetricsChecker checker = checkers.get(path);
-//        if (checker == null) {
-//            return Response.status(Response.Status.NOT_FOUND);
-//        }
-//        
-//        final String json = toolsDAO.getJSON(id);
-//        if (json == null || json.isEmpty()) {
-//            return Response.status(Response.Status.NOT_FOUND);
-//        }
-//
-//        final JsonPointer pointer = Json.createPointer(checker.getToolPath());
-//        final JsonStructure structure = Json.createReader(new StringReader(json)).read();
-//        if (!pointer.containsValue(structure)) {
-//            return Response.status(Response.Status.NOT_FOUND);
-//        }
-//        final JsonValue value = pointer.getValue(structure);
-//        StreamingOutput stream = (OutputStream out) -> {
-//            try (JsonWriter writer = Json.createWriter(out)) {
-//                writer.write(value);
-//            }
-//        };
-//        return Response.ok(stream);
-//
-//    }
 
     @GET
     @Path("/widget/tool/{id:.*}")

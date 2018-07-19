@@ -20,8 +20,5 @@ public class CorsResponseFilter implements ContainerResponseFilter {
         responseContext.getHeaders().add("Access-Control-Allow-Origin","*");
         responseContext.getHeaders().add("Access-Control-Allow-Methods", "GET, POST, DELETE, PUT, PATCH, OPTIONS");
         responseContext.getHeaders().add("Access-Control-Allow-Headers", "X-Requested-With");
-//        responseContext.getHeaders().add("Access-Control-Allow-Headers", "Range");
-//        responseContext.getHeaders().add("Access-Control-Expose-Headers", "Accept-Ranges");
-//        responseContext.getHeaders().add("Access-Control-Expose-Headers", "Content-Range");
     }
 } 

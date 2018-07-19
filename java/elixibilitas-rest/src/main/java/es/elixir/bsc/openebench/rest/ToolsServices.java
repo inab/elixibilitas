@@ -204,7 +204,7 @@ public class ToolsServices {
     @Produces(MediaType.APPLICATION_JSON)
     @Operation(operationId = "getAllTools",
         summary = "Returns all tools descriptions.",
-        description = "returns an array of tools which can be restricted by the standard HTTP 'Range' header",
+        description = "returns an array of tools which can be restricted by the standard HTTP 'Range' header.",
         responses = {
             @ApiResponse(content = @Content(
                mediaType = MediaType.APPLICATION_JSON,
@@ -260,9 +260,20 @@ public class ToolsServices {
     @GET
     @Path("/{id}/")
     @Produces(MediaType.APPLICATION_JSON)
+    @Operation(
+        summary = "Returns a tool defined by the id",
+        description = "if the id is unprefixed (and unversioned) returns a 'common' tool, " +
+                      "otherwise the first matched tool is returned.",
+        responses = {
+            @ApiResponse(content = @Content(mediaType = MediaType.APPLICATION_JSON,
+                                            schema = @Schema(ref="https://openebench.bsc.es/monitor/tool/tool.json")
+            )),
+            @ApiResponse(responseCode = "404", description = "tool not found")
+        }
+    )
     public void getTool(@PathParam("id")
-                        @Parameter(description = "prefixed tool id",
-                                   example = "biotools:pmut:2017")
+                        @Parameter(description = "the tool id",
+                                   example = "'pmut', 'biotools:pmut:2017'")
                         final String id,
                         @Suspended final AsyncResponse asyncResponse) {
         executor.submit(() -> {
@@ -364,6 +375,15 @@ public class ToolsServices {
     @GET
     @Path("/{id}/{type}/{host}")
     @Produces("application/ld+json")
+    @Operation(
+        summary = "Returns semantic descriprtion of the tool",
+        description = "returns JSON-LD OWL 2 tools description.",
+        responses = {
+            @ApiResponse(content = @Content(mediaType = "application/ld+json")
+            ),
+            @ApiResponse(responseCode = "404", description = "tool not found")
+        }
+    )
     public void getToolOntology(@PathParam("id")
                                 @Parameter(description = "prefixed tool id",
                                            example = "biotools:pmut:2017") 
@@ -457,11 +477,9 @@ public class ToolsServices {
     }
 
     private ResponseBuilder updateToolsAsync(final String user, final Reader reader) {
-        final JsonParser parser = Json.createParser(reader);
-                
-        if (parser.hasNext() &&
-            parser.next() == JsonParser.Event.START_ARRAY) {
-            try {
+        try(JsonParser parser = Json.createParser(reader)) {
+            if (parser.hasNext() &&
+                parser.next() == JsonParser.Event.START_ARRAY) {
                 Stream<JsonValue> stream = parser.getArrayStream();
                 stream.forEach(item->{
                     if (JsonValue.ValueType.OBJECT == item.getValueType()) {
@@ -469,13 +487,14 @@ public class ToolsServices {
                         toolsDAO.upsert(user, object);
                     }
                 });
-            } catch (Exception ex) {
-                Response.status(Response.Status.BAD_REQUEST);
-                Logger.getLogger(ToolsServices.class.getName()).log(Level.SEVERE, null, ex);
+            } else {
+                return Response.status(Response.Status.BAD_REQUEST);
             }
-        } else {
-            Response.status(Response.Status.BAD_REQUEST);
+        } catch (Exception ex) {
+            Logger.getLogger(ToolsServices.class.getName()).log(Level.SEVERE, null, ex);
+            return Response.status(Response.Status.BAD_REQUEST);
         }
+
         return Response.ok();
     }
 
