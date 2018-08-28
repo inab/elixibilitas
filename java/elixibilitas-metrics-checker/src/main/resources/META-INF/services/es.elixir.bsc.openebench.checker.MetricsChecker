@@ -23,3 +23,6 @@ es.elixir.bsc.openebench.checker.biotools.BuildSystemChecker
 es.elixir.bsc.openebench.checker.biotools.VREDistributionChecker
 es.elixir.bsc.openebench.checker.biotools.PackageDistributionChecker
 es.elixir.bsc.openebench.checker.biotools.BuildInstructionsChecker
+es.elixir.bsc.openebench.checker.biotools.HomepageCopyrightChecker
+es.elixir.bsc.openebench.checker.biotools.HomepageLicenseChecker
+es.elixir.bsc.openebench.checker.biotools.LanguageChecker
