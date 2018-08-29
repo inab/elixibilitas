@@ -65,22 +65,22 @@ public class Website {
         this.robots = robots;
     }
     
-    @JsonbProperty("ssl")
+    @JsonbProperty(value="ssl", nillable=true)
     public Boolean getSSL() {
         return ssl;
     }
 
-    @JsonbProperty("ssl")
+    @JsonbProperty(value="ssl", nillable=true)
     public void setSSL(Boolean ssl) {
         this.ssl = ssl;
     }
 
-    @JsonbProperty("access_time")
+    @JsonbProperty(value="access_time", nillable=true)
     public Long getAccessTime() {
         return accessTime;
     }
 
-    @JsonbProperty("access_time")
+    @JsonbProperty(value="access_time", nillable=true)
     public void setAccessTime(Long accessTime) {
         this.accessTime = accessTime;
     }

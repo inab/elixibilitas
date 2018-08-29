@@ -314,8 +314,14 @@
         "type": "object",
         "properties": {
           "anonymous": {
+            "description": "anonymous access to the repository",
+            "type": "boolean"
+          },
+          "online": {
+            "description": "whether the repository is browsable (online)",
             "type": "boolean"
           }
+
         }
       },
       "Sourcecode": {
@@ -368,6 +374,10 @@
             "type": "boolean"
           },
           "packages": {
+            "type": "boolean"
+          },
+          "source_packages" :{
+            "description": "whenever the code can be dounloaded as a package (i.e. zip achive)",
             "type": "boolean"
           }
         }

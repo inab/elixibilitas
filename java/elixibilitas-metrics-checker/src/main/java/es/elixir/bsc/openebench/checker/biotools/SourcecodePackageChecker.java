@@ -1,6 +1,6 @@
 /**
  * *****************************************************************************
- * Copyright (C) 2017 ELIXIR ES, Spanish National Bioinformatics Institute (INB)
+ * Copyright (C) 2018 ELIXIR ES, Spanish National Bioinformatics Institute (INB)
  * and Barcelona Supercomputing Center (BSC)
  *
  * Modifications to the initial code base are copyright of their respective
@@ -36,18 +36,18 @@ import java.util.List;
  * @author Dmitry Repchevsky
  */
 
-public class PackageDistributionChecker implements MetricsChecker {
-
+public class SourcecodePackageChecker implements MetricsChecker {
+    
     @Override
     public String getToolPath() {
-        return "/distributions/binary_packages";
+        return "/distributions/source_packages";
     }
     
     @Override
     public String getMetricsPath() {
-        return "/distribution/packages";
+        return "/distribution/source_packages";
     }
-
+    
     @Override
     public Boolean check(Tool tool, Metrics metrics) {
         Boolean bool = check(tool);
@@ -57,7 +57,7 @@ public class PackageDistributionChecker implements MetricsChecker {
                 metrics.setDistribution(distribution = new Distribution());
                 distribution.setBinaryPackages(bool);
             }
-            distribution.setBinaryPackages(bool);
+            distribution.setSourcecodePackages(bool);
         }
         return bool;
     }
@@ -66,8 +66,8 @@ public class PackageDistributionChecker implements MetricsChecker {
         
         es.elixir.bsc.openebench.model.tools.Distributions distributions = tool.getDistributions();
         if (distributions != null) {
-            final List<URI> packages = distributions.getBinaryPackagesDistributions();
-            return !packages.isEmpty();
+            final List<URI> packages = distributions.getSourcePackagesDistributions();
+            return packages != null && !packages.isEmpty();
         }
         return false;
     }

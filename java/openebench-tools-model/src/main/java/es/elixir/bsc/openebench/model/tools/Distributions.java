@@ -81,6 +81,11 @@ public class Distributions {
         return sourcecode;
     }
 
+    @JsonbProperty("sourcecode")
+    public void setSourcecodeDistributions(List<URI> sourcecode) {
+        this.sourcecode = sourcecode;
+    }
+    
     @JsonbProperty("vre")
     public void setVirtualResearchEnvironment(List<URI> vre) {
         this.vre = vre;
@@ -92,11 +97,6 @@ public class Distributions {
             vre = new ArrayList<>();
         }
         return vre;
-    }
-
-    @JsonbProperty("sourcecode")
-    public void setSourcecodeDistributions(List<URI> sourcecode) {
-        this.sourcecode = sourcecode;
     }
     
     @JsonbProperty("source_packages")

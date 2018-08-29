@@ -74,6 +74,6 @@ public class DocumentationGeneralChecker implements MetricsChecker {
         if (documentation == null) {
             return null;
         }
-        return documentation.getGeneralDocumentation()== null ? null : true;
+        return documentation.getGeneralDocumentation() == null ? null : true;
     }
 }

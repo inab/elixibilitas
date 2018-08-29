@@ -38,6 +38,7 @@ public class Distribution {
     private Sourcecode sourcecode;
     private Boolean vre;
     private Boolean packages;
+    private Boolean sourcecodePackages;
 
     @JsonbProperty("readme")
     public Boolean getReadme() {
@@ -87,5 +88,15 @@ public class Distribution {
     @JsonbProperty("packages")
     public void setBinaryPackages(Boolean packages) {
         this.packages = packages;
+    }
+    
+    @JsonbProperty("source_packages")
+    public Boolean getSourcecodePackages() {
+        return sourcecodePackages;
+    }
+
+    @JsonbProperty("source_packages")
+    public void setSourcecodePackages(Boolean sourcecodePackages) {
+        this.sourcecodePackages = sourcecodePackages;
     }
 }
