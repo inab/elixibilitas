@@ -19,6 +19,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.TreeMap;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -418,7 +419,7 @@ public abstract class AbstractDAO<T> {
                         map.put(id, metrics = new HashSet<>());
                     }
                     final JsonObject obj = Json.createObjectBuilder(doc).build();
-                    travers(metrics, "/", obj);
+                    travers(metrics, "", obj);
                 }
             }
         }
@@ -426,7 +427,7 @@ public abstract class AbstractDAO<T> {
             Logger.getLogger(AbstractDAO.class.getName()).log(Level.SEVERE, null, ex);
         }
 
-        final HashMap<String, AtomicInteger> metrics = new HashMap<>();
+        final TreeMap<String, AtomicInteger> metrics = new TreeMap<>();
         for (HashSet<String> set : map.values()) {
             for (String path : set) {
                 final AtomicInteger count = metrics.get(path);
@@ -453,7 +454,7 @@ public abstract class AbstractDAO<T> {
         if (type == JsonValue.ValueType.OBJECT) {
             final JsonObject object = value.asJsonObject();
             for (Entry<String, JsonValue> entry : object.entrySet()) {
-                travers(metrics, path + entry.getKey() + "/", entry.getValue());
+                travers(metrics, path + "/" + entry.getKey(), entry.getValue());
             }
         } else if (type == JsonValue.ValueType.ARRAY){
             final JsonArray array = value.asJsonArray();
@@ -461,10 +462,15 @@ public abstract class AbstractDAO<T> {
                 metrics.add(path);
             }
         } else if (type == JsonValue.ValueType.NUMBER ||
-                   type ==JsonValue.ValueType.TRUE ||
                   (value instanceof JsonString && 
                   ((JsonString)value).getChars().length() > 0)) {
             metrics.add(path);
+        } else if (type == JsonValue.ValueType.TRUE) {
+            metrics.add(path + ":true");
+        } else if (type == JsonValue.ValueType.FALSE) {
+            metrics.add(path + ":false");
+        } else if (type == JsonValue.ValueType.NULL) {
+            metrics.add(path + ":null");
         }
         // if the value == 'NULL' or 'FALSE' or empty string dont' add.
     }
