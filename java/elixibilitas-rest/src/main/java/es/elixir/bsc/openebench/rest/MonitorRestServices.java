@@ -51,6 +51,7 @@ import java.io.Writer;
 import java.net.HttpURLConnection;
 import java.time.Instant;
 import java.util.List;
+import java.util.TreeMap;
 import javax.annotation.PostConstruct;
 import javax.annotation.Resource;
 import javax.enterprise.concurrent.ManagedExecutorService;
@@ -449,7 +450,9 @@ public class MonitorRestServices {
  
         String from = date1 == null ? null : Instant.ofEpochSecond(date1).toString();
         String to = date2 == null ? null : Instant.ofEpochSecond(date2).toString();
-            
+        
+        final JsonArray last_check = metricsDAO.findLog(id, "/project/website/last_check", from, to, null);
+        
         final JsonArray operational = metricsDAO.findLog(id, "/project/website/operational", from, to, null);
         if (operational == null) {
             return Response.status(Response.Status.INTERNAL_SERVER_ERROR);
@@ -464,21 +467,30 @@ public class MonitorRestServices {
             return Response.status(Response.Status.NOT_FOUND);
         }
         
+        final TreeMap<String, String> atimes = new TreeMap<>();
+        for (int i = 0, n = access_time.size(); i < n; i++) {
+            final JsonObject obj = access_time.getJsonObject(i);
+            
+            final String date = obj.getString("date", "null");
+            final String time = obj.getString("value", "0");
+            
+            atimes.put(date, time);
+        }
+        
         StreamingOutput stream = (OutputStream out) -> {
             try (JsonGenerator writer = Json.createGenerator(out)) {
                 writer.writeStartArray();
 
                 JsonObject obj = operational.getJsonObject(0);
                 String code = obj.getString("value", "0");
-                String date = obj.getString("date", null); 
-                        
-                for (int i = 0, j = 0, m = access_time.size(), n = operational.size(); i < m; i++) {
+                String date = obj.getString("date", null);
+                
+                for (int i = 0, j = 0, m = last_check.size(), n = operational.size(); i < m; i++) {
                     writer.writeStartObject();
-
-                    final JsonObject o = access_time.getJsonObject(i);
-                    final String adate = o.getString("date", null);
-                    final String time = o.getString("value", "null");
-
+                 
+                    final JsonObject o = last_check.getJsonObject(i);
+                    final String adate = o.getString("date", "null");
+                    
                     while(j <= n && adate.compareTo(date) >= 0) {
                         code = obj.getString("value", "0");
                         if (++j < n) {
@@ -489,11 +501,13 @@ public class MonitorRestServices {
                     
                     writer.write("date", adate);
                     
+                    final String time = atimes.get(adate);
+                    
                     try {
                         final int c = Integer.parseInt(code);
                         writer.write("code", c);
                         if (c == HttpURLConnection.HTTP_CLIENT_TIMEOUT ||
-                            "null".equals(time)) {
+                            time == null) {
                             writer.writeNull("access_time");
                         } else {
                             try {
