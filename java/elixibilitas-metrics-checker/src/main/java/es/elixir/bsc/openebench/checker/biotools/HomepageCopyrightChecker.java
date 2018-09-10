@@ -47,7 +47,7 @@ public class HomepageCopyrightChecker implements MetricsChecker {
     }
     
     private static Boolean check(Tool tool) {
-        Web web = tool.getWeb();
+        final Web web = tool.getWeb();
         return web != null && web.getCopyright() != null && !web.getCopyright().isEmpty();
     }
 }

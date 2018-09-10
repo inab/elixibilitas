@@ -64,7 +64,7 @@ public class CitationDocumentationChecker implements MetricsChecker {
             }
             documentation.setCitationInstructions(true);
         } else if (project != null && project.getDocumentation() != null) {
-            project.getDocumentation().setAPI(bool);
+            project.getDocumentation().setCitationInstructions(bool);
         }
         return bool;
     }

@@ -53,6 +53,6 @@ public class RepositoryChecker implements MetricsChecker {
     
     private static Boolean check(Tool tool) {
         final List<URI> repositories = tool.getRepositories();
-        return !repositories.isEmpty();
+        return repositories != null && !repositories.isEmpty();
     }
 }

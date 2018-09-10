@@ -238,6 +238,7 @@ public class HomepageChecker implements MetricsChecker {
             }
         }
         
+        website.setHTTPS("https".equals(homepage.getScheme()));
         website.setSSL("https".equals(homepage.getScheme()) ? security.length() == 0 : null);
             
         website.setOperational(code);
