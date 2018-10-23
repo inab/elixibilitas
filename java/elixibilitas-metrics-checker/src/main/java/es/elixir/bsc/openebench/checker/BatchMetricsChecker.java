@@ -82,8 +82,8 @@ public class BatchMetricsChecker {
 
     public void check(MongoClient mc) {
         
-        final ToolsDAO toolsDAO = new ToolsDAO(mc.getDatabase("elixibilitas"), "https://openebench.bsc.es/monitor/tool/");
-        final MetricsDAO metricsDAO = new MetricsDAO(mc.getDatabase("elixibilitas"), "https://openebench.bsc.es/monitor/metrics/");
+        final ToolsDAO toolsDAO = new ToolsDAO(mc.getDatabase("elixibilitas"), "https://dev-openebench.bsc.es/monitor/tool/");
+        final MetricsDAO metricsDAO = new MetricsDAO(mc.getDatabase("elixibilitas"), "https://dev-openebench.bsc.es/monitor/metrics/");
         
         final List<Tool> tools = toolsDAO.get();
         final CountDownLatch latch = new CountDownLatch(tools.size());
@@ -118,8 +118,10 @@ public class BatchMetricsChecker {
 
         // ensure that all taksks executed.
         try {
-            latch.await();
+            latch.await(8, TimeUnit.HOURS);
         } catch (InterruptedException ex) {}
+        
+        executor.shutdownNow();
     }
     
     private static Map<String, List<String>> parameters(String[] args) {
