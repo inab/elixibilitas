@@ -46,6 +46,7 @@ public class OpenEBenchMonitorApplication extends Application {
         resources.add(OpenApiResource.class);
         resources.add(ToolsServices.class);
         resources.add(MetricsServices.class);
+        resources.add(AlambiqueServices.class);
         resources.add(WebProxyService.class);
         resources.add(EdamServices.class);
         resources.add(MonitorRestServices.class);

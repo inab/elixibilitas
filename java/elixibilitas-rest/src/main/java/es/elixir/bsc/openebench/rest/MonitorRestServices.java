@@ -50,6 +50,7 @@ import java.io.OutputStreamWriter;
 import java.io.Writer;
 import java.net.HttpURLConnection;
 import java.time.Instant;
+import static java.time.temporal.ChronoUnit.HOURS;
 import java.util.List;
 import java.util.TreeMap;
 import javax.annotation.PostConstruct;
@@ -451,7 +452,7 @@ public class MonitorRestServices {
         String from = date1 == null ? null : Instant.ofEpochSecond(date1).toString();
         String to = date2 == null ? null : Instant.ofEpochSecond(date2).toString();
         
-        final JsonArray last_check = metricsDAO.findLog(id, "/project/website/last_check", from, to, null);
+        final JsonArray last_check = metricsDAO.findLog(id, "/project/website/last_check", from, to, limit);
         
         final JsonArray operational = metricsDAO.findLog(id, "/project/website/operational", from, to, null);
         if (operational == null) {
@@ -460,7 +461,7 @@ public class MonitorRestServices {
             return Response.status(Response.Status.NOT_FOUND);
         }
         
-        final JsonArray access_time = metricsDAO.findLog(id, "/project/website/access_time", from, to, limit);
+        final JsonArray access_time = metricsDAO.findLog(id, "/project/website/access_time", from, to, null);
         if (access_time == null) {
             return Response.status(Response.Status.INTERNAL_SERVER_ERROR);
         } else if (access_time.isEmpty()) {
@@ -485,12 +486,33 @@ public class MonitorRestServices {
                 String code = obj.getString("value", "0");
                 String date = obj.getString("date", null);
                 
+                Instant last_date = null;
                 for (int i = 0, j = 0, m = last_check.size(), n = operational.size(); i < m; i++) {
-                    writer.writeStartObject();
-                 
                     final JsonObject o = last_check.getJsonObject(i);
-                    final String adate = o.getString("date", "null");
+                    final String adate = o.getString("date", null);
+                    if (adate == null) {
+                        continue;
+                    }
                     
+                    writer.writeStartObject();
+                    
+                    if (last_date == null) {
+                        last_date = Instant.parse(adate);
+                    } else {
+                        final Instant current_date = Instant.parse(adate);
+                        long hours = HOURS.between(last_date, current_date);
+                        while (hours > 26) {
+                            hours -= 24;
+                            last_date = last_date.plus(24, HOURS);
+                            writer.write("date", last_date.toString());
+                            writer.writeNull("code");
+                            writer.writeNull("access_time");
+                            writer.writeEnd();
+                            writer.writeStartObject();
+                        }
+                        last_date = current_date;
+                    }
+
                     while(j <= n && adate.compareTo(date) >= 0) {
                         code = obj.getString("value", "0");
                         if (++j < n) {

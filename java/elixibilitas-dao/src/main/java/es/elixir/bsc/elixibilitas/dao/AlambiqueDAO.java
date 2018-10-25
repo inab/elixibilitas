@@ -1,6 +1,6 @@
 /**
  * *****************************************************************************
- * Copyright (C) 2017 ELIXIR ES, Spanish National Bioinformatics Institute (INB)
+ * Copyright (C) 2018 ELIXIR ES, Spanish National Bioinformatics Institute (INB)
  * and Barcelona Supercomputing Center (BSC)
  *
  * Modifications to the initial code base are copyright of their respective
@@ -31,17 +31,12 @@ import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoCursor;
 import com.mongodb.client.MongoDatabase;
 import com.mongodb.client.model.Filters;
-import es.elixir.bsc.elixibilitas.model.metrics.Metrics;
+import static es.elixir.bsc.elixibilitas.dao.AbstractDAO.LICENSE;
 import java.io.Serializable;
 import java.io.Writer;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.json.bind.Jsonb;
-import javax.json.bind.JsonbBuilder;
-import javax.json.bind.JsonbConfig;
-import javax.json.bind.config.PropertyNamingStrategy;
 import org.bson.BsonWriter;
 import org.bson.Document;
 import org.bson.codecs.DocumentCodec;
@@ -49,32 +44,30 @@ import org.bson.codecs.EncoderContext;
 import org.bson.json.JsonWriter;
 
 /**
- * Utility class to get/put Metrics into MongoDB.
- * 
  * @author Dmitry Repchevsky
  */
 
-public class MetricsDAO extends AbstractDAO<String> implements Serializable {
+public class AlambiqueDAO extends AbstractDAO<String> implements Serializable {
+
+    public final static String COLLECTION = "alambique";
     
-    public final static String COLLECTION = "metrics";
-    
-    public MetricsDAO(MongoDatabase database, String baseURI) {
+    public AlambiqueDAO(MongoDatabase database, String baseURI) {
         super(baseURI, database, COLLECTION);
     }
-
+    
     @Override
     protected String createPK(String id) {
         return id;
     }
-    
+
     @Override
     protected String getURI(String pk) {
         return baseURI + pk;
     }
-    
+
     @Override
     protected String getType(String pk) {
-        return "metrics";
+        return "alambique";
     }
 
     @Override
@@ -103,37 +96,6 @@ public class MetricsDAO extends AbstractDAO<String> implements Serializable {
         return "";
     }
     
-    public List<Metrics> get() {
-        List<Metrics> metrics = new ArrayList<>();
-
-        try {
-            final MongoCollection<Document> col = database.getCollection(collection);
-            
-            for (Document doc : col.find()) {
-                metrics.add(deserialize(doc));
-            }
-        } catch(Exception ex) {
-            Logger.getLogger(MetricsDAO.class.getName()).log(Level.SEVERE, null, ex);
-        }
-
-        return metrics;
-    }
-    
-    public Metrics get(String id) {
-        try {
-            final MongoCollection<Document> col = database.getCollection(collection);
-
-            final Document doc = col.find(Filters.eq("_id", id)).first();
-            if (doc != null) {
-                return deserialize(doc);
-            }
-        } catch(Exception ex) {
-            Logger.getLogger(MetricsDAO.class.getName()).log(Level.SEVERE, null, ex);
-        }
-
-        return null;
-    }
-    
     public String getJSON(String id) {
         final Document doc = getBSON(id);
         return doc != null ? doc.toJson() : null;
@@ -146,53 +108,17 @@ public class MetricsDAO extends AbstractDAO<String> implements Serializable {
             Document doc = col.find(Filters.eq("_id", id)).first();
             if (doc != null) {
                 doc.append("@id", baseURI + doc.remove("_id"));
-                doc.append("@type", "metrics");
+                doc.append("@type", "alambique");
                 doc.append("@license", LICENSE);
                 
                 return doc;
             }
         } catch(Exception ex) {
-            Logger.getLogger(MetricsDAO.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(AlambiqueDAO.class.getName()).log(Level.SEVERE, null, ex);
         }
         return null;
     }
 
-    public String upsert(String user, String id, Metrics metrics) {
-        try (Jsonb jsonb = JsonbBuilder.create(
-                new JsonbConfig().withPropertyNamingStrategy(PropertyNamingStrategy.UPPER_CAMEL_CASE))) {            
-            final String json = jsonb.toJson(metrics);
-            return upsert(user, id, json);
-        } catch (Exception ex) {
-            Logger.getLogger(MetricsDAO.class.getName()).log(Level.SEVERE, null, ex);
-        }
-        return null;
-    }
-    
-    public String merge(String user, String id, Metrics metrics) {
-        try (Jsonb jsonb = JsonbBuilder.create(
-                new JsonbConfig().withPropertyNamingStrategy(PropertyNamingStrategy.UPPER_CAMEL_CASE))) {            
-            final String json = jsonb.toJson(metrics);
-            return merge(user, id, json);
-        } catch (Exception ex) {
-            Logger.getLogger(MetricsDAO.class.getName()).log(Level.SEVERE, id, ex);
-        }
-        return null;        
-    }
-    
-    private Metrics deserialize(Document doc) {
-
-        doc.append("@id", baseURI + doc.remove("_id"));
-        doc.append("@type", "metrics");
-                        
-        try (Jsonb jsonb = JsonbBuilder.create(
-                new JsonbConfig().withPropertyNamingStrategy(PropertyNamingStrategy.UPPER_CAMEL_CASE))) {
-            return jsonb.fromJson(doc.toJson(), Metrics.class);
-        } catch(Exception ex) {
-            Logger.getLogger(MetricsDAO.class.getName()).log(Level.SEVERE, doc.getString("@id"), ex);
-        }
-        return null;
-    }
-    
     /**
      * Find metrics and write them into the reader.
      * 
@@ -230,7 +156,7 @@ public class MetricsDAO extends AbstractDAO<String> implements Serializable {
                         final Document doc = cursor.next();
 
                         doc.append("@id", baseURI + doc.remove("_id"));
-                        doc.append("@type", "metrics");
+                        doc.append("@type", "alambique");
                         doc.append("@license", LICENSE);
 
                         doc.toJson(codec);
@@ -239,7 +165,7 @@ public class MetricsDAO extends AbstractDAO<String> implements Serializable {
                 jwriter.writeEndArray();
             }
         } catch(Exception ex) {
-            Logger.getLogger(MetricsDAO.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(AlambiqueDAO.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
 }
