@@ -154,11 +154,11 @@ public class MetricsServices {
                            final List<String> projections,
                            @Suspended final AsyncResponse asyncResponse) {
         executor.submit(() -> {
-            asyncResponse.resume(getToolsAsync(projections).build());
+            asyncResponse.resume(getMetricsAsync(projections).build());
         });
     }
 
-    private ResponseBuilder getToolsAsync(List<String> projections) {
+    private ResponseBuilder getMetricsAsync(List<String> projections) {
         StreamingOutput stream = (OutputStream out) -> {
             try (Writer writer = new BufferedWriter(new OutputStreamWriter(out, "UTF-8"))) {
                 metricsDAO.write(writer, projections);
