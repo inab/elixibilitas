@@ -60,10 +60,12 @@ import es.elixir.bsc.openebench.model.tools.Suite;
 import es.elixir.bsc.openebench.model.tools.Support;
 import es.elixir.bsc.openebench.model.tools.Tool;
 import es.elixir.bsc.openebench.model.tools.VMImage;
+import es.elixir.bsc.openebench.model.tools.Web;
 import es.elixir.bsc.openebench.model.tools.WebAPI;
 import es.elixir.bsc.openebench.model.tools.WebApplication;
 import es.elixir.bsc.openebench.model.tools.Workbench;
 import es.elixir.bsc.openebench.model.tools.Workflow;
+import es.elixir.bsc.openebench.tools.OpenEBenchEndpoint;
 import java.io.InputStream;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
@@ -145,12 +147,6 @@ public class BiotoolsRepositoryIterator implements Iterator<Tool> {
                 JsonArray jtools = jo.getJsonArray("list");
                 for (int i = 0, n = jtools.size(); i < n; i++) {
                     addTool(tools, jtools.getJsonObject(i));
-                                        
-//                    addOperatingSystems(tool, jtool);
-//                    addToolTypes(tool, jtool);
-//                    addAccessibility(tool, jtool);
-//                    addLanguages(tool, jtool);
-//                    addCollectionIDs(tool, jtool);
                 }
                 String next = jo.getString("next", null);
                 return next == null || !next.startsWith("?page=") ? Integer.MIN_VALUE : Integer.parseInt(next.substring(6));
@@ -175,7 +171,7 @@ public class BiotoolsRepositoryIterator implements Iterator<Tool> {
         
         final String version = jtool.getString("version", null);
 
-        StringBuilder idTemplate = new StringBuilder("https://openebench.bsc.es/monitor/tool/").append("biotools:").append(_id);
+        StringBuilder idTemplate = new StringBuilder(OpenEBenchEndpoint.URI_BASE).append("biotools:").append(_id);
         
         if (version != null) {
             idTemplate.append(':').append(version.replace(' ', '_'));
@@ -196,14 +192,23 @@ public class BiotoolsRepositoryIterator implements Iterator<Tool> {
 
         final String name = jtool.getString("name", null);
 
+        /* inset 'generic' tool with @type: null*/
+        Tool tool = new Tool(URI.create(OpenEBenchEndpoint.URI_BASE + _id), null);
+        tool.setName(name);
+        if (homepage != null) {
+            Web web = new Web();
+            web.setHomepage(homepage);
+            tool.setWeb(web);
+        }
+        
+        tool.setDescription(jtool.getString("description", null));
+        tools.add(tool);
+        
         JsonArray jtoolTypes = jtool.getJsonArray("toolType");
         for (int i = 0, n = jtoolTypes.size(); i < n; i++) {
             JsonString jtoolType = jtoolTypes.getJsonString(i);
-            final Tool tool;
             try {
-
                 final ToolType toolType = ToolType.fromValue(jtoolType.getString());
-
                 switch(toolType) {
                     case COMMAND_LINE: tool = addCommandLineTool(new CommandLineTool(new URI(
                                                     String.format(idTemplate.toString(), CommandLineTool.TYPE))), jtool);
@@ -264,9 +269,12 @@ public class BiotoolsRepositoryIterator implements Iterator<Tool> {
             }
             
             tool.setName(name);
-
-            tool.setHomepage(homepage);
-
+            if (homepage != null) {
+                Web web = new Web();
+                web.setHomepage(homepage);
+                tool.setWeb(web);
+            }
+            
             tool.setDescription(jtool.getString("description", null));
 
             addDocumentation(tool, jtool);
@@ -280,11 +288,16 @@ public class BiotoolsRepositoryIterator implements Iterator<Tool> {
             setMaturity(tool, jtool);
             setCost(tool, jtool);
 
+//                    addOperatingSystems(tool, jtool);
+//                    addAccessibility(tool, jtool);
+//                    addCollectionIDs(tool, jtool);
+
             tools.add(tool);
         }
     }
-    
+
     private CommandLineTool addCommandLineTool(CommandLineTool tool, JsonObject jtool) {
+        setLanguages(tool.getLanguages(), jtool);
         setOperatingSystems(tool.getOperatingSystems(), jtool);
         return tool;
     }
@@ -294,6 +307,8 @@ public class BiotoolsRepositoryIterator implements Iterator<Tool> {
     }
 
     private DesktopApplication addDesktopApplication(DesktopApplication tool, JsonObject jtool) {
+        setLanguages(tool.getLanguages(), jtool);
+        setOperatingSystems(tool.getOperatingSystems(), jtool);
         return tool;
     }
 
@@ -302,6 +317,7 @@ public class BiotoolsRepositoryIterator implements Iterator<Tool> {
     }
 
     private Library addLibrary(Library tool, JsonObject jtool) {
+        setLanguages(tool.getLanguages(), jtool);
         return tool;
     }
     
@@ -326,14 +342,18 @@ public class BiotoolsRepositoryIterator implements Iterator<Tool> {
     }
     
     private Script addScript(Script tool, JsonObject jtool) {
+        setLanguages(tool.getLanguages(), jtool);
         return tool;
     }
 
     private Plugin addPlugin(Plugin tool, JsonObject jtool) {
+        setLanguages(tool.getLanguages(), jtool);
         return tool;
     }
 
     private Suite addSuite(Suite tool, JsonObject jtool) {
+        setLanguages(tool.getLanguages(), jtool);
+        setOperatingSystems(tool.getOperatingSystems(), jtool);
         return tool;
     }
     
@@ -356,7 +376,7 @@ public class BiotoolsRepositoryIterator implements Iterator<Tool> {
                             final URI uri = URI.create(url);
                             final DocumentationType documentationType = DocumentationType.fromValue(type);
                             switch (documentationType) {
-                                case GENERAL: documentation.setGeneralDocumentation(uri); break;
+                                case GENERAL: documentation.setGeneral(uri); break;
                                 case MANUAL: documentation.setManual(uri); break;
                                 case API_DOCUMENTATION: documentation.setAPIDocumentation(uri); break;
                                 case CITATION_INSTRUCTIONS: documentation.setCitationInstructions(uri); break;
@@ -520,7 +540,7 @@ public class BiotoolsRepositoryIterator implements Iterator<Tool> {
             }
         }
     }
-    
+
     private void addDatatype(Datatype datatype, JsonObject jdatatype) {
         
         final JsonObject jdata = jdatatype.getJsonObject("data");
@@ -753,6 +773,17 @@ public class BiotoolsRepositoryIterator implements Iterator<Tool> {
             }
         }
     }
-
     
+    private void setLanguages(List<String> list, JsonObject jtool) {
+        final JsonArray jlanguages = jtool.getJsonArray("language");
+        if (jlanguages != null) {
+            for (int i = 0, n = jlanguages.size(); i < n; i++) {
+               final String language = jlanguages.getString(i, null);
+               if (language != null) {
+                   list.add(language);
+               }
+            }
+        }
+    }
+
 }

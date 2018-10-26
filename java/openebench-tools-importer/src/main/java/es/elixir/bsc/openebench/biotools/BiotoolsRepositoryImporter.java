@@ -63,7 +63,7 @@ public class BiotoolsRepositoryImporter {
             try {
                 System.out.println("> PUT: " + tool.id);
                 if (repository != null) {
-                    repository.put(tool);
+                    repository.patch(tool);
                 }
                 ids.add(tool.id);
             } catch (IOException ex) {

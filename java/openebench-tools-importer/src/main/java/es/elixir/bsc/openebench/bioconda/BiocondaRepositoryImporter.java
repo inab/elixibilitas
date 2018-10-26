@@ -3,12 +3,16 @@ package es.elixir.bsc.openebench.bioconda;
 import es.elixir.bsc.openebench.tools.OpenEBenchEndpoint;
 import es.elixir.bsc.openebench.bioconda.BiocondaPackage.Metadata;
 import es.elixir.bsc.openebench.model.tools.Distributions;
+import es.elixir.bsc.openebench.model.tools.Publication;
 import es.elixir.bsc.openebench.model.tools.Tool;
+import es.elixir.bsc.openebench.model.tools.Web;
 import es.elixir.bsc.openebench.tools.OpenEBenchRepository;
 import es.elixir.bsc.openebench.tools.ToolsComparator;
 import java.io.IOException;
 import java.net.URI;
 import java.util.Collection;
+import java.util.List;
+import java.util.Map;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -22,6 +26,8 @@ import java.util.logging.Logger;
 public class BiocondaRepositoryImporter {
     
     public final static String ID_TEMPLATE = OpenEBenchEndpoint.URI_BASE + "bioconda:%s:%s/%s/%s";
+    
+    private final Map<String, String> dois = OpenEBenchRepository.getDOIPublications();
     
     private OpenEBenchRepository repository;
 
@@ -45,14 +51,35 @@ public class BiocondaRepositoryImporter {
                         Tool tool = find(pack);
                         if (tool == null) {
                             tool = create(pack, null);
+                            if (tool != null) {
+                                String id = tool.id.toString();
+                                if (id.startsWith(OpenEBenchEndpoint.URI_BASE)) {
+                                    final String[] nodes = id.substring(OpenEBenchEndpoint.URI_BASE.length()).split("/")[0].split(":");
+                                    id = nodes.length == 1 ? nodes[0] : nodes[1];
+                                    
+                                    if (repository != null) {
+                                        // insert 'common' tool
+                                        final Tool common = new Tool(URI.create(OpenEBenchEndpoint.URI_BASE + id), null);
+                                        common.setName(tool.getName());
+                                        common.setDescription(tool.getDescription());
+                                        common.setWeb(tool.getWeb());
+                                        repository.patch(common);
+                                    }
+                                }
+                            }
                         }
                         if (tool != null) {
+                            checkDOIs(tool);
+
                             System.out.println("> PUT: " + tool.id.toString());
                             if (repository != null) {
-                                repository.put(tool);
+                                repository.patch(tool);
                             } else {
                                 System.out.println("    name: " + tool.getName());
-                                System.out.println("    homepage: " + tool.getHomepage());
+                                Web web = tool.getWeb();
+                                if (web != null) {
+                                    System.out.println("    homepage: " + web.getHomepage());
+                                }
                                 System.out.println("    description: " + tool.getDescription());
 //                                final Jsonb jsonb = JsonbBuilder.create(
 //                                        new JsonbConfig().withPropertyNamingStrategy(PropertyNamingStrategy.UPPER_CAMEL_CASE)
@@ -62,7 +89,7 @@ public class BiocondaRepositoryImporter {
                             
                         }
                     } catch (Exception ex) {
-                        Logger.getLogger(BiocondaRepositoryImporter.class.getName()).log(Level.SEVERE, null, ex);
+                        Logger.getLogger(BiocondaRepositoryImporter.class.getName()).log(Level.SEVERE, pack.toString(), ex);
                     }
                     latch.countDown();
                 });
@@ -73,6 +100,26 @@ public class BiocondaRepositoryImporter {
             Logger.getLogger(BiocondaRepositoryImporter.class.getName()).log(Level.SEVERE, null, ex);
         } finally {
             executor.shutdown();
+        }
+    }
+    
+    private void checkDOIs(final Tool tool) {
+        final List<Publication> publications = tool.getPublications();
+        if (!publications.isEmpty()) {
+            String id = tool.id.toString();
+            if (id.startsWith(OpenEBenchEndpoint.URI_BASE)) {
+                final String[] nodes = id.substring(OpenEBenchEndpoint.URI_BASE.length()).split("/")[0].split(":");
+                id = nodes.length == 1 ? nodes[0] : nodes[1];
+                for (Publication publication : publications) {
+                    final String doi = publication.getDOI();
+                    if (doi != null) {
+                        final String _id = dois.get(doi);
+                        if (!id.equals(_id)) {
+                            System.out.println(String.format(">openebench warning: %s vs %s, %s", id, _id, doi));
+                        }
+                    }
+                }
+            }
         }
     }
     
@@ -106,8 +153,10 @@ public class BiocondaRepositoryImporter {
             if (nodes.length > 0) {
                 final String[] _id = nodes[0].split(":");
                 final Tool tool = create(pack, _id.length > 1 ? _id[1] : _id[0]);
-                tool.setExternalId(pack.name + ":" + pack.version);
-                return tool;
+                if (tool != null) {
+                    tool.setExternalId(pack.name + ":" + pack.version);
+                    return tool;
+                }
             }
         }
         return null;
@@ -117,6 +166,7 @@ public class BiocondaRepositoryImporter {
      *  Searches the bio.tools Tool for the bioconda package
      */
     private static String search(final BiocondaPackage pack) {
+        
         if (pack.name != null && pack.name.startsWith("bioconductor-")) {
             final String name = pack.name.substring("bioconductor-".length());
             
@@ -124,7 +174,7 @@ public class BiocondaRepositoryImporter {
                 final String uri = t.id.getPath();
 
                 if (uri.endsWith("bioconductor.org")) {
-                    final int idx = uri.indexOf("bio.tools:" + name + ":");
+                    final int idx = uri.indexOf("biotools:" + name + ":");
                     if (idx > 0) {
                         return t.id.toString();
                     }
@@ -139,7 +189,7 @@ public class BiocondaRepositoryImporter {
                 final String uri = t.id.getPath();
                 
                 if (uri.endsWith("cran.r-project.org")) {
-                    final int idx = uri.indexOf("bio.tools:" + name + ":");
+                    final int idx = uri.indexOf("biotools:" + name + ":");
                     if (idx > 0) {
                         return t.id.toString();
                     }
@@ -175,15 +225,48 @@ public class BiocondaRepositoryImporter {
 
         final String authority = homepage != null ? homepage.getHost() : "";
 
-        final String _id = id != null ? id : pack.name.toLowerCase();
+        String _id = id != null ? id : pack.name.toLowerCase();
+        String doi = null;
+        if (metadata.identifiers != null && metadata.identifiers.length > 0) {
+            for (String identifier : metadata.identifiers) {
+                if (identifier != null) {
+                    if (identifier.startsWith("biotools:")) {
+                        _id = identifier.substring("biotools:".length());
+                    } else if (identifier.startsWith("doi:")) {
+                        doi = identifier.substring("doi:".length());
+                    }
+                }
+            }
+        }
+        
         Tool tool = new Tool(URI.create(String.format(ID_TEMPLATE, _id, pack.version, "cmd", authority)), "cmd");
 
         if (!_id.equals(pack.name)) {
             tool.setExternalId(pack.version == null || pack.version.isEmpty() ? pack.name : pack.name + ":" + pack.version);
         }
         
+        if (doi != null) {
+            boolean hasPublication = false;
+            for (Publication publication : tool.getPublications()) {
+                if (doi.equals(publication.getDOI())) {
+                    hasPublication = true;
+                    break;
+                }
+            }
+            if (!hasPublication) {
+                Publication publication = new Publication();
+                publication.setDOI(doi);
+                tool.getPublications().add(publication);
+            }
+        }
+        
         tool.setName(pack.name);
-        tool.setHomepage(homepage);
+        if (homepage != null) {
+            Web web = new Web();
+            web.setHomepage(homepage);
+            tool.setWeb(web);
+        }
+
         tool.setLicense(metadata.license);
         tool.setDescription(metadata.summary);
 

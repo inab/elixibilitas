@@ -143,10 +143,11 @@ public class BiocondaPackage {
                                 }
                             }
                         } catch (IOException ex) {
+                            System.out.println(toString() + "\n" + ex.getMessage());
                             // tar can't detect the EOF - do nothing...
                         }
                     }
-                    break;
+                    return null;
                     
                 case HttpURLConnection.HTTP_MOVED_TEMP:
                 case HttpURLConnection.HTTP_MOVED_PERM:
@@ -177,21 +178,22 @@ public class BiocondaPackage {
                 String summary = null;
                 String git = null;
                 String src_urls[] = null;
+                String identifiers[] = null;
                 
-                Object about = map.get("about");
+                final Object about = map.get("about");
                 if (about instanceof Map) {
-                    Map<String, Object> about_map = (Map<String, Object>)about;
+                    final Map<String, Object> about_map = (Map<String, Object>)about;
                     home = about_map.getOrDefault("home", "").toString();
                     license = about_map.getOrDefault("license", "").toString();
                     summary = about_map.getOrDefault("summary", "").toString();
                 }
                 
-                Object source = map.get("source");
+                final Object source = map.get("source");
                 if (source instanceof Map) {
-                    Map<String, Object> source_map = (Map<String, Object>) source;
+                    final Map<String, Object> source_map = (Map<String, Object>) source;
                     git = source_map.getOrDefault("git_url", "").toString();
                     
-                    Object obj = source_map.get("url");
+                    final Object obj = source_map.get("url");
                     if (obj != null) {
                         if (obj instanceof String) {
                             src_urls = new String[]{obj.toString()};
@@ -205,7 +207,24 @@ public class BiocondaPackage {
                     }
                 }
                 
-                return new Metadata(home, license, summary, git, src_urls);
+                final Object extra = map.get("extra");
+                if (extra instanceof Map) {
+                    final Map<String, Object> extra_map = (Map<String, Object>) extra;
+                    final Object obj = extra_map.get("identifiers");
+                    if (obj != null) {
+                        if (obj instanceof String) {
+                            identifiers = new String[]{obj.toString()};
+                        } else if (obj instanceof List) {
+                            final List list = (List)obj;
+                            identifiers = new String[list.size()];
+                            for (int i = 0; i < identifiers.length; i++) {
+                                identifiers[i] = list.get(i).toString();
+                            }
+                        }
+                    }
+                }
+
+                return new Metadata(home, license, summary, git, src_urls, identifiers);
             }
         }
         return null;
@@ -269,13 +288,16 @@ public class BiocondaPackage {
         public final String summary;
         public final String git;
         public final String[] src_urls;
+        public final String[] identifiers;
         
-        public Metadata(String home, String license, String summary, String git, String[] src_urls) {
+        public Metadata(String home, String license, String summary, String git, 
+                String[] src_urls, String[] identifiers) {
             this.home = home;
             this.license = license;
             this.summary = summary;
             this.git = git;
             this.src_urls = src_urls;
+            this.identifiers = identifiers;
         }
         
         @Override

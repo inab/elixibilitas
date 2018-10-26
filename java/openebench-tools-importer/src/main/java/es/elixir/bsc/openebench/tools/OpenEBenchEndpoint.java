@@ -1,6 +1,20 @@
 package es.elixir.bsc.openebench.tools;
 
+import es.elixir.bsc.openebench.model.tools.CommandLineTool;
+import es.elixir.bsc.openebench.model.tools.DatabasePortal;
+import es.elixir.bsc.openebench.model.tools.DesktopApplication;
+import es.elixir.bsc.openebench.model.tools.Library;
+import es.elixir.bsc.openebench.model.tools.Ontology;
+import es.elixir.bsc.openebench.model.tools.Plugin;
+import es.elixir.bsc.openebench.model.tools.SOAPServices;
+import es.elixir.bsc.openebench.model.tools.SPARQLEndpoint;
+import es.elixir.bsc.openebench.model.tools.Script;
+import es.elixir.bsc.openebench.model.tools.Suite;
 import es.elixir.bsc.openebench.model.tools.Tool;
+import es.elixir.bsc.openebench.model.tools.WebAPI;
+import es.elixir.bsc.openebench.model.tools.WebApplication;
+import es.elixir.bsc.openebench.model.tools.Workbench;
+import es.elixir.bsc.openebench.model.tools.Workflow;
 import java.io.BufferedInputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -81,7 +95,7 @@ public class OpenEBenchEndpoint {
         try (OutputStream out = con.getOutputStream()) {
             out.write(json.getBytes("UTF-8"));
         }
-
+        
         return con.getResponseCode();
     }
     
@@ -99,7 +113,6 @@ public class OpenEBenchEndpoint {
             try (InputStream in = con.getInputStream();
                  JsonParser parser = Json.createParser(new BufferedInputStream(in))) {
 
-
                 if (parser.hasNext() &&
                     parser.next() == JsonParser.Event.START_ARRAY) {
 
@@ -108,7 +121,7 @@ public class OpenEBenchEndpoint {
                         final JsonValue value = iter.next();
                         if (value.getValueType() == JsonValue.ValueType.OBJECT) {
                             final JsonObject object = value.asJsonObject();
-                            final Tool tool = jsonb.fromJson(object.toString(), Tool.class);
+                            final Tool tool = deserialize(jsonb, object);
                             toolz.put(tool.id.toString(), tool);
                         }
                     }
@@ -121,4 +134,29 @@ public class OpenEBenchEndpoint {
         return toolz;
     }
 
+    private static Tool deserialize(Jsonb jsonb, JsonObject object) {
+        
+        final String json = object.toString();
+
+        final String type = object.getString("@type", null);
+        if (type != null) {
+            switch(type) {
+                case CommandLineTool.TYPE: return jsonb.fromJson(json, CommandLineTool.class);
+                case WebApplication.TYPE: return jsonb.fromJson(json, WebApplication.class);
+                case DatabasePortal.TYPE: return jsonb.fromJson(json, DatabasePortal.class);
+                case DesktopApplication.TYPE: return jsonb.fromJson(json, DesktopApplication.class);
+                case Library.TYPE: return jsonb.fromJson(json, Library.class);
+                case Ontology.TYPE: return jsonb.fromJson(json, Ontology.class);
+                case Workflow.TYPE: return jsonb.fromJson(json, Workflow.class);
+                case Plugin.TYPE: return jsonb.fromJson(json, Plugin.class);
+                case SPARQLEndpoint.TYPE: return jsonb.fromJson(json, SPARQLEndpoint.class);
+                case SOAPServices.TYPE: return jsonb.fromJson(json, SOAPServices.class);
+                case Script.TYPE: return jsonb.fromJson(json, Script.class);
+                case WebAPI.TYPE: return jsonb.fromJson(json, WebAPI.class);
+                case Workbench.TYPE: return jsonb.fromJson(json, Workbench.class);
+                case Suite.TYPE: return jsonb.fromJson(json, Suite.class);
+            }
+        }
+        return jsonb.fromJson(json, Tool.class);
+    }
 }
