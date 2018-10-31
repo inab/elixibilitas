@@ -386,40 +386,45 @@ public class ToolsDAO extends AbstractDAO<Document> implements Serializable {
     }
     
     public int search_count(String id, String text, String name, String description) {
-        final MongoCollection<Document> col = database.getCollection(collection);
+        
+        try {
+            final MongoCollection<Document> col = database.getCollection(collection);
 
-        ArrayList<Bson> aggregation = new ArrayList();
-        if (text != null && !text.isEmpty()) {
-            aggregation.add(Aggregates.match(Filters.or(Filters.regex("description", text, "i"),
-                                    Filters.regex("name", text, "i"))));
-        }
+            ArrayList<Bson> aggregation = new ArrayList();
+            if (text != null && !text.isEmpty()) {
+                aggregation.add(Aggregates.match(Filters.or(Filters.regex("description", text, "i"),
+                                        Filters.regex("name", text, "i"))));
+            }
 
-        if (name != null && !name.isEmpty()) {
-            aggregation.add(Aggregates.match(Filters.regex("name", name, "i")));
-        }
+            if (name != null && !name.isEmpty()) {
+                aggregation.add(Aggregates.match(Filters.regex("name", name, "i")));
+            }
 
-        if (description != null && !description.isEmpty()) {
-            aggregation.add(Aggregates.match(Filters.regex("description", description, "i")));
-        }
+            if (description != null && !description.isEmpty()) {
+                aggregation.add(Aggregates.match(Filters.regex("description", description, "i")));
+            }
 
-        if (id != null && !id.isEmpty()) {
-            aggregation.add(createIdFilter(id));
-        }
+            if (id != null && !id.isEmpty()) {
+                aggregation.add(createIdFilter(id));
+            }
 
-        aggregation.add(Aggregates.group(new BasicDBObject("_id", "$_id.id"), Accumulators.push("tools", "$$ROOT")));
+            aggregation.add(Aggregates.group(new BasicDBObject("_id", "$_id.id"), Accumulators.push("tools", "$$ROOT")));
 
-        aggregation.add(Aggregates.sort(Sorts.ascending("tools.name")));
+            aggregation.add(Aggregates.sort(Sorts.ascending("tools.name")));
 
-        aggregation.add(Aggregates.unwind("$tools"));
-        aggregation.add(Aggregates.replaceRoot("$tools"));
-        aggregation.add(Aggregates.group(new BasicDBObject("_id", BsonNull.VALUE),
-                Accumulators.sum("count", 1)));
+            aggregation.add(Aggregates.unwind("$tools"));
+            aggregation.add(Aggregates.replaceRoot("$tools"));
+            aggregation.add(Aggregates.group(new BasicDBObject("_id", BsonNull.VALUE),
+                    Accumulators.sum("count", 1)));
 
-        final AggregateIterable<Document> iterator = col.aggregate(aggregation);
-        final Document doc = iterator.first();
-        if (doc != null) {
-            final Integer count = doc.get("count", Integer.class);
-            return count == null ? 0 : count;
+            final AggregateIterable<Document> iterator = col.aggregate(aggregation).allowDiskUse(true);
+            final Document doc = iterator.first();
+            if (doc != null) {
+                final Integer count = doc.get("count", Integer.class);
+                return count == null ? 0 : count;
+            }
+        } catch(Exception ex) {
+            Logger.getLogger(ToolsDAO.class.getName()).log(Level.SEVERE, null, ex);
         }
         return 0;
     }
@@ -598,7 +603,7 @@ public class ToolsDAO extends AbstractDAO<Document> implements Serializable {
         aggregation.add(Aggregates.group(new BasicDBObject("_id", BsonNull.VALUE),
                 Accumulators.sum("count", 1)));
 
-        final AggregateIterable<Document> iterator = col.aggregate(aggregation);
+        final AggregateIterable<Document> iterator = col.aggregate(aggregation).allowDiskUse(true);
         final Document doc = iterator.first();
         if (doc != null) {
             final Integer count = doc.get("count", Integer.class);
