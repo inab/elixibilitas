@@ -82,9 +82,7 @@ public class MetricsDAO extends AbstractDAO<String> implements Serializable {
         final String[] nodes = pk.split("/");
         if (nodes.length > 0) {
             final String[] _id = nodes[0].split(":");
-            if (_id.length > 1) {
-                return _id[1];
-            }
+            return _id[_id.length > 1 ? 1 : 0];
         }
         
         return "";
