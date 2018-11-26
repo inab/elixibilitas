@@ -874,4 +874,33 @@ public class ToolsDAO extends AbstractDAO<Document> implements Serializable {
                 Filters.ne(field, new BsonArray()),
                 Filters.regex(field, Pattern.compile(text == null ? "" : text))));
     }
+    
+    public void group(final Writer writer, final String id) {
+        try {
+            final MongoCollection<Document> col = database.getCollection(collection);
+            final ArrayList<Bson> aggregation = new ArrayList();
+
+            if (id != null && !id.isEmpty()) {
+                aggregation.add(createIdFilter(id));
+            }
+                
+            aggregation.add(Aggregates.group(new BasicDBObject("_id", "$_id.id"), Accumulators.push("tools", "$$ROOT")));
+            aggregation.add(Aggregates.sort(Sorts.ascending("tools.name")));
+            aggregation.add(Aggregates.unwind("$tools"));
+            aggregation.add(Aggregates.replaceRoot("$tools"));
+            AggregateIterable<Document> iterator = col.aggregate(aggregation).allowDiskUse(true);
+
+            try (MongoCursor<Document> cursor = iterator.iterator()) {
+                while (cursor.hasNext()) {
+                    final Document doc = cursor.next();
+                    Document _id = (Document) doc.remove("_id");
+                    writer.write(getURI(_id));
+                    writer.write('\n');
+                }
+            }
+        } catch(Exception ex) {
+            Logger.getLogger(ToolsDAO.class.getName()).log(Level.SEVERE, null, ex);
+        }
+
+    }
 }
