@@ -28,6 +28,7 @@ package es.elixir.bsc.openebench.rest;
 import com.mongodb.MongoClient;
 import com.mongodb.MongoClientURI;
 import es.elixir.bsc.elixibilitas.dao.ToolsDAO;
+import es.elixir.bsc.elixibilitas.meta.ToolsMetaIterator;
 import es.elixir.bsc.openebench.rest.ext.ContentRange;
 import es.elixir.bsc.openebench.rest.ext.Range;
 import io.swagger.v3.oas.annotations.Hidden;
@@ -46,6 +47,8 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
+import java.io.PipedReader;
+import java.io.PipedWriter;
 import java.io.Reader;
 import java.io.StringReader;
 import java.io.Writer;
@@ -68,6 +71,7 @@ import javax.json.JsonPointer;
 import javax.json.JsonStructure;
 import javax.json.JsonValue;
 import javax.json.JsonWriter;
+import javax.json.stream.JsonGenerator;
 import javax.json.stream.JsonParser;
 import javax.servlet.ServletContext;
 import javax.ws.rs.Consumes;
@@ -193,6 +197,29 @@ public class ToolsServices {
                  .build();
     }
 
+    @GET
+    @Path("/")
+    @Produces("text/uri-list")
+    public void listToolsIDs(@Suspended final AsyncResponse asyncResponse) {
+        executor.submit(() -> {
+            asyncResponse.resume(
+                    listToolsIDsAsync()
+                    .type("text/uri-list")
+                    .build());
+        });
+    }
+    
+    public ResponseBuilder listToolsIDsAsync() {
+        StreamingOutput stream = (OutputStream out) -> {
+            try (Writer writer = new BufferedWriter(new OutputStreamWriter(out, "UTF-8"))) {
+                toolsDAO.group(writer, null);
+            } catch(Exception ex) {
+                Logger.getLogger(ToolsServices.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        };
+        return Response.ok(stream);
+    }
+
     /**
      * Get back all tools as a JSON array.
      * 
@@ -294,7 +321,11 @@ public class ToolsServices {
                          final String type,
                          @Suspended final AsyncResponse asyncResponse) {
         executor.submit(() -> {
-            asyncResponse.resume(getToolsAsync(id + "/" + type).build());
+            if (id.indexOf(':') < 0) {
+                asyncResponse.resume(getToolAsync(id, "/" + type).build()); // type == path
+            } else {
+                asyncResponse.resume(getToolsAsync(id + "/" + type).build());
+            }
         });
     }
     
@@ -332,8 +363,12 @@ public class ToolsServices {
                         final String path,
                         @Suspended final AsyncResponse asyncResponse) {
         executor.submit(() -> {
-            asyncResponse.resume(
+            if (id.indexOf(':') < 0) {
+                asyncResponse.resume(getToolAsync(id, "/" + type + "/" + host + "/" + path).build());
+            } else {
+                asyncResponse.resume(
                     getToolAsync(id + "/" + type + "/" + host, path).build());
+            }
         });
     }
 
@@ -642,4 +677,63 @@ public class ToolsServices {
         
         return Response.ok(array);
     }
+
+    @GET
+    @Path("/meta")
+    @Produces(MediaType.APPLICATION_JSON)
+    public void getToolsMeta(@Suspended final AsyncResponse asyncResponse) {
+        executor.submit(() -> {
+            asyncResponse.resume(getToolsMetaAsync(null).build());
+        });
+    }
+    
+    @GET
+    @Path("/meta/{id}")
+    @Produces(MediaType.APPLICATION_JSON)
+    public void getToolsMeta(@PathParam("id") String id,
+                             @Suspended final AsyncResponse asyncResponse) {
+        executor.submit(() -> {
+            asyncResponse.resume(getToolsMetaAsync(id).build());
+        });
+    }
+
+    private Response.ResponseBuilder getToolsMetaAsync(String id) {
+        StreamingOutput stream = (OutputStream out) -> {
+            try (JsonGenerator gen = Json.createGenerator(out);
+                 PipedReader reader = new PipedReader();
+                 JsonParser parser = Json.createParser(reader)) {
+                
+                final PipedWriter writer = new PipedWriter(reader);
+                executor.submit(() -> {
+                    try {
+                        toolsDAO.search(writer, id, null, null, null, null, null, null);
+                    }
+                    finally {
+                        try {
+                            writer.close();
+                        } catch(IOException ex) {}
+                    }
+                });
+                
+                if (parser.hasNext() &&
+                    parser.next() == JsonParser.Event.START_ARRAY) {
+
+                    gen.writeStartArray();
+                    
+                    ToolsMetaIterator iterator = new ToolsMetaIterator(parser.getArrayStream());
+                    while (iterator.hasNext()) {
+                        final JsonValue meta = iterator.next();
+                        gen.write(meta);
+                    }
+                    
+                    gen.writeEnd();
+                }
+
+            } catch(Exception ex) {
+                Logger.getLogger(ToolsServices.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        };
+        return Response.ok(stream);
+    }
+
 }
