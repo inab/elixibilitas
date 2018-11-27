@@ -123,7 +123,7 @@ public class StatisticsServices {
     
     private Response.ResponseBuilder getMetricsStatisticsAsync() {
         StreamingOutput stream = (OutputStream out) -> {
-            if (System.currentTimeMillis() - metrics_uptime > 60000) {
+            if (System.currentTimeMillis() - metrics_uptime > 86400000) {
                 metrics_stat.reset();
                 metricsDAO.statistics(metrics_stat);
                 metrics_uptime = System.currentTimeMillis();
