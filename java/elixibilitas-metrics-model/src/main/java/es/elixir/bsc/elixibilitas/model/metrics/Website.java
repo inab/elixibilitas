@@ -36,6 +36,7 @@ public class Website {
 
     private Integer operational;
     private Boolean robots;
+    private Boolean https;
     private Boolean ssl;
     private Long accessTime;
     private ZonedDateTime lastCheck;
@@ -65,6 +66,16 @@ public class Website {
         this.robots = robots;
     }
     
+    @JsonbProperty(value="https")
+    public Boolean getHTTPS() {
+        return https;
+    }
+
+    @JsonbProperty(value="https")
+    public void setHTTPS(Boolean https) {
+        this.https = https;
+    }
+
     @JsonbProperty(value="ssl", nillable=true)
     public Boolean getSSL() {
         return ssl;
