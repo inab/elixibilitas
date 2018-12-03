@@ -230,8 +230,8 @@ public class BiocondaRepositoryImporter {
         if (metadata.identifiers != null && metadata.identifiers.length > 0) {
             for (String identifier : metadata.identifiers) {
                 if (identifier != null) {
-                    if (identifier.startsWith("biotools:")) {
-                        _id = identifier.substring("biotools:".length());
+                    if (id == null && identifier.startsWith("biotools:")) {
+                        _id = identifier.substring("biotools:".length()).toLowerCase();
                     } else if (identifier.startsWith("doi:")) {
                         doi = identifier.substring("doi:".length());
                     }
