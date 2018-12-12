@@ -2,9 +2,9 @@
 
 ###### Enterprise Java 8 (JEE8) Platform
 Elixibilitas project is strictly adherent to the [JEE8](https://www.jcp.org/en/jsr/detail?id=366) specification.
-The tools is developed and deployed on [WildFly 10.1](http://wildfly.org/) server, 
+The tool is developed and deployed on [WildFly 14.1](http://wildfly.org/) server, 
 but should run on other servers (i.e. [Apache Tomcat](http://tomcat.apache.org/)).
-f
+
 ###### MongoDB
 Quality Metrics are stored in [MongoDB](www.mongodb.com)
 
@@ -67,10 +67,17 @@ where:
 > Note that {id}/{type}/{host} uniquely identify the tool, while omitting the {type} or {host} returns an array of descriptions.<br/><br/>
 > example 1: [https://openebench.bsc.es/monitor/tool/biotools:pmut:2017/web/mmb.irbbarcelona.org](https://openebench.bsc.es/monitor/tool/biotools:pmut:2017/web/mmb.irbbarcelona.org) .<br/>
 > example 2: [https://openebench.bsc.es/monitor/tool/biotools:pmut:2017/web/mmb.irbbarcelona.org/credits](https://openebench.bsc.es/monitor/tool/biotools:pmut:2017/web/mmb.irbbarcelona.org/credits) .<br/>
-> curl patch tool data example: 
+
+curl patch tool data example: 
 ```
 curl -v -X PATCH -u user:password -H 'Content-Type: application/json' /
 https://openebench.bsc.es/monitor/tool/{id}/description -d '"new description."'
+```
+
+---
+It is also possible to get the list of all tools identifiers providing "Accept: text/uri-list" HTTP header:
+```
+curl -v -H 'Accept: text/uri-list' https://openebench.bsc.es/monitor/tool
 ```
 
 Quality Metrics accessed via:
