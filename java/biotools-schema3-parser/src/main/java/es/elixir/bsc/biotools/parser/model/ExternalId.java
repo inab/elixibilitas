@@ -33,8 +33,9 @@ import javax.xml.bind.annotation.XmlType;
  * @author Dmitry Repchevsky
  */
 
-@XmlType(name = "", propOrder = {"baseURL",
-                                 "endpoints"})
+@XmlType(name = "", propOrder = {"value",
+                                 "type",
+                                 "version"})
 public class ExternalId {
     
     private String value;
