@@ -81,19 +81,34 @@ public class Documentation {
         this.help = help;
     }
     
+//    @JsonbProperty("general")
+//    public URI getGeneralDocumentation() {
+//        return general;
+//    }
+//
+//    @JsonbProperty("general")
+//    public void setGeneralDocumentation(URI general) {
+//        this.general = general;
+//    }
+
     @JsonbProperty("general")
-    public URI getGeneralDocumentation() {
+    public URI getGeneral() {
         return general;
     }
 
     @JsonbProperty("general")
-    public void setGeneralDocumentation(URI general) {
+    public void setGeneral(URI general) {
         this.general = general;
     }
 
     @JsonbProperty("tutorial")
     public URI getTutorial() {
         return tutorial;
+    }
+
+    @JsonbProperty("tutorial")
+    public void setTutorial(URI tutorial) {
+        this.tutorial = tutorial;
     }
 
     @JsonbProperty("build_instructions")
@@ -104,11 +119,6 @@ public class Documentation {
     @JsonbProperty("build_instructions")
     public URI getBuildInstructions() {
         return build;
-    }
-
-    @JsonbProperty("tutorial")
-    public void setTutorial(URI tutorial) {
-        this.tutorial = tutorial;
     }
 
     @JsonbProperty("manual")
