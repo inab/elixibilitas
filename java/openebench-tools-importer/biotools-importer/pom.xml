@@ -37,7 +37,7 @@
 
         <dependency>
             <groupId>es.elixir.bsc.elixibilitas</groupId>
-            <artifactId>biotools-schema-parser</artifactId>
+            <artifactId>biotools-schema3-parser</artifactId>
             <version>0.1-SNAPSHOT</version>
         </dependency>
 

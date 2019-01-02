@@ -38,7 +38,9 @@ import java.util.logging.Logger;
 
 public class BiocondaRepository {
     
-    public final static String SERVER = "https://conda.anaconda.org/bioconda/linux-64/repodata.json.bz2";
+    public final static String LINUX64_REPO = "https://conda.anaconda.org/bioconda/linux-64/repodata.json.bz2";
+    public final static String OSX64_REPO = "https://conda.anaconda.org/bioconda/osx-64/repodata.json.bz2";
+    
     
     private static volatile Map<BiocondaPackage, BiocondaPackage> packages;
         
@@ -70,7 +72,15 @@ public class BiocondaRepository {
     
     private static Map<BiocondaPackage, BiocondaPackage> load() {
         final Map<BiocondaPackage, BiocondaPackage> map = new ConcurrentHashMap<>();
-        try (BiocondaRepositoryIterator iter = new BiocondaRepositoryIterator(SERVER)) {
+        
+        load(LINUX64_REPO, map);
+        load(OSX64_REPO, map);
+
+        return map;
+    }
+    
+    private static void load(final String repo, final Map<BiocondaPackage, BiocondaPackage> map) {
+        try (BiocondaRepositoryIterator iter = new BiocondaRepositoryIterator(repo)) {
             while(iter.hasNext()) {
                 final BiocondaPackage pack = iter.next();
                 if (pack != null) {
@@ -80,6 +90,5 @@ public class BiocondaRepository {
         } catch (IOException ex) {
             Logger.getLogger(BiocondaRepository.class.getName()).log(Level.SEVERE, null, ex);
         }
-        return map;
     }
 }

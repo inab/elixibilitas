@@ -53,19 +53,23 @@ public class BiocondaPackage {
     public final String name;
     public final String version;
     public final String platform;
+    public final String os;
+    public final String license;
     public final String file;
     
     private volatile Metadata metadata;
     
     public BiocondaPackage(String name, String version) {
-        this(name, version, null, null);
+        this(name, version, null, null, null, null);
     }
     
     public BiocondaPackage(String name, String version, 
-            String platform, String file) {
+            String platform, String os, String license, String file) {
         this.name = name;
         this.version = version;
         this.platform = platform;
+        this.os = os;
+        this.license = license;
         this.file = file;
     }
 

@@ -25,9 +25,7 @@
 
 package es.elixir.bsc.openebench.biotools;
 
-import es.elixir.bsc.biotools.parser.model.ContainerFormatType;
 import es.elixir.bsc.biotools.parser.model.CostType;
-import es.elixir.bsc.biotools.parser.model.DiskFormatType;
 import es.elixir.bsc.biotools.parser.model.DocumentationType;
 import es.elixir.bsc.biotools.parser.model.DownloadType;
 import es.elixir.bsc.biotools.parser.model.EntityType;
@@ -163,136 +161,137 @@ public class BiotoolsRepositoryIterator implements Iterator<Tool> {
    
     private void addTool(List<Tool> tools, JsonObject jtool) {
         
-        final String id = jtool.getString("id", null);
+        final String id = jtool.getString("biotoolsID", null);
         if (id == null || id.isEmpty()) {
             return;
         }
         final String _id = id.toLowerCase().trim();
         
-        final String version = jtool.getString("version", null);
+        final JsonArray versions = jtool.getJsonArray("version");
+        for (int j = 0, m = (versions == null || versions.isEmpty()) ? 1 : versions.size(); j < m; j++) {
+            StringBuilder idTemplate = new StringBuilder(OpenEBenchEndpoint.URI_BASE).append("biotools:").append(_id);
 
-        StringBuilder idTemplate = new StringBuilder(OpenEBenchEndpoint.URI_BASE).append("biotools:").append(_id);
-        
-        if (version != null) {
-            idTemplate.append(':').append(version.replace(' ', '_'));
-        }
-
-        idTemplate.append("/%s");
-        
-        final String jhomepage = jtool.getString("homepage", null);
-        URI homepage = null;
-        if (jhomepage != null) {
-            try {
-                homepage = URI.create(jhomepage);
-                idTemplate.append('/').append(homepage.getHost());
-            } catch (IllegalArgumentException ex) {
-                Logger.getLogger(BiotoolsRepositoryIterator.class.getName()).log(Level.INFO, "invalid homepage: {0}", jhomepage);
+            final String version = (versions != null && versions.size() > 0) ? versions.getJsonString(j).getString() : null;
+            if (version != null) {
+                idTemplate.append(':').append(version.replace(' ', '_'));
             }
-        }
 
-        final String name = jtool.getString("name", null);
+            idTemplate.append("/%s");
 
-        /* inset 'generic' tool with @type: null*/
-        Tool tool = new Tool(URI.create(OpenEBenchEndpoint.URI_BASE + _id), null);
-        tool.setName(name);
-        if (homepage != null) {
-            Web web = new Web();
-            web.setHomepage(homepage);
-            tool.setWeb(web);
-        }
-        
-        tool.setDescription(jtool.getString("description", null));
-        tools.add(tool);
-        
-        JsonArray jtoolTypes = jtool.getJsonArray("toolType");
-        for (int i = 0, n = jtoolTypes.size(); i < n; i++) {
-            JsonString jtoolType = jtoolTypes.getJsonString(i);
-            try {
-                final ToolType toolType = ToolType.fromValue(jtoolType.getString());
-                switch(toolType) {
-                    case COMMAND_LINE: tool = addCommandLineTool(new CommandLineTool(new URI(
-                                                    String.format(idTemplate.toString(), CommandLineTool.TYPE))), jtool);
-                                       break;
-                    case WEB_APPLICATION: tool = addWebApplication(new WebApplication(new URI(
-                                                    String.format(idTemplate.toString(), WebApplication.TYPE))), jtool);
-                                       break;
-                    case DESKTOP_APPLICATION: tool = addDesktopApplication(new DesktopApplication(new URI(
-                                                    String.format(idTemplate.toString(), DesktopApplication.TYPE))), jtool);
-                                       break;
-                    case DATABASE_PORTAL: tool = addDatabasePortal(new DatabasePortal(new URI(
-                                                    String.format(idTemplate.toString(), DatabasePortal.TYPE))), jtool);
-                                       break;
-                    case LIBRARY: tool = addLibrary(new Library(URI.create(
-                                                    String.format(idTemplate.toString(), Library.TYPE))), jtool);
-                                       break;
-                    case WEB_SERVICE: tool = addSOAPServices(new SOAPServices(new URI(
-                                                    String.format(idTemplate.toString(), SOAPServices.TYPE))), jtool);
-                                       break;
-                    case WEB_API: tool = addWebAPI(new WebAPI(new URI(
-                                                    String.format(idTemplate.toString(), WebAPI.TYPE))), jtool);
-                                       break;
-                    case SPARQL_ENDPOINT: tool = addSPARQLEndpoint(new SPARQLEndpoint(new URI(
-                                                    String.format(idTemplate.toString(), SPARQLEndpoint.TYPE))), jtool);
-                                       break;
-                    case ONTOLOGY: tool = addOntology(new Ontology(new URI(
-                                                    String.format(idTemplate.toString(), Ontology.TYPE))), jtool);
-                                       break;
-                    case WORKFLOW: tool = addWorkflow(new Workflow(new URI(
-                                                    String.format(idTemplate.toString(), Workflow.TYPE))), jtool);
-                                       break;
-                    case SCRIPT: tool = addScript(new Script(new URI(
-                                                    String.format(idTemplate.toString(), Script.TYPE))), jtool);
-                                       break;
-                    case PLUGIN: tool = addPlugin(new Plugin(new URI(
-                                                    String.format(idTemplate.toString(), Plugin.TYPE))), jtool);
-                                       break;
-                    case SUITE: tool = addSuite(new Suite(new URI(
-                                                    String.format(idTemplate.toString(), Suite.TYPE))), jtool);
-                                       break;
-                    case WORKBENCH: tool = addWorkbench(new Workbench(new URI(
-                                                    String.format(idTemplate.toString(), Workbench.TYPE))), jtool);
-                                       break;
-
-                    default: continue;
+            final String jhomepage = jtool.getString("homepage", null);
+            URI homepage = null;
+            if (jhomepage != null) {
+                try {
+                    homepage = URI.create(jhomepage);
+                    idTemplate.append('/').append(homepage.getHost());
+                } catch (IllegalArgumentException ex) {
+                    Logger.getLogger(BiotoolsRepositoryIterator.class.getName()).log(Level.INFO, "invalid homepage: {0}", jhomepage);
                 }
-            } catch(IllegalArgumentException ex) {
-                Logger.getLogger(BiotoolsRepositoryIterator.class.getName()).log(Level.INFO, "unrecognized toolType: {0} for the {1}", new String[] {jtoolType.getString(), name});
-                continue;
-            } catch(URISyntaxException ex) {
-                Logger.getLogger(BiotoolsRepositoryIterator.class.getName()).log(Level.INFO, "invalid uri for : {0} ", idTemplate.toString());
-                continue;
-                
             }
-            
-            if (!id.equals(_id)) {
-                tool.setExternalId(version == null || version.isEmpty() ? id : id + ":" + version);
-            }
-            
+
+            final String name = jtool.getString("name", null);
+
+            /* inset 'generic' tool with @type: null*/
+            Tool tool = new Tool(URI.create(OpenEBenchEndpoint.URI_BASE + _id), null);
             tool.setName(name);
             if (homepage != null) {
                 Web web = new Web();
                 web.setHomepage(homepage);
                 tool.setWeb(web);
             }
-            
+
             tool.setDescription(jtool.getString("description", null));
-
-            addDocumentation(tool, jtool);
-            addPublications(tool, jtool);
-            addContacts(tool, jtool);
-            addCredits(tool, jtool);
-            addSemantics(tool, jtool);
-            addDownloads(tool, jtool);
-            addLinks(tool, jtool);
-            setLicense(tool, jtool);
-            setMaturity(tool, jtool);
-            setCost(tool, jtool);
-
-//                    addOperatingSystems(tool, jtool);
-//                    addAccessibility(tool, jtool);
-//                    addCollectionIDs(tool, jtool);
-
             tools.add(tool);
+
+            JsonArray jtoolTypes = jtool.getJsonArray("toolType");
+            for (int i = 0, n = jtoolTypes.size(); i < n; i++) {
+                JsonString jtoolType = jtoolTypes.getJsonString(i);
+                try {
+                    final ToolType toolType = ToolType.fromValue(jtoolType.getString());
+                    switch(toolType) {
+                        case COMMAND_LINE: tool = addCommandLineTool(new CommandLineTool(new URI(
+                                                        String.format(idTemplate.toString(), CommandLineTool.TYPE))), jtool);
+                                           break;
+                        case WEB_APPLICATION: tool = addWebApplication(new WebApplication(new URI(
+                                                        String.format(idTemplate.toString(), WebApplication.TYPE))), jtool);
+                                           break;
+                        case DESKTOP_APPLICATION: tool = addDesktopApplication(new DesktopApplication(new URI(
+                                                        String.format(idTemplate.toString(), DesktopApplication.TYPE))), jtool);
+                                           break;
+                        case DATABASE_PORTAL: tool = addDatabasePortal(new DatabasePortal(new URI(
+                                                        String.format(idTemplate.toString(), DatabasePortal.TYPE))), jtool);
+                                           break;
+                        case LIBRARY: tool = addLibrary(new Library(URI.create(
+                                                        String.format(idTemplate.toString(), Library.TYPE))), jtool);
+                                           break;
+                        case WEB_SERVICE: tool = addSOAPServices(new SOAPServices(new URI(
+                                                        String.format(idTemplate.toString(), SOAPServices.TYPE))), jtool);
+                                           break;
+                        case WEB_API: tool = addWebAPI(new WebAPI(new URI(
+                                                        String.format(idTemplate.toString(), WebAPI.TYPE))), jtool);
+                                           break;
+                        case SPARQL_ENDPOINT: tool = addSPARQLEndpoint(new SPARQLEndpoint(new URI(
+                                                        String.format(idTemplate.toString(), SPARQLEndpoint.TYPE))), jtool);
+                                           break;
+                        case ONTOLOGY: tool = addOntology(new Ontology(new URI(
+                                                        String.format(idTemplate.toString(), Ontology.TYPE))), jtool);
+                                           break;
+                        case WORKFLOW: tool = addWorkflow(new Workflow(new URI(
+                                                        String.format(idTemplate.toString(), Workflow.TYPE))), jtool);
+                                           break;
+                        case SCRIPT: tool = addScript(new Script(new URI(
+                                                        String.format(idTemplate.toString(), Script.TYPE))), jtool);
+                                           break;
+                        case PLUGIN: tool = addPlugin(new Plugin(new URI(
+                                                        String.format(idTemplate.toString(), Plugin.TYPE))), jtool);
+                                           break;
+                        case SUITE: tool = addSuite(new Suite(new URI(
+                                                        String.format(idTemplate.toString(), Suite.TYPE))), jtool);
+                                           break;
+                        case WORKBENCH: tool = addWorkbench(new Workbench(new URI(
+                                                        String.format(idTemplate.toString(), Workbench.TYPE))), jtool);
+                                           break;
+
+                        default: continue;
+                    }
+                } catch(IllegalArgumentException ex) {
+                    Logger.getLogger(BiotoolsRepositoryIterator.class.getName()).log(Level.INFO, "unrecognized toolType: {0} for the {1}", new String[] {jtoolType.getString(), name});
+                    continue;
+                } catch(URISyntaxException ex) {
+                    Logger.getLogger(BiotoolsRepositoryIterator.class.getName()).log(Level.INFO, "invalid uri for : {0} ", idTemplate.toString());
+                    continue;
+                }
+
+                if (!id.equals(_id)) {
+                    tool.setExternalId(version == null || version.isEmpty() ? id : id + ":" + version);
+                }
+
+                tool.setName(name);
+                if (homepage != null) {
+                    Web web = new Web();
+                    web.setHomepage(homepage);
+                    tool.setWeb(web);
+                }
+
+                tool.setDescription(jtool.getString("description", null));
+
+                addDocumentation(tool, jtool);
+                addPublications(tool, jtool);
+//                addContacts(tool, jtool);
+                addCredits(tool, jtool);
+                addSemantics(tool, jtool);
+                addDownloads(tool, jtool);
+                addLinks(tool, jtool);
+                setLicense(tool, jtool);
+                setMaturity(tool, jtool);
+                setCost(tool, jtool);
+
+    //                    addOperatingSystems(tool, jtool);
+    //                    addAccessibility(tool, jtool);
+    //                    addCollectionIDs(tool, jtool);
+
+                tools.add(tool);
+            }
         }
     }
 
@@ -414,25 +413,27 @@ public class BiotoolsRepositoryIterator implements Iterator<Tool> {
     
     private void addContacts(Tool tool, JsonObject jtool) {
         JsonArray jcontacts = jtool.getJsonArray("contact");
-        for (int i = 0, n = jcontacts.size(); i < n; i++) {
-            JsonObject jcontact = jcontacts.getJsonObject(i);
-            Contact contact = new Contact();
+        if (jcontacts != null) {
+            for (int i = 0, n = jcontacts.size(); i < n; i++) {
+                JsonObject jcontact = jcontacts.getJsonObject(i);
+                Contact contact = new Contact();
 
-            contact.setName(jcontact.getString("name", null));
-            contact.setEmail(jcontact.getString("email", null));
-            contact.setPhone(jcontact.getString("tel", null));
-            
-            final String url = jcontact.getString("url", null);
-            if (url != null) {
-                try {
-                    contact.setUrl(URI.create(url));
-                } catch(IllegalArgumentException ex) {
-                    Logger.getLogger(BiotoolsRepositoryIterator.class.getName()).log(Level.INFO, "incorrect contact url: {0}", url);
+                contact.setName(jcontact.getString("name", null));
+                contact.setEmail(jcontact.getString("email", null));
+                contact.setPhone(jcontact.getString("tel", null));
+
+                final String url = jcontact.getString("url", null);
+                if (url != null) {
+                    try {
+                        contact.setUrl(URI.create(url));
+                    } catch(IllegalArgumentException ex) {
+                        Logger.getLogger(BiotoolsRepositoryIterator.class.getName()).log(Level.INFO, "incorrect contact url: {0}", url);
+                    }
                 }
-            }
 
-            tool.getContacts().add(contact);
-        }     
+                tool.getContacts().add(contact);
+            }
+        }
     }
 
     private void addCredits(Tool tool, JsonObject jtool) {
@@ -616,35 +617,37 @@ public class BiotoolsRepositoryIterator implements Iterator<Tool> {
                                          break;
                     case CONTAINER_FILE: final String cformat = jdownload.getString("containerFormat", null);
                                          Container container;
-                                         if (cformat == null) {
-                                             Logger.getLogger(BiotoolsRepositoryIterator.class.getName()).log(Level.INFO, "no container format set");
-                                             container = new Container("unknown");
-                                         } else {
-                                             try {
-                                                ContainerFormatType.fromValue(cformat);
-                                                container = new Container(cformat);
-                                             } catch(IllegalArgumentException ex) {
-                                                Logger.getLogger(BiotoolsRepositoryIterator.class.getName()).log(Level.INFO, "unrecognized container format: {0}", cformat);
-                                                container = new Container("unknown");
-                                             }
-                                         }
+//                                         if (cformat == null) {
+//                                             Logger.getLogger(BiotoolsRepositoryIterator.class.getName()).log(Level.INFO, "no container format set");
+//                                             container = new Container("unknown");
+//                                         } else {
+//                                             try {
+//                                                ContainerFormatType.fromValue(cformat);
+//                                                container = new Container(cformat);
+//                                             } catch(IllegalArgumentException ex) {
+//                                                Logger.getLogger(BiotoolsRepositoryIterator.class.getName()).log(Level.INFO, "unrecognized container format: {0}", cformat);
+//                                                container = new Container("unknown");
+//                                             }
+//                                         }
+                                         container = new Container("unknown");
                                          container.setURI(uri);
                                          distributions.getContainers().add(container);
                                          break;
                     case VM_IMAGE:       final String dformat = jdownload.getString("diskFormat", null);
                                          VMImage vmImage;
-                                         if (dformat == null) {
-                                             Logger.getLogger(BiotoolsRepositoryIterator.class.getName()).log(Level.INFO, "no vm image format set");
-                                             vmImage = new VMImage("unknown");
-                                         } else {
-                                             try {
-                                                DiskFormatType.fromValue(dformat);
-                                                vmImage = new VMImage(dformat);
-                                             } catch(IllegalArgumentException ex) {
-                                                Logger.getLogger(BiotoolsRepositoryIterator.class.getName()).log(Level.INFO, "unrecognized vm image  format: {0}", dformat);
-                                                vmImage = new VMImage("unknown");
-                                             }
-                                         }
+//                                         if (dformat == null) {
+//                                             Logger.getLogger(BiotoolsRepositoryIterator.class.getName()).log(Level.INFO, "no vm image format set");
+//                                             vmImage = new VMImage("unknown");
+//                                         } else {
+//                                             try {
+//                                                DiskFormatType.fromValue(dformat);
+//                                                vmImage = new VMImage(dformat);
+//                                             } catch(IllegalArgumentException ex) {
+//                                                Logger.getLogger(BiotoolsRepositoryIterator.class.getName()).log(Level.INFO, "unrecognized vm image  format: {0}", dformat);
+//                                                vmImage = new VMImage("unknown");
+//                                             }
+//                                         }
+                                         vmImage = new VMImage("unknown");
                                          vmImage.setURI(uri);
                                          distributions.getVirtualMachineImages().add(vmImage);
                                          break;
@@ -718,7 +721,7 @@ public class BiotoolsRepositoryIterator implements Iterator<Tool> {
             }
         }
     }
-    
+
     private void setLicense(Tool tool, JsonObject jtool) {
         final String license = jtool.getString("license", null);
         if (license != null) {

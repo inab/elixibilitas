@@ -25,8 +25,7 @@ public class BiotoolsImporter {
     public static void main(String[] args) {
         Map<String, List<String>> params = parameters(args);
         
-        if (params.isEmpty() || 
-            params.get("-h") != null ||
+        if (params.get("-h") != null ||
             params.get("--help") != null) {
             System.out.println(HELP);
             System.exit(0);

@@ -85,6 +85,8 @@ public class BiocondaRepositoryIterator implements Iterator<BiocondaPackage> , C
                 return new BiocondaPackage(object.getString("name", null),
                                            object.getString("version", null),
                                            object.getString("subdir", null),
+                                           object.getString("operatingsystem", null),
+                                           object.getString("license", null),
                                            file);
             }
         }

@@ -222,7 +222,7 @@ public class BiocondaRepositoryImporter {
         }
         if (homepage == null) {
             try {
-                homepage = URI.create(BiocondaRepository.SERVER);
+                homepage = URI.create(BiocondaRepository.LINUX64_REPO);
             } catch(IllegalArgumentException ex) {}
         }
 
@@ -270,7 +270,7 @@ public class BiocondaRepositoryImporter {
             tool.setWeb(web);
         }
 
-        tool.setLicense(metadata.license);
+        tool.setLicense(metadata.license != null ? metadata.license : pack.license);
         tool.setDescription(metadata.summary);
 
         // set repository
@@ -308,5 +308,4 @@ public class BiocondaRepositoryImporter {
 
         return tool;
     }
-
 }
