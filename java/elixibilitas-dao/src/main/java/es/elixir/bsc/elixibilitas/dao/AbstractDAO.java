@@ -403,7 +403,7 @@ public abstract class AbstractDAO<T> {
         }
     }
     
-    public void statistics(Writer writer) {
+    public <U extends Writer> U statistics(U writer) {
         final HashMap<String, HashSet<String>> map = new HashMap<>();
         
         try {
@@ -425,16 +425,19 @@ public abstract class AbstractDAO<T> {
         }
         catch(Exception ex) {
             Logger.getLogger(AbstractDAO.class.getName()).log(Level.SEVERE, null, ex);
+            return null;
         }
 
+        int max = 0;
         final TreeMap<String, AtomicInteger> metrics = new TreeMap<>();
         for (HashSet<String> set : map.values()) {
             for (String path : set) {
                 final AtomicInteger count = metrics.get(path);
                 if (count == null) {
-                    metrics.put(path, new AtomicInteger(0));
+                    metrics.put(path, new AtomicInteger(1));
+                    max = Math.max(max, 1);
                 } else {
-                    count.addAndGet(1);
+                    max = Math.max(max, count.addAndGet(1));
                 }
             }
         }
@@ -443,10 +446,16 @@ public abstract class AbstractDAO<T> {
             jwriter.writeStartDocument();
             
             for (Map.Entry<String, AtomicInteger> entry : metrics.entrySet()) {
-                jwriter.writeInt32(entry.getKey(), entry.getValue().get());
+                final String path = entry.getKey();
+                final int count = path.endsWith(":null") ? max - entry.getValue().get() : entry.getValue().get();
+                jwriter.writeInt32(path, count);
             }
             jwriter.writeEndDocument();
+        } catch (Exception ex) {
+            Logger.getLogger(AbstractDAO.class.getName()).log(Level.SEVERE, null, ex);
+            return null;
         }
+        return writer;
     }
     
     private void travers(HashSet<String> metrics, String path, JsonValue value) {
@@ -461,18 +470,20 @@ public abstract class AbstractDAO<T> {
             if (!array.isEmpty()) {
                 metrics.add(path);
             }
-        } else if (type == JsonValue.ValueType.NUMBER ||
-                  (value instanceof JsonString && 
-                  ((JsonString)value).getChars().length() > 0)) {
-            metrics.add(path);
-        } else if (type == JsonValue.ValueType.TRUE) {
-            metrics.add(path + ":true");
-        } else if (type == JsonValue.ValueType.FALSE) {
-            metrics.add(path + ":false");
-        } else if (type == JsonValue.ValueType.NULL) {
-            metrics.add(path + ":null");
+        } else if (type != JsonValue.ValueType.NULL) {
+            if (type == JsonValue.ValueType.NUMBER ||
+                      (value instanceof JsonString && 
+                      ((JsonString)value).getChars().length() > 0)) {
+                metrics.add(path);
+            } else if (type == JsonValue.ValueType.TRUE) {
+                metrics.add(path + ":true");
+            } else if (type == JsonValue.ValueType.FALSE) {
+                metrics.add(path + ":false");
+            } else if (type == JsonValue.ValueType.STRING) {
+                metrics.add(path);
+            }
+            metrics.add(path + ":null"); // acually NOT null!!!
         }
-        // if the value == 'NULL' or 'FALSE' or empty string dont' add.
     }
     
     public static class ReusableJsonWriter extends JsonWriter {

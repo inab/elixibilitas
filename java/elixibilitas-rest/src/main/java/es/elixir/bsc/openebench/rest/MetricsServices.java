@@ -27,7 +27,10 @@ package es.elixir.bsc.openebench.rest;
 
 import com.mongodb.MongoClient;
 import com.mongodb.MongoClientURI;
+import com.mongodb.client.MongoDatabase;
 import es.elixir.bsc.elixibilitas.dao.MetricsDAO;
+import es.elixir.bsc.elixibilitas.dao.ToolsDAO;
+import es.elixir.bsc.elixibilitas.meta.MetricsMetaWriter;
 import es.elixir.bsc.openebench.rest.validator.JsonSchema;
 import io.swagger.v3.oas.annotations.Hidden;
 import io.swagger.v3.oas.annotations.Operation;
@@ -37,9 +40,13 @@ import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.parameters.RequestBody;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import java.io.BufferedReader;
 import java.io.BufferedWriter;
+import java.io.IOException;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
+import java.io.PipedReader;
+import java.io.PipedWriter;
 import java.io.Reader;
 import java.io.StringReader;
 import java.io.Writer;
@@ -60,9 +67,11 @@ import javax.json.JsonException;
 import javax.json.JsonObject;
 import javax.json.JsonPatch;
 import javax.json.JsonPointer;
+import javax.json.JsonReader;
 import javax.json.JsonStructure;
 import javax.json.JsonValue;
 import javax.json.JsonWriter;
+import javax.json.stream.JsonGenerator;
 import javax.json.stream.JsonParser;
 import javax.servlet.ServletContext;
 import javax.ws.rs.Consumes;
@@ -107,6 +116,7 @@ public class MetricsServices {
     @Resource
     private ManagedExecutorService executor;
     
+    private ToolsDAO toolsDAO;
     private MetricsDAO metricsDAO;
     
     @PostConstruct
@@ -114,7 +124,11 @@ public class MetricsServices {
         final String baseURI = UriBuilder.fromUri(uriInfo.getBaseUri()).path(MetricsServices.class).build().toString();
 
         final MongoClientURI mongodbURI = new MongoClientURI(ctx.getInitParameter("mongodb.url"));
-        metricsDAO = new MetricsDAO(mc.getDatabase(mongodbURI.getDatabase()), baseURI);
+        final MongoDatabase db = mc.getDatabase(mongodbURI.getDatabase());
+        metricsDAO = new MetricsDAO(db, baseURI);
+        
+        // we will generate ids for "/metrics"
+        toolsDAO = new ToolsDAO(db, baseURI);
     }
 
     /**
@@ -503,5 +517,66 @@ public class MetricsServices {
         }
         
         return Response.ok(array);
+    }
+
+    @GET
+    @Path("/meta")
+    @Produces(MediaType.APPLICATION_JSON)
+    public void getMetricsMeta(@Suspended final AsyncResponse asyncResponse) {
+        executor.submit(() -> {
+            asyncResponse.resume(getMetricsMetaAsync(null).build());
+        });
+    }
+    
+    @GET
+    @Path("/meta/{id}")
+    @Produces(MediaType.APPLICATION_JSON)
+    public void getMetricsMeta(@PathParam("id") String id,
+                               @Suspended final AsyncResponse asyncResponse) {
+        executor.submit(() -> {
+            asyncResponse.resume(getMetricsMetaAsync(id).build());
+        });
+    }
+
+    private Response.ResponseBuilder getMetricsMetaAsync(String id) {
+        StreamingOutput stream = (OutputStream out) -> {
+            JsonGenerator generator = Json.createGenerator(new BufferedWriter(new OutputStreamWriter(out, "UTF-8")));
+            if (id == null) {
+               generator.writeStartArray();
+            }
+            try (MetricsMetaWriter writer = new MetricsMetaWriter(generator);
+                 JsonGenerator gen = Json.createGenerator(out);
+                 PipedReader reader = new PipedReader();
+                 BufferedReader ids = new BufferedReader(reader)) {
+                
+                final PipedWriter pwriter = new PipedWriter(reader);
+                executor.submit(() -> {
+                    try {
+                        toolsDAO.group(pwriter, id);
+                    }
+                    finally {
+                        try {
+                            pwriter.close();
+                        } catch(IOException ex) {}
+                    }
+                });
+                
+                final int baseURIindex = metricsDAO.baseURI.length();
+                String line;
+                while((line = ids.readLine()) != null) {
+                    final String json = metricsDAO.getJSON(line.substring(baseURIindex));
+                    final JsonReader jsonReader = Json.createReader(new StringReader(json));
+                    writer.write(jsonReader.read());
+                }
+            } catch(Exception ex) {
+                Logger.getLogger(ToolsServices.class.getName()).log(Level.SEVERE, null, ex);
+            }
+
+            if (id == null) {
+               generator.writeEnd();
+            }
+
+        };
+        return Response.ok(stream);
     }
 }

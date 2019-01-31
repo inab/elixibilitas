@@ -46,6 +46,7 @@ import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 import javax.servlet.ServletContext;
 import javax.ws.rs.GET;
+import javax.ws.rs.HeaderParam;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 import javax.ws.rs.container.AsyncResponse;
@@ -107,26 +108,29 @@ public class StatisticsServices {
         
         toolsDAO = new ToolsDAO(mc.getDatabase(mongodbURI.getDatabase()), toolsBaseURI);
         metricsDAO = new MetricsDAO(mc.getDatabase(mongodbURI.getDatabase()), metricsBaseURI);
-        
-        tools_stat = new CharArrayWriter();
-        metrics_stat = new CharArrayWriter();
     }
     
     @GET
     @Path("/metrics/statistics/")
     @Produces(MediaType.APPLICATION_JSON)
-    public void getMetricsStatistics(@Suspended final AsyncResponse asyncResponse) {
+    public void getMetricsStatistics(
+            @HeaderParam("Cache-Control") final String cache,
+            @Suspended final AsyncResponse asyncResponse) {
         executor.submit(() -> {
-            asyncResponse.resume(getMetricsStatisticsAsync().build());
+            asyncResponse.resume(getMetricsStatisticsAsync(cache).build());
         });
     }
     
-    private Response.ResponseBuilder getMetricsStatisticsAsync() {
+    private Response.ResponseBuilder getMetricsStatisticsAsync(final String cache) {
         StreamingOutput stream = (OutputStream out) -> {
-            if (System.currentTimeMillis() - metrics_uptime > 86400000) {
-                metrics_stat.reset();
-                metricsDAO.statistics(metrics_stat);
-                metrics_uptime = System.currentTimeMillis();
+            if (metrics_stat == null || "no-cache".equalsIgnoreCase(cache) || System.currentTimeMillis() - metrics_uptime > 86400000) {
+                final CharArrayWriter stat = metricsDAO.statistics(new CharArrayWriter());
+                if (stat != null) {
+                    metrics_stat = stat;
+                    metrics_uptime = System.currentTimeMillis();
+                } else if (metrics_stat == null) {
+                    return;
+                }
             }
             
             try (Writer writer = new BufferedWriter(new OutputStreamWriter(out, "UTF-8"))) {
@@ -139,18 +143,24 @@ public class StatisticsServices {
     @GET
     @Path("/tools/statistics/")
     @Produces(MediaType.APPLICATION_JSON)
-    public void getToolsStatistics(@Suspended final AsyncResponse asyncResponse) {
+    public void getToolsStatistics(
+            @HeaderParam("Cache-Control") final String cache,
+            @Suspended final AsyncResponse asyncResponse) {
         executor.submit(() -> {
-            asyncResponse.resume(getToolsStatisticsAsync().build());
+            asyncResponse.resume(getToolsStatisticsAsync(cache).build());
         });
     }
     
-    private Response.ResponseBuilder getToolsStatisticsAsync() {
+    private Response.ResponseBuilder getToolsStatisticsAsync(final String cache) {
         StreamingOutput stream = (OutputStream out) -> {
-            if (System.currentTimeMillis() - tools_uptime > 60000) {
-                tools_stat.reset();
-                toolsDAO.statistics(tools_stat);
-                tools_uptime = System.currentTimeMillis();
+            if (tools_stat == null || "no-cache".equalsIgnoreCase(cache) || System.currentTimeMillis() - tools_uptime > 86400000) {
+                final CharArrayWriter stat = toolsDAO.statistics(new CharArrayWriter());
+                if (stat != null) {
+                    tools_stat = stat;
+                    tools_uptime = System.currentTimeMillis();
+                } else if (tools_stat == null) {
+                    return;
+                }
             }
             
             try (Writer writer = new BufferedWriter(new OutputStreamWriter(out, "UTF-8"))) {
