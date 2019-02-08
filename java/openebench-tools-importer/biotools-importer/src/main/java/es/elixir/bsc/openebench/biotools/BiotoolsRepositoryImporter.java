@@ -32,9 +32,11 @@ import java.io.IOException;
 import java.net.URI;
 import java.time.LocalTime;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.json.JsonObject;
 
 /**
  * The bio.tools data model importer.
@@ -45,11 +47,13 @@ import java.util.logging.Logger;
 public class BiotoolsRepositoryImporter {
     
     private OpenEBenchRepository repository;
+    private OpenEBenchAlambiqueEndpoint alambique;
     
     public BiotoolsRepositoryImporter() {}
 
     public BiotoolsRepositoryImporter(String username, String password) {
         repository = new OpenEBenchRepository(username, password);
+        alambique = new OpenEBenchAlambiqueEndpoint(username, password);
     }
     
     public void load() {
@@ -60,16 +64,30 @@ public class BiotoolsRepositoryImporter {
         
         BiotoolsRepositoryIterator iter = new BiotoolsRepositoryIterator();
         while (iter.hasNext()) {
-            final Tool tool = iter.next();
+            final JsonObject jtool = iter.next();
+            final List<Tool> tools;
             try {
-                System.out.println(LocalTime.now() + ": (PUT) " + tool.id);
-                if (repository != null) {
-                    repository.patch(tool);
+                if (alambique != null && alambique.put(jtool) != 200) {
+                    exception = true;
+                    continue;
                 }
-                ids.add(tool.id);
+                tools = BiotoolsConverter.convert(jtool);
             } catch (Exception ex) {
                 exception = true;
-                Logger.getLogger(BiotoolsRepositoryImporter.class.getName()).log(Level.SEVERE, null, ex);
+                Logger.getLogger(BiotoolsRepositoryImporter.class.getName()).log(Level.SEVERE, jtool.getString("biotoolsID", null), ex);
+                continue;
+            }
+            for (Tool tool : tools) {
+                try {
+                    System.out.println(LocalTime.now() + ": (PUT) " + tool.id);
+                    if (repository != null) {
+                        repository.patch(tool);
+                    }
+                    ids.add(tool.id);
+                } catch (Exception ex) {
+                    exception = true;
+                    Logger.getLogger(BiotoolsRepositoryImporter.class.getName()).log(Level.SEVERE, tool.id.toString(), ex);
+                }
             }
         }
 
