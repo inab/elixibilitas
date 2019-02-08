@@ -358,7 +358,8 @@ public enum LicenseType {
     @XmlEnumValue("xpp") XPP("xpp"),
     @XmlEnumValue("zlib-acknowledgement") ZLIB_ACKNOWLEDGEMENT("zlib-acknowledgement"),
     @XmlEnumValue("Proprietary") PROPRIETARY("Proprietary"),
-    @XmlEnumValue("Other") OTHER("Other");
+    @XmlEnumValue("Other") OTHER("Other"),
+    @XmlEnumValue("Unlicensed") UNLICENSED("Unlicensed");
     
     public final String value;
     
