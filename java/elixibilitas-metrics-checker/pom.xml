@@ -43,12 +43,6 @@
         </dependency>
 
         <dependency>
-            <groupId>org.eclipse</groupId>
-            <artifactId>yasson</artifactId>
-            <version>1.0.2</version>
-        </dependency>
-
-        <dependency>
             <groupId>es.elixir.bsc.elixibilitas</groupId>
             <artifactId>elixibilitas-dao</artifactId>
             <version>0.1-SNAPSHOT</version>
