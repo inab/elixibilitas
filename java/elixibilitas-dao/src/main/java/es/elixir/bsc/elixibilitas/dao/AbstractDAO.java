@@ -140,7 +140,7 @@ public abstract class AbstractDAO<T> {
             return result;
 
         } catch(Exception ex) {
-            Logger.getLogger(AbstractDAO.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(AbstractDAO.class.getName()).log(Level.SEVERE, id, ex);
         }
         return null;
     }
@@ -220,7 +220,7 @@ public abstract class AbstractDAO<T> {
                 return result;
             }
         } catch(Exception ex) {
-            Logger.getLogger(AbstractDAO.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(AbstractDAO.class.getName()).log(Level.SEVERE, id, ex);
         }
         return null;
     }
@@ -303,9 +303,9 @@ public abstract class AbstractDAO<T> {
             return result;
 
         } catch (IllegalArgumentException ex) {
-            Logger.getLogger(AbstractDAO.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(AbstractDAO.class.getName()).log(Level.SEVERE, id, ex);
         } catch(Exception ex) {
-            Logger.getLogger(AbstractDAO.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(AbstractDAO.class.getName()).log(Level.SEVERE, id, ex);
         }
         return null;
     }
@@ -360,9 +360,9 @@ public abstract class AbstractDAO<T> {
                 return result.toJson();
             }
         } catch (IllegalArgumentException ex) {
-            Logger.getLogger(AbstractDAO.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(AbstractDAO.class.getName()).log(Level.SEVERE, id, ex);
         } catch(Exception ex) {
-            Logger.getLogger(AbstractDAO.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(AbstractDAO.class.getName()).log(Level.SEVERE, id, ex);
         }
         return null;
     }
@@ -489,7 +489,7 @@ public abstract class AbstractDAO<T> {
     public static class ReusableJsonWriter extends JsonWriter {
         
         public ReusableJsonWriter(Writer writer) {
-            super(writer, new JsonWriterSettings(true));
+            super(writer, JsonWriterSettings.builder().indent(true).build());
         }
 
         @Override
