@@ -110,11 +110,12 @@ public class EdamServices {
     private final static String QUERY = "PREFIX search: <http://www.openrdf.org/contrib/lucenesail#>\n" +
                                         "PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>\n" +
                                         "PREFIX oboInOwl: <http://www.geneontology.org/formats/oboInOwl#>\n" +
-			                "SELECT ?subj ?text ?property WHERE {\n" +
+			                "SELECT ?subj ?text ?property ?label WHERE {\n" +
+                                        "?subj rdfs:label ?label . \n" + 
 			                "?subj search:matches [\n" +
 					    "search:query ?term;\n" +
 					    "search:snippet ?text;\n" +
-                                            "search:property ?property ] }";
+                                            "search:property ?property;" + " ] }";
 
     @Inject 
     private ServletContext ctx;
@@ -205,7 +206,7 @@ public class EdamServices {
     @Path("/description")
     @Produces(MediaType.APPLICATION_JSON)
     public void description(@QueryParam("term") final String term, 
-                      @Suspended final AsyncResponse asyncResponse) {
+                            @Suspended final AsyncResponse asyncResponse) {
         executor.submit(() -> {
             asyncResponse.resume(descriptionAsync(term).build());
         });
@@ -224,7 +225,7 @@ public class EdamServices {
                 
         return Response.ok(stream);
     }
-    
+
     private void search(final OutputStream out, final String text) {
 
         final Map<String, List<Map.Entry<String, String>>> map = search(text);
@@ -248,7 +249,7 @@ public class EdamServices {
             gen.writeEnd();
         }
     }
-    
+
     private Map<String, List<Map.Entry<String, String>>> search(final String text) {
         final List<BindingSet> results;
         try (RepositoryConnection con = repository.getConnection()) {
@@ -261,19 +262,19 @@ public class EdamServices {
 
         final Map<String, List<Map.Entry<String, String>>> map = new HashMap<>();
         results.forEach(res -> {
-            final String subject = res.getValue("subj").stringValue();
+                final String subject = res.getValue("subj").stringValue();
             List<Map.Entry<String, String>> descriptions = map.get(subject);
             if (descriptions == null) {
                 map.put(subject, descriptions = new ArrayList<>());
             }
-            
+
             final String property = res.getValue("property").stringValue();
             final String snip = res.getValue("text").stringValue();
             descriptions.add(new AbstractMap.SimpleImmutableEntry<>(property, snip));
         });
         return map;
     }
-    
+
     @GET
     @Path("/tool/search")
     @Produces(MediaType.APPLICATION_JSON)
