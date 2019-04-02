@@ -45,13 +45,12 @@ import org.eclipse.jgit.util.SystemReader;
 public class MetricExporter {
     
     private final static String HELP = 
-            "biotools-importer [-u && -p]\n\n" +
+            "biotools-export -u && -p\n\n" +
             "parameters:\n\n" +
             "-h (--help)                - this help message\n" +
-            "-u (--user) 'username'     - OpenEBench username\n" +
-            "-p (--password) 'password' - OpenEBench pasword\n\n" +
-            "comment: in the absense of credentials the tool only simulates the activity.\n" +
-            "example: >java -jar biotools-importer.jar\n";
+            "-u (--user) 'username'     - github username\n" +
+            "-p (--password) 'password' - github pasword\n\n" +
+            "example: >java -jar biotools-export.jar -u redmitry -p xyz\n";
 
     public final static String TOOLS_ENDPOINT = "https://openebench.bsc.es/monitor/rest/search?id=biotools::&projection=xid";
 
