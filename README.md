@@ -119,6 +119,14 @@ where:
 
 ---
 
+The METRICS API that aggregates some metrics:
+```
+https://openebench.bsc.es/monitor/rest/metrics/availability/{id}
+```
+> example: [https://openebench.bsc.es/monitor/rest/metrics/availability/trimal](https://openebench.bsc.es/monitor/rest/metrics/availability/trimal) .<br/>
+
+---
+
 The API also provides EDAM descriptions for the tool:
 ```
 https://openebench.bsc.es/monitor/rest/edam/tool/
