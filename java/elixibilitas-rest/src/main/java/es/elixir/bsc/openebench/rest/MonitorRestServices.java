@@ -50,6 +50,7 @@ import java.io.OutputStreamWriter;
 import java.io.Writer;
 import java.net.HttpURLConnection;
 import java.time.Instant;
+import java.time.ZonedDateTime;
 import static java.time.temporal.ChronoUnit.HOURS;
 import java.util.List;
 import java.util.TreeMap;
@@ -267,10 +268,13 @@ public class MonitorRestServices {
                           @QueryParam("type")
                           @Parameter(description = "list of filtered types")
                           final List<String> types,
+                          @QueryParam("edam")
+                          @Parameter(description = "edam ontology term")
+                          final String edam_term,
                           @Suspended final AsyncResponse asyncResponse) {
         executor.submit(() -> {
             if (range != null) {
-                asyncResponse.resume(aggregateAsync(id, range.getFirstPos(), range.getLastPos(), projections, text, name, description, types)
+                asyncResponse.resume(aggregateAsync(id, range.getFirstPos(), range.getLastPos(), projections, text, name, description, types, edam_term)
                         .header("Access-Control-Allow-Headers", "Range")
                         .header("Access-Control-Expose-Headers", "Accept-Ranges")
                         .header("Access-Control-Expose-Headers", "Content-Range")
@@ -282,7 +286,7 @@ public class MonitorRestServices {
                     to += limit;
                 }
                 
-                asyncResponse.resume(aggregateAsync(id, from, to, projections, text, name, description, types)
+                asyncResponse.resume(aggregateAsync(id, from, to, projections, text, name, description, types, edam_term)
                         .header("Access-Control-Allow-Headers", "Range")
                         .header("Access-Control-Expose-Headers", "Accept-Ranges")
                         .header("Access-Control-Expose-Headers", "Content-Range")
@@ -298,7 +302,8 @@ public class MonitorRestServices {
                               final String text,
                               final String name,
                               final String description,
-                              final List<String> types) {
+                              final List<String> types,
+                              final String edam_term) {
 
         StreamingOutput stream = (OutputStream out) -> {
             final Long limit;
@@ -308,10 +313,10 @@ public class MonitorRestServices {
                 limit = to - from;
             }
             try (Writer writer = new BufferedWriter(new OutputStreamWriter(out, "UTF-8"))) {
-                toolsDAO.aggregate(writer, id, from, limit, text, name, description, types, projections);
+                toolsDAO.aggregate(writer, id, from, limit, text, name, description, types, projections, null);
             }
         };
-        final long count = toolsDAO.aggregate_count(id, text, name, description, types);
+        final long count = toolsDAO.aggregate_count(id, text, name, description, types, null);
         
         final ContentRange range = new ContentRange("items", from, to, count);
         
@@ -454,7 +459,7 @@ public class MonitorRestServices {
         
         final JsonArray last_check = metricsDAO.findLog(id, "/project/website/last_check", from, to, limit);
         
-        final JsonArray operational = metricsDAO.findLog(id, "/project/website/operational", from, to, null);
+        final JsonArray operational = metricsDAO.findLog(id, "/project/website/operational", null, to, null);
         if (operational == null) {
             return Response.status(Response.Status.INTERNAL_SERVER_ERROR);
         } else if (operational.isEmpty()) {
@@ -486,7 +491,7 @@ public class MonitorRestServices {
                 String code = obj.getString("value", "0");
                 String date = obj.getString("date", null);
                 
-                Instant last_date = null;
+                ZonedDateTime last_date = null;
                 for (int i = 0, j = 0, m = last_check.size(), n = operational.size(); i < m; i++) {
                     final JsonObject o = last_check.getJsonObject(i);
                     final String adate = o.getString("date", null);
@@ -497,9 +502,9 @@ public class MonitorRestServices {
                     writer.writeStartObject();
                     
                     if (last_date == null) {
-                        last_date = Instant.parse(adate);
+                        last_date = ZonedDateTime.parse(adate);
                     } else {
-                        final Instant current_date = Instant.parse(adate);
+                        final ZonedDateTime current_date = ZonedDateTime.parse(adate);
                         long hours = HOURS.between(last_date, current_date);
                         while (hours > 26) {
                             hours -= 24;

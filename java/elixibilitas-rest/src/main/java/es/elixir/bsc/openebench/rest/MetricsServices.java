@@ -206,10 +206,37 @@ public class MetricsServices {
     }
 
     @GET
-    @Path("/{id}/{type}/{host}{path:.*}")
+    @Path("/{id:[^:/]*}/{path:.*}")
     @Produces(MediaType.APPLICATION_JSON)
     @Operation(
-        summary = "Returns tools metrics by the tool's id.",
+        summary = "Returns metrics by the tool's id and json path.",
+        responses = {
+            @ApiResponse(content = @Content(mediaType = MediaType.APPLICATION_JSON,
+                                            schema = @Schema(ref="https://openebench.bsc.es/monitor/metrics/metrics.json")),
+                         description = "Metrics JSON description or 'null' if no metrics found"
+            ),
+            @ApiResponse(responseCode = "404", description = "metrics object not found")
+        }
+    )
+    public void getMetrics(@PathParam("id")
+                           @Parameter(description = "unprefixed tool id",
+                                      example = "pmut")
+                           final String id,
+                           @PathParam("path")
+                           @Parameter(description = "json pointer",
+                                      example = "project")
+                           final String path,
+                           @Suspended final AsyncResponse asyncResponse) {
+        executor.submit(() -> {
+            asyncResponse.resume(getMetricsAsync(id, path).build());
+        });
+    }
+
+    @GET
+    @Path("/{id:.*:+[^/]*}/{type}/{host}{path:.*}")
+    @Produces(MediaType.APPLICATION_JSON)
+    @Operation(
+        summary = "Returns metrics by the tool's id and (optionally) json path.",
         responses = {
             @ApiResponse(content = @Content(mediaType = MediaType.APPLICATION_JSON,
                                             schema = @Schema(ref="https://openebench.bsc.es/monitor/metrics/metrics.json")),
@@ -246,7 +273,17 @@ public class MetricsServices {
             return Response.status(Response.Status.NOT_FOUND);
         }
         if (path != null && path.length() > 0) {
-            JsonPointer pointer = Json.createPointer(path);
+            if (path.charAt(0) != '/') {
+                path = "/" + path;
+            }
+
+            JsonPointer pointer;
+            try {
+                pointer = Json.createPointer(path);
+            } catch(Exception ex) {
+                return Response.status(Status.BAD_REQUEST);
+            }
+
             JsonStructure structure = Json.createReader(new StringReader(json)).read();
             try {
                 if (!pointer.containsValue(structure)) {
