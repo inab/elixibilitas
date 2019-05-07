@@ -31,6 +31,15 @@ import es.elixir.bsc.elixibilitas.dao.ToolsDAO;
 import es.elixir.bsc.openebench.model.tools.Datatype;
 import es.elixir.bsc.openebench.model.tools.Semantics;
 import es.elixir.bsc.openebench.model.tools.Tool;
+import es.elixir.bsc.openebench.rest.ext.ContentRange;
+import es.elixir.bsc.openebench.rest.ext.Range;
+import io.swagger.v3.oas.annotations.Hidden;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.headers.Header;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.InputStream;
@@ -42,7 +51,6 @@ import java.io.Writer;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URL;
-import java.util.AbstractMap;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -69,6 +77,8 @@ import javax.json.stream.JsonParser;
 import javax.json.stream.JsonParserFactory;
 import javax.servlet.ServletContext;
 import javax.ws.rs.GET;
+import javax.ws.rs.HeaderParam;
+import javax.ws.rs.OPTIONS;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
@@ -184,19 +194,138 @@ public class EdamServices {
         }
     }
 
+    @OPTIONS
+    @Path("/aggregate")
+    @Hidden
+    public Response aggregate() {
+         return Response.ok()
+                 .header("Access-Control-Allow-Headers", "Range")
+                 .header("Access-Control-Expose-Headers", "Accept-Ranges")
+                 .header("Access-Control-Expose-Headers", "Content-Range")
+                 .build();
+    }
+
+    @GET
+    @Path("/aggregate")
+    @Produces(MediaType.APPLICATION_JSON)
+    @Operation(summary = "Searches and groups tools by their id",
+               description = "The same as '/search' with a difference in the output format",
+        responses = {
+            @ApiResponse(content = @Content(mediaType = MediaType.APPLICATION_JSON),
+                headers = @Header(name = "Content-Range",
+                                  description = "standart HTTP header ('Content-Range: items 10-30/20000')"))
+
+        }
+    )
+    public void aggregate(@HeaderParam("Range")
+                          @Parameter(description = "HTTP Range Header",
+                                     example = "Range: items=10-30",
+                                     schema = @Schema(type = "string"))
+                          final Range range,
+                          @QueryParam("id") 
+                          @Parameter(description = "prefixed tool id", required = true)
+                          final String id,
+                          @QueryParam("skip") final Long skip,
+                          @QueryParam("limit") final Long limit,
+                          @QueryParam("projection")
+                          @Parameter(description = "tools properties to return")
+                          final List<String> projections,
+                          @QueryParam("text")
+                          @Parameter(description = "text to search")
+                          final String text,
+                          @QueryParam("name")
+                          @Parameter(description = "text to search in the 'name' property")
+                          final String name,
+                          @QueryParam("description")
+                          @Parameter(description = "text to search in the 'description' property")
+                          final String description,
+                          @QueryParam("type")
+                          @Parameter(description = "list of filtered types")
+                          final List<String> types,
+                          @QueryParam("label")
+                          @Parameter(description = "edam ontology term label")
+                          final String label,
+                          @Suspended final AsyncResponse asyncResponse) {
+        executor.submit(() -> {
+            if (range != null) {
+                asyncResponse.resume(aggregateAsync(id, range.getFirstPos(), range.getLastPos(), projections, text, name, description, types, label)
+                        .header("Access-Control-Allow-Headers", "Range")
+                        .header("Access-Control-Expose-Headers", "Accept-Ranges")
+                        .header("Access-Control-Expose-Headers", "Content-Range")
+                        .build());
+            } else {
+                final Long from = skip;
+                Long to = limit;
+                if (from != null && to != null) {
+                    to += limit;
+                }
+                
+                asyncResponse.resume(aggregateAsync(id, from, to, projections, text, name, description, types, label)
+                        .header("Access-Control-Allow-Headers", "Range")
+                        .header("Access-Control-Expose-Headers", "Accept-Ranges")
+                        .header("Access-Control-Expose-Headers", "Content-Range")
+                        .build());
+            }
+        });
+    }
+    
+    private Response.ResponseBuilder aggregateAsync(
+                            final String id, 
+                            final Long from, 
+                            final Long to, 
+                            final List<String> projections, 
+                            final String text,
+                            final String name,
+                            final String description,
+                            final List<String> types,
+                            final String label) {
+
+        final String[] terms = label_search(label);
+        if (terms.length == 0) {
+            // no edam label found
+            final ContentRange range = new ContentRange("items", 0L, 0L, 0L);
+            return Response.ok("[]").type(MediaType.APPLICATION_JSON)
+                       .header("Accept-Ranges", "items")
+                       .header("Content-Range", range.toString());
+        }
+
+        StreamingOutput stream = (OutputStream out) -> {
+            final Long limit;
+            if (from == null || to == null) {
+                limit = to;
+            } else {
+                limit = to - from;
+            }
+            try (Writer writer = new BufferedWriter(new OutputStreamWriter(out, "UTF-8"))) {
+                toolsDAO.aggregate(writer, id, from, limit, text, name, description, types, projections, terms);
+            }
+        };
+        final long count = toolsDAO.aggregate_count(id, text, name, description, types, terms);
+        
+        final ContentRange range = new ContentRange("items", from, to, count);
+        
+        Response.ResponseBuilder response = from == null && to == null 
+                ? Response.ok() : Response.status(Response.Status.PARTIAL_CONTENT);
+        
+        return response.header("Accept-Ranges", "items")
+                       .header("Content-Range", range.toString()).entity(stream);
+    }
+
+    
+    
     @GET
     @Path("/search")
     @Produces(MediaType.APPLICATION_JSON)
     public void search(@QueryParam("text") final String text, 
                        @Suspended final AsyncResponse asyncResponse) {
         executor.submit(() -> {
-            asyncResponse.resume(searchAsync(text).build());
+            asyncResponse.resume(searchAsync(text, null).build());
         });
     }
-
-    private Response.ResponseBuilder searchAsync(final String text) {
+    
+    private Response.ResponseBuilder searchAsync(final String text, final String filter) {
         final StreamingOutput stream = (OutputStream out) -> {
-            search(out, text);
+            search(out, text, filter);
         };
                 
         return Response.ok(stream);
@@ -228,19 +357,21 @@ public class EdamServices {
 
     private void search(final OutputStream out, final String text) {
 
-        final Map<String, List<Map.Entry<String, String>>> map = search(text);
+        final Map<String, List<String[]>> map = search(text);
         
         try (JsonGenerator gen = Json.createGenerator(out)) {
             gen.writeStartArray();
-            for (Map.Entry<String, List<Map.Entry<String, String>>> subjects : map.entrySet()) {
+            for (Map.Entry<String, List<String[]>> subjects : map.entrySet()) {
                 gen.writeStartObject();
                 gen.write("subject", subjects.getKey());
                 gen.writeStartArray("result");
 
-                for (Map.Entry<String, String> entry : subjects.getValue()) {
+                //String[] entries = subjects.getValue();
+                for (String[] entry : subjects.getValue()) {
                     gen.writeStartObject();
-                    gen.write("property", entry.getKey());
-                    gen.write("sniplet", entry.getValue());
+                    gen.write("label", entry[0]);
+                    gen.write("property", entry[1]);
+                    gen.write("sniplet", entry[2]);
                     gen.writeEnd();
                 }
                 gen.writeEnd();
@@ -250,7 +381,24 @@ public class EdamServices {
         }
     }
 
-    private Map<String, List<Map.Entry<String, String>>> search(final String text) {
+    private void search(final OutputStream out, final String text, final String filter) {
+
+        final Map<String, String> map = search(text, filter);
+        
+        try (JsonGenerator gen = Json.createGenerator(out)) {
+            gen.writeStartArray();
+            for (Map.Entry<String, String> subjects : map.entrySet()) {
+                gen.writeStartObject();
+                gen.write("subject", subjects.getKey());
+                gen.write("label", subjects.getValue());
+                gen.writeEnd();
+            }
+            gen.writeEnd();
+        }
+    }
+    
+    private String[] label_search(final String text) {
+
         final List<BindingSet> results;
         try (RepositoryConnection con = repository.getConnection()) {
             ValueFactory vf = con.getValueFactory();
@@ -260,21 +408,73 @@ public class EdamServices {
             results = QueryResults.asList(tq.evaluate());
         }
 
-        final Map<String, List<Map.Entry<String, String>>> map = new HashMap<>();
+        List<String> terms = new ArrayList<>();
         results.forEach(res -> {
+            final String property = res.getValue("property").stringValue();
+            if ("http://www.w3.org/2000/01/rdf-schema#label".equals(property)) {
                 final String subject = res.getValue("subj").stringValue();
-            List<Map.Entry<String, String>> descriptions = map.get(subject);
+                terms.add(subject);
+            }
+        });
+        return terms.toArray(new String[terms.size()]);
+    }
+
+    private Map<String, List<String[]>> search(final String text) {
+
+        final List<BindingSet> results;
+        try (RepositoryConnection con = repository.getConnection()) {
+            ValueFactory vf = con.getValueFactory();
+
+            TupleQuery tq = con.prepareTupleQuery(QueryLanguage.SPARQL, QUERY);
+            tq.setBinding("term", vf.createLiteral(text.trim().replaceAll("\\s","* AND ") + "*"));
+            results = QueryResults.asList(tq.evaluate());
+        }
+
+        final Map<String, List<String[]>> map = new HashMap<>();
+        results.forEach(res -> {
+            final String subject = res.getValue("subj").stringValue();
+            List<String[]> descriptions = map.get(subject);
             if (descriptions == null) {
                 map.put(subject, descriptions = new ArrayList<>());
             }
 
+            String label = res.getValue("label").stringValue();
+            if (label == null) {
+                label = "";
+            }
             final String property = res.getValue("property").stringValue();
             final String snip = res.getValue("text").stringValue();
-            descriptions.add(new AbstractMap.SimpleImmutableEntry<>(property, snip));
+            descriptions.add(new String[] {label, property, snip});
+
         });
         return map;
     }
 
+    private Map<String, String> search(final String text, final String filter) {
+
+        final List<BindingSet> results;
+        try (RepositoryConnection con = repository.getConnection()) {
+            ValueFactory vf = con.getValueFactory();
+
+            TupleQuery tq = con.prepareTupleQuery(QueryLanguage.SPARQL, QUERY);
+            tq.setBinding("term", vf.createLiteral(text.trim().replaceAll("\\s","* AND ") + "*"));
+            results = QueryResults.asList(tq.evaluate());
+        }
+
+        final Map<String, String> map = new HashMap<>();
+        results.forEach(res -> {
+            final String subject = res.getValue("subj").stringValue();
+            if (filter == null || subject.startsWith(filter, "http://edamontology.org/".length())) {
+                String label = res.getValue("label").stringValue();
+                if (label == null) {
+                    label = "";
+                }
+                map.put(subject, label);
+            }
+        });
+        return map;
+    }
+    
     @GET
     @Path("/tool/search")
     @Produces(MediaType.APPLICATION_JSON)
@@ -287,7 +487,7 @@ public class EdamServices {
 
     private Response.ResponseBuilder searchToolsAsync(final String text) {
         final StreamingOutput stream = (OutputStream out) -> {
-            final Map<String, List<Map.Entry<String, String>>> map = search(text);
+            final Map<String, List<String[]>> map = search(text);
             if (!map.isEmpty()) {
                 try (Writer writer = new BufferedWriter(new OutputStreamWriter(out, "UTF-8"))) {
                     writer.append("[");
