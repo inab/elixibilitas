@@ -34,8 +34,7 @@ import com.mongodb.client.model.Aggregates;
 import com.mongodb.client.model.Filters;
 import java.io.StringReader;
 import java.io.StringWriter;
-import java.time.ZoneId;
-import java.time.ZonedDateTime;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -83,7 +82,7 @@ public class JsonLog {
             MongoCollection<Document> col = database.getCollection(log_collection);
 
             Document bson = new Document();
-            bson.append("_id", new BasicDBObject("id", id).append("date", ZonedDateTime.now(ZoneId.of("Z")).toString()));
+            bson.append("_id", new BasicDBObject("id", id).append("date", Instant.now().toString()));
             bson.append("src", user);
             bson.append("patch", BsonArray.parse(writer.toString()));
 
@@ -105,19 +104,19 @@ public class JsonLog {
                 query = Filters.and(query, Filters.gte("_id.date", from), Filters.lte("_id.date", to));
             }
 
-            final ArrayList aggregate = new ArrayList();
+            final ArrayList aggregation = new ArrayList();
             
-            aggregate.add(Aggregates.match(query));
-            aggregate.add(Aggregates.unwind("$patch"));
-            aggregate.add(Aggregates.match(new Document("patch.path", jpointer)));
+            aggregation.add(Aggregates.match(query));
+            aggregation.add(Aggregates.unwind("$patch"));
+            aggregation.add(Aggregates.match(new Document("patch.path", jpointer)));
             if (limit != null) {
-                aggregate.add(Aggregates.sort(new Document("_id.date", -1)));
-                aggregate.add(Aggregates.limit(limit));
-                aggregate.add(Aggregates.sort(new Document("_id.date", 1)));
+                aggregation.add(Aggregates.sort(new Document("_id.date", -1)));
+                aggregation.add(Aggregates.limit(limit));
+                aggregation.add(Aggregates.sort(new Document("_id.date", 1)));
             }
-            aggregate.add(Aggregates.project(new Document("_id.date", 1).append("patch.value", 1)));
+            aggregation.add(Aggregates.project(new Document("_id.date", 1).append("patch.value", 1)));
             
-            AggregateIterable<Document> iterator = col.aggregate(aggregate);
+            AggregateIterable<Document> iterator = col.aggregate(aggregation).allowDiskUse(true);
             
             JsonArrayBuilder builder = Json.createArrayBuilder();
             

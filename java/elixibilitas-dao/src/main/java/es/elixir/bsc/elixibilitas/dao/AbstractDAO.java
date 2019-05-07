@@ -71,7 +71,7 @@ public abstract class AbstractDAO<T> {
 
     public long count(String query) {
         final MongoCollection<Document> col = database.getCollection(collection);
-        return col.count(Document.parse(query));
+        return col.countDocuments(Document.parse(query));
     }
     
     public JsonArray findLog(String id, String jpointer, String from, String to, Integer limit) {

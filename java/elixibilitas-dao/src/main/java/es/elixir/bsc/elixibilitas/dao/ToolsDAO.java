@@ -54,6 +54,7 @@ import java.io.IOException;
 import java.io.Serializable;
 import java.io.Writer;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -570,7 +571,7 @@ public class ToolsDAO extends AbstractDAO<Document> implements Serializable {
         }
     }
     
-    public int aggregate_count(String id, String text, String name, String description, List<String> types) {
+    public int aggregate_count(String id, String text, String name, String description, List<String> types, String[] edam_terms) {
 
         final MongoCollection<Document> col = database.getCollection(collection);
         final ArrayList<Bson> aggregation = new ArrayList();
@@ -587,8 +588,22 @@ public class ToolsDAO extends AbstractDAO<Document> implements Serializable {
             aggregation.add(Aggregates.match(Filters.regex("description", description, "i")));
         }
         
+        if (edam_terms != null) {
+            final int edam_prefix_length = "http://edamontology.org/".length();
+
+            final String[] operations = Arrays.stream(edam_terms).filter(x -> x.startsWith("operation", edam_prefix_length)).toArray(String[]::new);
+            if (operations.length > 0) {
+                aggregation.add(Aggregates.match(Filters.in("semantics.operations", operations)));
+            }
+
+            final String[] topics = Arrays.stream(edam_terms).filter(x -> x.startsWith("topic", edam_prefix_length)).toArray(String[]::new);
+            if (topics.length > 0) {
+                aggregation.add(Aggregates.match(Filters.in("semantics.topics", topics)));
+            }
+        }
+                
         if (types != null && !types.isEmpty()) {
-            final List<Bson> tlist = new ArrayList<Bson>();
+            final List<Bson> tlist = new ArrayList<>();
             for (String type : types) {
                 tlist.add(Filters.eq("_id.type", type));
             }
@@ -611,10 +626,10 @@ public class ToolsDAO extends AbstractDAO<Document> implements Serializable {
         }
         return 0;
     }
-        
+    
     public void aggregate(Writer writer, String id, Long skip, 
             Long limit, String text, String name, String description,
-            List<String> types, List<String> projections) {
+            List<String> types, List<String> projections, String[] edam_terms) {
         try {
             final MongoCollection<Document> col = database.getCollection(collection);
             try (JsonWriter jwriter = new ReusableJsonWriter(writer)) {
@@ -642,6 +657,20 @@ public class ToolsDAO extends AbstractDAO<Document> implements Serializable {
                 
                 if (description != null && !description.isEmpty()) {
                     aggregation.add(Aggregates.match(Filters.regex("description", description, "i")));
+                }
+                
+                if (edam_terms != null) {
+                    final int edam_prefix_length = "http://edamontology.org/".length();
+                    
+                    final String[] operations = Arrays.stream(edam_terms).filter(x -> x.startsWith("operation", edam_prefix_length)).toArray(String[]::new);
+                    if (operations.length > 0) {
+                        aggregation.add(Aggregates.match(Filters.in("semantics.operations", operations)));
+                    }
+                    
+                    final String[] topics = Arrays.stream(edam_terms).filter(x -> x.startsWith("topic", edam_prefix_length)).toArray(String[]::new);
+                    if (topics.length > 0) {
+                        aggregation.add(Aggregates.match(Filters.in("semantics.topics", topics)));
+                    }
                 }
 
                 if (types != null && !types.isEmpty()) {
@@ -684,7 +713,7 @@ public class ToolsDAO extends AbstractDAO<Document> implements Serializable {
                     if (cursor.hasNext()) {
                         do {
                             final Document doc = cursor.next();
-
+                            
                             jwriter.writeStartDocument();
                             
                             final String tid = doc.get("_id", Document.class).get("_id", String.class);
@@ -748,6 +777,12 @@ public class ToolsDAO extends AbstractDAO<Document> implements Serializable {
     }
 
     private Bson createIdFilter(String id) {
+        if ("::".equals(id)) {
+            return Aggregates.match(Filters.and(Filters.eq("_id.nmsp", null),
+                        Filters.eq("_id.version", null),
+                        Filters.eq("_id.type", null)));
+        }
+        
         final String[] nodes = id.split(":", -1);
         if (nodes.length > 2) {
             if (nodes[0].isEmpty()) {
@@ -782,7 +817,7 @@ public class ToolsDAO extends AbstractDAO<Document> implements Serializable {
      * @param writer the writer to write ids.
      * @param map the map that has semantic ids as its keys.
      */
-    public void filter(Writer writer, Map<String, List<Map.Entry<String, String>>> map) {
+    public void filter(Writer writer, Map<String, List<String[]>> map) {
 
         final MongoCollection<Document> col = database.getCollection(COLLECTION);
 
@@ -796,12 +831,12 @@ public class ToolsDAO extends AbstractDAO<Document> implements Serializable {
                 final Document doc = cursor.next();
                 final String id = getURI((Document) doc.remove("_id"));
 
-                Document semantics = doc.get("semantics", Document.class);
+                final Document semantics = doc.get("semantics", Document.class);
                 if (semantics != null) {                        
                     List<String> topics = semantics.get("topics", List.class);
                     if (topics != null) {
                         for (String topic : topics) {
-                            final List<Map.Entry<String, String>> list = map.get(topic);
+                            final List<String[]> list = map.get(topic);
                             if (writeId(writer, list, id, first)) {
                                 first = false;
                                 continue loop;
@@ -811,7 +846,7 @@ public class ToolsDAO extends AbstractDAO<Document> implements Serializable {
                     List<String> operations = semantics.get("operations", List.class);
                     if (operations != null) {
                         for (String operation : operations) {
-                            final List<Map.Entry<String, String>> list = map.get(operation);
+                            final List<String[]> list = map.get(operation);
                             if (writeId(writer, list, id, first)) {
                                 first = false;
                                 continue loop;
@@ -822,7 +857,7 @@ public class ToolsDAO extends AbstractDAO<Document> implements Serializable {
                     if (inputs != null) {
                         for (Document input : inputs) {
                             final String datatype = input.getString("datatype");
-                            List<Map.Entry<String, String>> list = map.get(datatype);
+                            List<String[]> list = map.get(datatype);
                             if (writeId(writer, list, id, first)) {
                                 first = false;
                                 continue loop;
@@ -833,7 +868,7 @@ public class ToolsDAO extends AbstractDAO<Document> implements Serializable {
                     if (outputs != null) {
                         for (Document output : outputs) {
                             final String datatype = output.getString("datatype");
-                            List<Map.Entry<String, String>> list = map.get(datatype);
+                            List<String[]> list = map.get(datatype);
                             if (writeId(writer, list, id, first)) {
                                 first = false;
                                 continue loop;
@@ -869,7 +904,7 @@ public class ToolsDAO extends AbstractDAO<Document> implements Serializable {
     
     public long count(String field, String text) {
         final MongoCollection<Document> col = database.getCollection(COLLECTION);
-        return col.count(Filters.and(
+        return col.countDocuments(Filters.and(
                 Filters.exists(field, true), 
                 Filters.ne(field, new BsonArray()),
                 Filters.regex(field, Pattern.compile(text == null ? "" : text))));
@@ -901,6 +936,5 @@ public class ToolsDAO extends AbstractDAO<Document> implements Serializable {
         } catch(Exception ex) {
             Logger.getLogger(ToolsDAO.class.getName()).log(Level.SEVERE, null, ex);
         }
-
     }
 }
