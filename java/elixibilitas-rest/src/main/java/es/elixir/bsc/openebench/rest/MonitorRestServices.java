@@ -175,11 +175,14 @@ public class MonitorRestServices {
                        @QueryParam("description")
                        @Parameter(description = "text to search in the 'description' property")
                        final String description,
+                       @QueryParam("tags")
+                       @Parameter(description = "text to match the 'tags' property")
+                       final List<String> tags,
                        @Suspended final AsyncResponse asyncResponse) {
         executor.submit(() -> {
             asyncResponse.resume(searchAsync(id, range != null ? range.getFirstPos() :  null, 
                     range != null ? range.getLastPos() : null,
-                    projections, text, name, description)
+                    projections, text, name, description, tags)
                         .header("Access-Control-Allow-Headers", "Range")
                         .header("Access-Control-Expose-Headers", "Accept-Ranges")
                         .header("Access-Control-Expose-Headers", "Content-Range")
@@ -194,7 +197,8 @@ public class MonitorRestServices {
                               final List<String> projections, 
                               final String text,
                               final String name,
-                              final String description) {
+                              final String description,
+                              final List<String> tags) {
 
         StreamingOutput stream = (OutputStream out) -> {
 
@@ -206,11 +210,11 @@ public class MonitorRestServices {
             }
 
             try (Writer writer = new BufferedWriter(new OutputStreamWriter(out, "UTF-8"))) {
-                toolsDAO.search(writer, id, from, limit, text, name, description, projections);
+                toolsDAO.search(writer, id, from, limit, text, name, description, tags, projections);
             }
         };
 
-        final long count = toolsDAO.search_count(id, text, name, description);
+        final long count = toolsDAO.search_count(id, text, name, description, tags);
         
         final ContentRange range = new ContentRange("tools", from, to, count);
         
@@ -265,6 +269,9 @@ public class MonitorRestServices {
                           @QueryParam("description")
                           @Parameter(description = "text to search in the 'description' property")
                           final String description,
+                          @QueryParam("tags")
+                          @Parameter(description = "text to match the 'tags' property")
+                          final List<String> tags,
                           @QueryParam("type")
                           @Parameter(description = "list of filtered types")
                           final List<String> types,
@@ -274,7 +281,8 @@ public class MonitorRestServices {
                           @Suspended final AsyncResponse asyncResponse) {
         executor.submit(() -> {
             if (range != null) {
-                asyncResponse.resume(aggregateAsync(id, range.getFirstPos(), range.getLastPos(), projections, text, name, description, types, edam_term)
+                asyncResponse.resume(aggregateAsync(
+                        id, range.getFirstPos(), range.getLastPos(), projections, text, name, description, tags, types, edam_term)
                         .header("Access-Control-Allow-Headers", "Range")
                         .header("Access-Control-Expose-Headers", "Accept-Ranges")
                         .header("Access-Control-Expose-Headers", "Content-Range")
@@ -286,7 +294,7 @@ public class MonitorRestServices {
                     to += limit;
                 }
                 
-                asyncResponse.resume(aggregateAsync(id, from, to, projections, text, name, description, types, edam_term)
+                asyncResponse.resume(aggregateAsync(id, from, to, projections, text, name, description, tags, types, edam_term)
                         .header("Access-Control-Allow-Headers", "Range")
                         .header("Access-Control-Expose-Headers", "Accept-Ranges")
                         .header("Access-Control-Expose-Headers", "Content-Range")
@@ -302,6 +310,7 @@ public class MonitorRestServices {
                               final String text,
                               final String name,
                               final String description,
+                              final List<String> tags,
                               final List<String> types,
                               final String edam_term) {
 
@@ -313,10 +322,10 @@ public class MonitorRestServices {
                 limit = to - from;
             }
             try (Writer writer = new BufferedWriter(new OutputStreamWriter(out, "UTF-8"))) {
-                toolsDAO.aggregate(writer, id, from, limit, text, name, description, types, projections, null);
+                toolsDAO.aggregate(writer, id, from, limit, text, name, description, tags, types, projections, null);
             }
         };
-        final long count = toolsDAO.aggregate_count(id, text, name, description, types, null);
+        final long count = toolsDAO.aggregate_count(id, text, name, description, tags, types, null);
         
         final ContentRange range = new ContentRange("items", from, to, count);
         
