@@ -72,24 +72,21 @@ public class BatchMetricsChecker {
                 new BatchMetricsChecker(executor).check(mc);
             } 
         } finally {
-            System.out.println("shutting down...");
             executor.shutdown();
         }
-        
-        System.out.println("finished...");
+
         System.exit(0);
     }
 
     public void check(MongoClient mc) {
         
-        final ToolsDAO toolsDAO = new ToolsDAO(mc.getDatabase("elixibilitas"), "https://dev-openebench.bsc.es/monitor/tool/");
-        final MetricsDAO metricsDAO = new MetricsDAO(mc.getDatabase("elixibilitas"), "https://dev-openebench.bsc.es/monitor/metrics/");
+        final ToolsDAO toolsDAO = new ToolsDAO(mc.getDatabase("elixibilitas"), "https://openebench.bsc.es/monitor/tool/");
+        final MetricsDAO metricsDAO = new MetricsDAO(mc.getDatabase("elixibilitas"), "https://openebench.bsc.es/monitor/metrics/");
         
         final List<Tool> tools = toolsDAO.get();
         final CountDownLatch latch = new CountDownLatch(tools.size());
-
-        tools.forEach(tool -> {
-            
+        
+        for (Tool tool: tools) {
             try {
                 final String id = tool.id.toString().substring(toolsDAO.baseURI.length());
 
@@ -103,7 +100,8 @@ public class BatchMetricsChecker {
                     @Override
                     public void run() {
                         try {
-                            metricsDAO.merge("biotools", id, future.get());
+                            final Metrics metrics = future.get(30, TimeUnit.MINUTES);
+                            metricsDAO.merge("biotools", id, metrics);
                         } catch (Throwable th) {
                             Logger.getLogger(BatchMetricsChecker.class.getName()).log(Level.SEVERE, "update failed", th);
                         }
@@ -114,14 +112,15 @@ public class BatchMetricsChecker {
                 Logger.getLogger(BatchMetricsChecker.class.getName()).log(Level.SEVERE, "submit failed", th);
                 latch.countDown();
             }
-        });
+        }
 
         // ensure that all taksks executed.
         try {
             latch.await(8, TimeUnit.HOURS);
-        } catch (InterruptedException ex) {}
-        
-        executor.shutdownNow();
+        } catch (InterruptedException ex) {
+        } finally {
+            executor.shutdownNow();
+        }
     }
     
     private static Map<String, List<String>> parameters(String[] args) {
