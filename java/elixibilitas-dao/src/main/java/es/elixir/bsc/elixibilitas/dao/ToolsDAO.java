@@ -386,7 +386,7 @@ public class ToolsDAO extends AbstractDAO<Document> implements Serializable {
         return null;
     }
     
-    public int search_count(String id, String text, String name, String description) {
+    public int search_count(String id, String text, String name, String description, List<String> tags) {
         
         try {
             final MongoCollection<Document> col = database.getCollection(collection);
@@ -405,6 +405,10 @@ public class ToolsDAO extends AbstractDAO<Document> implements Serializable {
                 aggregation.add(Aggregates.match(Filters.regex("description", description, "i")));
             }
 
+            if (tags != null && !tags.isEmpty()) {
+                aggregation.add(Aggregates.match(Filters.in("tags", tags)));
+            }
+                
             if (id != null && !id.isEmpty()) {
                 aggregation.add(createIdFilter(id));
             }
@@ -469,6 +473,7 @@ public class ToolsDAO extends AbstractDAO<Document> implements Serializable {
         }
     }
 
+
     /**
      * Find tools and write them into the reader.
      * 
@@ -478,11 +483,29 @@ public class ToolsDAO extends AbstractDAO<Document> implements Serializable {
      * @param limit mongodb limit parameter (limits number of tools to be written).
      * @param text text to search either in 'name' or 'description' property.
      * @param name text to search in the 'name' property.
-     * @param description text to search in the 'descriptino' property.
+     * @param description text to search in the 'description' property.
      * @param projections - properties to write or null for all.
      */
     public void search(Writer writer, String id, Long skip, Long limit, 
             String text, String name, String description, List<String> projections) {
+        search(writer, id, skip, limit, text, name, description, null, projections);
+    }
+
+    /**
+     * Find tools and write them into the reader.
+     * 
+     * @param writer writer to write metrics into.
+     * @param id
+     * @param skip mongodb skip parameter (aka from).
+     * @param limit mongodb limit parameter (limits number of tools to be written).
+     * @param text text to search either in 'name' or 'description' property.
+     * @param name text to search in the 'name' property.
+     * @param description text to search in the 'description' property.
+     * @param tags text to match the 'tags' property.
+     * @param projections - properties to write or null for all.
+     */
+    public void search(Writer writer, String id, Long skip, Long limit, 
+            String text, String name, String description, List<String> tags, List<String> projections) {
         try {
             final MongoCollection<Document> col = database.getCollection(collection);
             try (JsonWriter jwriter = new ReusableJsonWriter(writer)) {
@@ -512,6 +535,10 @@ public class ToolsDAO extends AbstractDAO<Document> implements Serializable {
                     aggregation.add(Aggregates.match(Filters.regex("description", description, "i")));
                 }
                 
+                if (tags != null && !tags.isEmpty()) {
+                    aggregation.add(Aggregates.match(Filters.in("tags", tags)));
+                }
+
                 if (id != null && !id.isEmpty()) {
                     aggregation.add(createIdFilter(id));
                 }
@@ -572,6 +599,10 @@ public class ToolsDAO extends AbstractDAO<Document> implements Serializable {
     }
     
     public int aggregate_count(String id, String text, String name, String description, List<String> types, String[] edam_terms) {
+        return aggregate_count(id, text, name, description, null, types, edam_terms);
+    }
+    
+    public int aggregate_count(String id, String text, String name, String description, List<String> tags, List<String> types, String[] edam_terms) {
 
         final MongoCollection<Document> col = database.getCollection(collection);
         final ArrayList<Bson> aggregation = new ArrayList();
@@ -588,6 +619,10 @@ public class ToolsDAO extends AbstractDAO<Document> implements Serializable {
             aggregation.add(Aggregates.match(Filters.regex("description", description, "i")));
         }
         
+        if (tags != null && !tags.isEmpty()) {
+            aggregation.add(Aggregates.match(Filters.in("tags", tags)));
+        }
+                
         if (edam_terms != null) {
             final int edam_prefix_length = "http://edamontology.org/".length();
 
@@ -630,6 +665,12 @@ public class ToolsDAO extends AbstractDAO<Document> implements Serializable {
     public void aggregate(Writer writer, String id, Long skip, 
             Long limit, String text, String name, String description,
             List<String> types, List<String> projections, String[] edam_terms) {
+        aggregate(writer, id, skip, limit, text, name, description, null, types, projections, edam_terms);
+    }
+    
+    public void aggregate(Writer writer, String id, Long skip, 
+            Long limit, String text, String name, String description, List<String> tags,
+            List<String> types, List<String> projections, String[] edam_terms) {
         try {
             final MongoCollection<Document> col = database.getCollection(collection);
             try (JsonWriter jwriter = new ReusableJsonWriter(writer)) {
@@ -657,6 +698,10 @@ public class ToolsDAO extends AbstractDAO<Document> implements Serializable {
                 
                 if (description != null && !description.isEmpty()) {
                     aggregation.add(Aggregates.match(Filters.regex("description", description, "i")));
+                }
+                
+                if (tags != null && !tags.isEmpty()) {
+                    aggregation.add(Aggregates.match(Filters.in("tags", tags)));
                 }
                 
                 if (edam_terms != null) {

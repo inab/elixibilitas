@@ -91,6 +91,25 @@ public class BiotoolsConverter {
 
         final String _id = id.toLowerCase().trim();
         
+        final String name = jtool.getString("name", null);
+        final String jhomepage = jtool.getString("homepage", null);
+        
+        /* inset 'generic' tool with @type: null*/
+        Tool tool = new Tool(URI.create(OpenEBenchEndpoint.URI_BASE + _id), null);
+        tool.setName(name);
+        if (jhomepage != null) {
+            try {
+                Web web = new Web();
+                web.setHomepage(new URI(jhomepage));
+                tool.setWeb(web);
+            } catch(URISyntaxException ex) {
+                Logger.getLogger(BiotoolsConverter.class.getName()).log(Level.INFO, "invalid homepage: {0}", jhomepage);
+            }
+        }
+
+        tool.setDescription(jtool.getString("description", null));
+        tools.add(tool);
+        
         final JsonArray versions = jtool.getJsonArray("version");
         for (int j = 0, m = (versions == null || versions.isEmpty()) ? 1 : versions.size(); j < m; j++) {
             StringBuilder idTemplate = new StringBuilder(OpenEBenchEndpoint.URI_BASE).append("biotools:").append(_id);
@@ -101,8 +120,7 @@ public class BiotoolsConverter {
             }
 
             idTemplate.append("/%s");
-
-            final String jhomepage = jtool.getString("homepage", null);
+            
             URI homepage = null;
             if (jhomepage != null) {
                 try {
@@ -112,20 +130,6 @@ public class BiotoolsConverter {
                     Logger.getLogger(BiotoolsConverter.class.getName()).log(Level.INFO, "invalid homepage: {0}", jhomepage);
                 }
             }
-
-            final String name = jtool.getString("name", null);
-
-            /* inset 'generic' tool with @type: null*/
-            Tool tool = new Tool(URI.create(OpenEBenchEndpoint.URI_BASE + _id), null);
-            tool.setName(name);
-            if (homepage != null) {
-                Web web = new Web();
-                web.setHomepage(homepage);
-                tool.setWeb(web);
-            }
-
-            tool.setDescription(jtool.getString("description", null));
-            tools.add(tool);
 
             JsonArray jtoolTypes = jtool.getJsonArray("toolType");
             for (int i = 0, n = jtoolTypes.size(); i < n; i++) {
@@ -199,6 +203,7 @@ public class BiotoolsConverter {
 
                 tool.setDescription(jtool.getString("description", null));
 
+                addTags(tool, jtool);
                 addDocumentation(tool, jtool);
                 addPublications(tool, jtool);
 //                addContacts(tool, jtool);
@@ -284,6 +289,16 @@ public class BiotoolsConverter {
     
     private static Workbench addWorkbench(Workbench tool, JsonObject jtool) {
         return tool;
+    }
+    
+    private static void addTags(Tool tool, JsonObject jtool) {
+        final JsonArray jcollections = jtool.getJsonArray("collectionID");
+        if (jcollections.size() > 0) {
+            for (int i = 0, n = jcollections.size(); i < n; i++) {
+                final JsonString collectionID = jcollections.getJsonString(i);
+                tool.getTags().add(collectionID.getString());
+            }
+        }
     }
     
     private static void addDocumentation(Tool tool, JsonObject jtool) {
