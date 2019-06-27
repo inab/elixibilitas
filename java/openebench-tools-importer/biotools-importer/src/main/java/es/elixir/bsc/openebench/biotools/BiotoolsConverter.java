@@ -67,7 +67,9 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.json.JsonArray;
@@ -95,21 +97,23 @@ public class BiotoolsConverter {
         final String jhomepage = jtool.getString("homepage", null);
         
         /* inset 'generic' tool with @type: null*/
-        Tool tool = new Tool(URI.create(OpenEBenchEndpoint.URI_BASE + _id), null);
-        tool.setName(name);
+        Tool generic_tool = new Tool(URI.create(OpenEBenchEndpoint.URI_BASE + _id), null);
+        generic_tool.setName(name);
         if (jhomepage != null) {
             try {
                 Web web = new Web();
                 web.setHomepage(new URI(jhomepage));
-                tool.setWeb(web);
+                generic_tool.setWeb(web);
             } catch(URISyntaxException ex) {
                 Logger.getLogger(BiotoolsConverter.class.getName()).log(Level.INFO, "invalid homepage: {0}", jhomepage);
             }
         }
 
-        tool.setDescription(jtool.getString("description", null));
-        tools.add(tool);
-        
+        generic_tool.setDescription(jtool.getString("description", null));
+        tools.add(generic_tool);
+
+        final Set<String> tags = new HashSet<>();
+
         final JsonArray versions = jtool.getJsonArray("version");
         for (int j = 0, m = (versions == null || versions.isEmpty()) ? 1 : versions.size(); j < m; j++) {
             StringBuilder idTemplate = new StringBuilder(OpenEBenchEndpoint.URI_BASE).append("biotools:").append(_id);
@@ -133,6 +137,7 @@ public class BiotoolsConverter {
 
             JsonArray jtoolTypes = jtool.getJsonArray("toolType");
             for (int i = 0, n = jtoolTypes.size(); i < n; i++) {
+                final Tool tool;
                 JsonString jtoolType = jtoolTypes.getJsonString(i);
                 try {
                     final ToolType toolType = ToolType.fromValue(jtoolType.getString());
@@ -204,6 +209,8 @@ public class BiotoolsConverter {
                 tool.setDescription(jtool.getString("description", null));
 
                 addTags(tool, jtool);
+                tags.addAll(tool.getTags());
+                
                 addDocumentation(tool, jtool);
                 addPublications(tool, jtool);
 //                addContacts(tool, jtool);
@@ -221,6 +228,10 @@ public class BiotoolsConverter {
 
                 tools.add(tool);
             }
+        }
+        
+        if (!tags.isEmpty()) {
+            generic_tool.getTags().addAll(tags);
         }
         
         return tools;
