@@ -500,64 +500,68 @@ public class MonitorRestServices {
                 String code = obj.getString("value", "0");
                 String date = obj.getString("date", null);
                 
+                String time = null;
                 ZonedDateTime last_date = null;
-                for (int i = 0, j = 0, m = last_check.size(), n = operational.size(); i < m; i++) {
+                for (int i = 0, j = 0, m = last_check.size(), lim = limit == null ? Integer.MAX_VALUE: limit + 1, n = operational.size(); i < m && lim > 0; i++, lim--) {
                     final JsonObject o = last_check.getJsonObject(i);
                     final String adate = o.getString("date", null);
                     if (adate == null) {
                         continue;
                     }
                     
-                    writer.writeStartObject();
-                    
                     if (last_date == null) {
                         last_date = ZonedDateTime.parse(adate);
                     } else {
                         final ZonedDateTime current_date = ZonedDateTime.parse(adate);
                         long hours = HOURS.between(last_date, current_date);
-                        while (hours > 26) {
+                        while (hours > 26 && lim-- > 0) {
                             hours -= 24;
                             last_date = last_date.plus(24, HOURS);
+                            writer.writeStartObject();
                             writer.write("date", last_date.toString());
                             writer.writeNull("code");
                             writer.writeNull("access_time");
                             writer.writeEnd();
-                            writer.writeStartObject();
                         }
                         last_date = current_date;
                     }
 
-                    while(j <= n && adate.compareTo(date) >= 0) {
-                        code = obj.getString("value", "0");
-                        if (++j < n) {
-                            obj = operational.getJsonObject(j);
-                            date = obj.getString("date", null);
-                        }
-                    }
-                    
-                    writer.write("date", adate);
-                    
-                    final String time = atimes.get(adate);
-                    
-                    try {
-                        final int c = Integer.parseInt(code);
-                        writer.write("code", c);
-                        if (c == HttpURLConnection.HTTP_CLIENT_TIMEOUT ||
-                            time == null) {
-                            writer.writeNull("access_time");
-                        } else {
-                            try {
-                                writer.write("access_time", Integer.parseInt(time));
-                            } catch(NumberFormatException ex) {
-                                writer.writeNull("access_time");
-                            }
-                        }                    
-                    } catch(NumberFormatException ex) {
-                        writer.write("code", 0);
-                        writer.writeNull("access_time");
-                    }
+                    if (lim > 0) {
+                        writer.writeStartObject();
 
-                    writer.writeEnd();
+                        while(j <= n && adate.compareTo(date) >= 0) {
+                            code = obj.getString("value", "0");
+                            if (++j < n) {
+                                obj = operational.getJsonObject(j);
+                                date = obj.getString("date", null);
+                            }
+                        }
+
+                        writer.write("date", adate);
+
+                        final String ntime = atimes.get(adate);
+                        if (ntime != null) {
+                            time = ntime;
+                        }
+                        try {
+                            final int c = Integer.parseInt(code);
+                            writer.write("code", c);
+                            if (c == HttpURLConnection.HTTP_CLIENT_TIMEOUT ||
+                                time == null) {
+                                writer.writeNull("access_time");
+                            } else {
+                                try {
+                                    writer.write("access_time", Integer.parseInt(time));
+                                } catch(NumberFormatException ex) {
+                                    writer.writeNull("access_time");
+                                }
+                            }                    
+                        } catch(NumberFormatException ex) {
+                            writer.write("code", 0);
+                            writer.writeNull("access_time");
+                        }
+                        writer.writeEnd();
+                    }
                 }
                 
                 writer.writeEnd();
