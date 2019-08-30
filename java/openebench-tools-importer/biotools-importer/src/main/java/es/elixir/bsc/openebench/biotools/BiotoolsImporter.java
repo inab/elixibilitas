@@ -1,9 +1,14 @@
 package es.elixir.bsc.openebench.biotools;
 
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Properties;
 import java.util.TreeMap;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * A tool to import the tools from bio.tools repository
@@ -41,9 +46,21 @@ public class BiotoolsImporter {
             password = params.get("--password");
         }
 
-        final String u = user == null || user.isEmpty() ? null : user.get(0);
-        final String p = password == null || password.isEmpty() ? null : password.get(0);
+        String u = user == null || user.isEmpty() ? null : user.get(0);
+        String p = password == null || password.isEmpty() ? null : password.get(0);
 
+        if (u == null || password == null) {
+            try (InputStream in = BiotoolsImporter.class.getClassLoader().getResourceAsStream("META-INF/config.properties")) {
+                if (in != null) {
+                    final Properties properties = new Properties();
+                    properties.load(in);
+                    u = properties.getProperty("user");
+                    p = properties.getProperty("password");
+                }
+            } catch (IOException ex) {
+                Logger.getLogger(BiotoolsImporter.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        }
         if (u == null || u.isEmpty() || p == null || p.isEmpty()) {
             new BiotoolsRepositoryImporter().load();
         } else {

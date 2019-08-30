@@ -97,7 +97,7 @@ public class BiotoolsConverter {
         final String jhomepage = jtool.getString("homepage", null);
         
         /* inset 'generic' tool with @type: null*/
-        Tool generic_tool = new Tool(URI.create(OpenEBenchEndpoint.URI_BASE + _id), null);
+        Tool generic_tool = new Tool(URI.create(OpenEBenchEndpoint.TOOL_URI_BASE + _id), null);
         generic_tool.setName(name);
         if (jhomepage != null) {
             try {
@@ -116,7 +116,7 @@ public class BiotoolsConverter {
 
         final JsonArray versions = jtool.getJsonArray("version");
         for (int j = 0, m = (versions == null || versions.isEmpty()) ? 1 : versions.size(); j < m; j++) {
-            StringBuilder idTemplate = new StringBuilder(OpenEBenchEndpoint.URI_BASE).append("biotools:").append(_id);
+            StringBuilder idTemplate = new StringBuilder(OpenEBenchEndpoint.TOOL_URI_BASE).append("biotools:").append(_id);
 
             final String version = (versions != null && versions.size() > 0) ? versions.getJsonString(j).getString() : null;
             if (version != null) {

@@ -26,6 +26,7 @@
 package es.elixir.bsc.openebench.biotools;
 
 import es.elixir.bsc.openebench.model.tools.Tool;
+import es.elixir.bsc.openebench.tools.OpenEBenchAlambiqueEndpoint;
 import es.elixir.bsc.openebench.tools.OpenEBenchEndpoint;
 import es.elixir.bsc.openebench.tools.OpenEBenchRepository;
 import java.io.IOException;
@@ -96,11 +97,11 @@ public class BiotoolsRepositoryImporter {
                 final Boolean deprecated = tool.getDepricated();
 
                 final String id = tool.id.toString();
-                if (!id.startsWith(OpenEBenchEndpoint.URI_BASE)) {
+                if (!id.startsWith(OpenEBenchEndpoint.TOOL_URI_BASE)) {
                     Logger.getLogger(BiotoolsRepositoryImporter.class.getName()).log(Level.WARNING, "dubious id: {0}", id);
                     continue;
                 }
-                if (id.regionMatches(OpenEBenchEndpoint.URI_BASE.length(), "biotools:", 0, 10)) {
+                if (id.regionMatches(OpenEBenchEndpoint.TOOL_URI_BASE.length(), "biotools:", 0, 10)) {
                     try {
                         if (ids.contains(tool.id)) {
                             if (Boolean.TRUE.equals(deprecated)) {

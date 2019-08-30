@@ -27,7 +27,7 @@ import java.util.logging.Logger;
 
 public class BiocondaRepositoryImporter {
     
-    public final static String ID_TEMPLATE = OpenEBenchEndpoint.URI_BASE + "bioconda:%s:%s/%s/%s";
+    public final static String ID_TEMPLATE = OpenEBenchEndpoint.TOOL_URI_BASE + "bioconda:%s:%s/%s/%s";
     
     private final Map<String, String> dois = OpenEBenchRepository.getDOIPublications();
     
@@ -55,13 +55,13 @@ public class BiocondaRepositoryImporter {
                             tool = create(pack, null);
                             if (tool != null) {
                                 String id = tool.id.toString();
-                                if (id.startsWith(OpenEBenchEndpoint.URI_BASE)) {
-                                    final String[] nodes = id.substring(OpenEBenchEndpoint.URI_BASE.length()).split("/")[0].split(":");
+                                if (id.startsWith(OpenEBenchEndpoint.TOOL_URI_BASE)) {
+                                    final String[] nodes = id.substring(OpenEBenchEndpoint.TOOL_URI_BASE.length()).split("/")[0].split(":");
                                     id = nodes.length == 1 ? nodes[0] : nodes[1];
                                     
                                     if (repository != null) {
                                         // insert 'common' tool
-                                        final Tool common = new Tool(URI.create(OpenEBenchEndpoint.URI_BASE + id), null);
+                                        final Tool common = new Tool(URI.create(OpenEBenchEndpoint.TOOL_URI_BASE + id), null);
                                         common.setName(tool.getName());
                                         common.setDescription(tool.getDescription());
                                         common.setWeb(tool.getWeb());
@@ -110,8 +110,8 @@ public class BiocondaRepositoryImporter {
         final List<Publication> publications = tool.getPublications();
         if (!publications.isEmpty()) {
             String id = tool.id.toString();
-            if (id.startsWith(OpenEBenchEndpoint.URI_BASE)) {
-                final String[] nodes = id.substring(OpenEBenchEndpoint.URI_BASE.length()).split("/")[0].split(":");
+            if (id.startsWith(OpenEBenchEndpoint.TOOL_URI_BASE)) {
+                final String[] nodes = id.substring(OpenEBenchEndpoint.TOOL_URI_BASE.length()).split("/")[0].split(":");
                 id = nodes.length == 1 ? nodes[0] : nodes[1];
                 for (Publication publication : publications) {
                     final String doi = publication.getDOI();
@@ -134,7 +134,7 @@ public class BiocondaRepositoryImporter {
             if (tmp != null) {
                 double score = 0;
                 for (Tool t : OpenEBenchRepository.getTools().values()) {
-                    if (t.id.toString().substring(OpenEBenchEndpoint.URI_BASE.length()).startsWith("biotools:")) {
+                    if (t.id.toString().substring(OpenEBenchEndpoint.TOOL_URI_BASE.length()).startsWith("biotools:")) {
                         final double s = ToolsComparator.compare(tmp, t);
                         if (s > score) {
                             score = s;
@@ -151,8 +151,8 @@ public class BiocondaRepositoryImporter {
             }
         }
         
-        if (id.startsWith(OpenEBenchEndpoint.URI_BASE)) {
-            final String[] nodes = id.substring(OpenEBenchEndpoint.URI_BASE.length()).split("/");
+        if (id.startsWith(OpenEBenchEndpoint.TOOL_URI_BASE)) {
+            final String[] nodes = id.substring(OpenEBenchEndpoint.TOOL_URI_BASE.length()).split("/");
             if (nodes.length > 0) {
                 final String[] _id = nodes[0].split(":");
                 final Tool tool = create(pack, _id.length > 1 ? _id[1] : _id[0]);
