@@ -6,9 +6,13 @@ import es.elixir.bsc.elixibilitas.dao.MetricsDAO;
 import es.elixir.bsc.elixibilitas.dao.ToolsDAO;
 import es.elixir.bsc.elixibilitas.model.metrics.Metrics;
 import es.elixir.bsc.openebench.model.tools.Tool;
+import es.elixir.bsc.openebench.tools.OpenEBenchEndpoint;
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Properties;
 import java.util.TreeMap;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.CountDownLatch;
@@ -25,7 +29,7 @@ import java.util.logging.Logger;
  */
 
 public class BatchMetricsChecker {
-    
+
     private final static String HELP = "java -jar metrics_checker.jar -uri uri\n\n" +
                                        "parameters:\n\n" +
                                        "-uri - mongodb url\n";
@@ -55,22 +59,28 @@ public class BatchMetricsChecker {
                 }
             }
         });
-
         
         try {
-            if (params.isEmpty()) {
-                new BatchMetricsChecker(executor).check(new MongoClient("localhost"));
-            } else {
-                final List<String> uris = params.get("-uri");
-                if (uris == null || uris.isEmpty()) {
-                    System.out.println("missed 'url' parameter");
-                    System.out.println(HELP);
-                    System.exit(1);
+            String uri = null;
+            final List<String> uris = params.get("-uri");
+            if (uris == null || uris.isEmpty()) {
+                try (InputStream in = BatchMetricsChecker.class.getClassLoader().getResourceAsStream("META-INF/config.properties")) {
+                    if (in != null) {
+                        final Properties properties = new Properties();
+                        properties.load(in);
+                        uri = properties.getProperty("mongodb.uri");
+                    }
+                } catch (IOException ex) {
+                    Logger.getLogger(BatchMetricsChecker.class.getName()).log(Level.SEVERE, null, ex);
                 }
-
-                final MongoClient mc = new MongoClient(new MongoClientURI(uris.get(0)));
-                new BatchMetricsChecker(executor).check(mc);
-            } 
+            } else {
+                uri = uris.get(0);
+            }
+            
+            final MongoClient mc = (uri == null || uri.isEmpty()) ? 
+                    new MongoClient("localhost") : 
+                    new MongoClient(new MongoClientURI(uri));
+            new BatchMetricsChecker(executor).check(mc); 
         } finally {
             executor.shutdown();
         }
@@ -80,8 +90,8 @@ public class BatchMetricsChecker {
 
     public void check(MongoClient mc) {
         
-        final ToolsDAO toolsDAO = new ToolsDAO(mc.getDatabase("elixibilitas"), "https://openebench.bsc.es/monitor/tool/");
-        final MetricsDAO metricsDAO = new MetricsDAO(mc.getDatabase("elixibilitas"), "https://openebench.bsc.es/monitor/metrics/");
+        final ToolsDAO toolsDAO = new ToolsDAO(mc.getDatabase("elixibilitas"), OpenEBenchEndpoint.TOOL_URI_BASE);
+        final MetricsDAO metricsDAO = new MetricsDAO(mc.getDatabase("elixibilitas"), OpenEBenchEndpoint.METRICS_URI_BASE);
         
         final List<Tool> tools = toolsDAO.get();
         final CountDownLatch latch = new CountDownLatch(tools.size());

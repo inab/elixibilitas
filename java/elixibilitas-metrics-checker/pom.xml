@@ -30,6 +30,19 @@
     <dependencies>
 
         <dependency>
+            <groupId>es.elixir.bsc.elixibilitas</groupId>
+            <artifactId>openebench-repo</artifactId>
+            <version>0.1-SNAPSHOT</version>
+        </dependency>
+
+        <dependency>
+            <groupId>es.elixir.bsc.elixibilitas</groupId>
+            <artifactId>elixibilitas-dao</artifactId>
+            <version>0.1-SNAPSHOT</version>
+            <type>jar</type>
+        </dependency>
+
+        <dependency>
             <groupId>org.glassfish</groupId>
             <artifactId>javax.json</artifactId>
             <version>1.1</version>
@@ -40,13 +53,6 @@
             <groupId>javax.json.bind</groupId>
             <artifactId>javax.json.bind-api</artifactId>
             <version>1.0</version>
-        </dependency>
-
-        <dependency>
-            <groupId>es.elixir.bsc.elixibilitas</groupId>
-            <artifactId>elixibilitas-dao</artifactId>
-            <version>0.1-SNAPSHOT</version>
-            <type>jar</type>
         </dependency>
 
         <dependency>
