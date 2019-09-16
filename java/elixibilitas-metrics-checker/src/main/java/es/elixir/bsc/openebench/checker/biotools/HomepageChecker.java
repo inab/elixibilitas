@@ -138,7 +138,10 @@ public class HomepageChecker implements MetricsChecker {
         try {
             SSLContext sc = SSLContext.getInstance("TLSv1.2");
             sc.init(null, trustAllManager, new SecureRandom());
-        } catch (NoSuchAlgorithmException | KeyManagementException ex) {}
+            SSLContext.setDefault(sc);
+        } catch (NoSuchAlgorithmException | KeyManagementException ex) {
+            Logger.getLogger(HomepageChecker.class.getName()).log(Level.INFO, ex.getMessage());
+        }
         
         final HostnameVerifier allVerifier = (String h, SSLSession s) -> true;
 
@@ -282,10 +285,11 @@ public class HomepageChecker implements MetricsChecker {
                             final JsonObject obj = value.asJsonObject();
                             final String context = obj.getString("@context", null);
                             if (context != null && context.equals("http://schema.org")) {
-                                final String type = obj.getString("@type", null);
-                                if (type != null && type.equals("SoftwareApplication")) {
-                                    return true;
-                                }
+                                return true;
+//                                final String type = obj.getString("@type", null);
+//                                if (type != null && type.equals("SoftwareApplication")) {
+//                                    return true;
+//                                }
                             }
                         }
                     }
@@ -296,7 +300,10 @@ public class HomepageChecker implements MetricsChecker {
             for(Element elements : doc.getElementsByAttribute("itemscope")) {
                 for (Element items : elements.getElementsByAttribute("itemtype")) {
                     final String itemtype = items.attr("itemtype");
-                    if (itemtype != null && itemtype.equals("http://schema.org/SoftwareApplication")) {
+                    if (itemtype != null &&
+                        itemtype.startsWith("http://schema.org/")) {
+//                       (itemtype.equals("http://schema.org/SoftwareApplication") ||
+//                        itemtype.equals("http://schema.org/DataCatalog"))) {
                         return true;
                     }
                 }
@@ -305,10 +312,11 @@ public class HomepageChecker implements MetricsChecker {
             for(Element elements : doc.getElementsByAttribute("vocab")) {
                 final String vocab = elements.attr("vocab");
                 if (vocab != null && vocab.equals("http://schema.org")) {
-                    final String typeof = elements.attr("typeof");
-                    if (typeof != null && typeof.equals("SoftwareApplication")) {
-                        return true;
-                    }
+                    return true;
+//                    final String typeof = elements.attr("typeof");
+//                    if (typeof != null && typeof.equals("SoftwareApplication")) {
+//                        return true;
+//                    }
                 }
             }
         } catch (IOException ex) {
