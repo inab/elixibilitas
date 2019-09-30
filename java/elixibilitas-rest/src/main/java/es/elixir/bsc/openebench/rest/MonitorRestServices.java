@@ -467,6 +467,10 @@ public class MonitorRestServices {
         String to = date2 == null ? null : Instant.ofEpochSecond(date2).toString();
         
         final JsonArray last_check = metricsDAO.findLog(id, "/project/website/last_check", from, to, limit);
+        if (last_check.isEmpty()) {
+            // if no measurments was done in the period, read the last one
+            last_check.addAll(metricsDAO.findLog(id, "/project/website/last_check", null, null, 1));
+        }
         
         final JsonArray operational = metricsDAO.findLog(id, "/project/website/operational", null, to, null);
         if (operational == null) {
@@ -478,8 +482,6 @@ public class MonitorRestServices {
         final JsonArray access_time = metricsDAO.findLog(id, "/project/website/access_time", from, to, null);
         if (access_time == null) {
             return Response.status(Response.Status.INTERNAL_SERVER_ERROR);
-        } else if (access_time.isEmpty()) {
-            return Response.status(Response.Status.NOT_FOUND);
         }
         
         final TreeMap<String, String> atimes = new TreeMap<>();
