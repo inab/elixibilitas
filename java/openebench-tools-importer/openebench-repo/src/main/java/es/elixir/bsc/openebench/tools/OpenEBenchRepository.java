@@ -94,8 +94,8 @@ public class OpenEBenchRepository {
         final Map<String, Tool> toolz = getTools();
         for (Tool tool : toolz.values()) {
             String id = tool.id.toString();
-            if (id.startsWith(OpenEBenchEndpoint.URI_BASE)) {
-                final String[] nodes = id.substring(OpenEBenchEndpoint.URI_BASE.length()).split("/")[0].split(":");
+            if (id.startsWith(OpenEBenchEndpoint.TOOL_URI_BASE)) {
+                final String[] nodes = id.substring(OpenEBenchEndpoint.TOOL_URI_BASE.length()).split("/")[0].split(":");
                 id = nodes.length == 1 ? nodes[0] : nodes[1];
                 for (Publication publication : tool.getPublications()) {
                     final String doi = publication.getDOI();

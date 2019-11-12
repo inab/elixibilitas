@@ -24,8 +24,10 @@ import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URL;
+import java.util.Base64;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.Properties;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -37,7 +39,6 @@ import javax.json.bind.JsonbBuilder;
 import javax.json.bind.JsonbConfig;
 import javax.json.bind.config.PropertyNamingStrategy;
 import javax.json.stream.JsonParser;
-import javax.xml.bind.DatatypeConverter;
 
 /**
  * @author Dmitry Repchevsky
@@ -45,15 +46,33 @@ import javax.xml.bind.DatatypeConverter;
 
 public class OpenEBenchEndpoint {
     
-    public static final String URI_BASE = "https://dev-openebench.bsc.es/monitor/tool/";
+    private static final String DEFAULT_URI_BASE = "https://openebench.bsc.es/monitor";
+
+    public static final String TOOL_URI_BASE;
+    public static final String METRICS_URI_BASE;
+    public static final String ALAMBIQUE_URI_BASE;
     
+    static {
+        String uri_base;
+        try (InputStream in = OpenEBenchEndpoint.class.getClassLoader().getResourceAsStream("openebench-repo.cfg")) {
+            final Properties p = new Properties();
+            p.load(in);
+            uri_base = p.getProperty("openebench.uri.base", DEFAULT_URI_BASE);
+        } catch (IOException ex) {
+            uri_base = DEFAULT_URI_BASE;
+        }
+        TOOL_URI_BASE = uri_base + "/tool/";
+        METRICS_URI_BASE = uri_base + "/metrics/";
+        ALAMBIQUE_URI_BASE = uri_base + "/alambique/";
+    }
+
     private final String credentials;
     
     public OpenEBenchEndpoint(String name, String password) {
         String _credentials;
         try {
             final StringBuilder sb = new StringBuilder().append(name).append(':').append(password);
-            _credentials = DatatypeConverter.printBase64Binary(sb.toString().getBytes("UTF-8"));
+            _credentials = Base64.getEncoder().encodeToString(sb.toString().getBytes("UTF-8"));
         } catch (UnsupportedEncodingException ex) {
             _credentials = "";
         }
@@ -106,7 +125,7 @@ public class OpenEBenchEndpoint {
                 new JsonbConfig().withPropertyNamingStrategy(PropertyNamingStrategy.UPPER_CAMEL_CASE));
 
         try {
-            HttpURLConnection con = (HttpURLConnection)URI.create(URI_BASE).toURL().openConnection();
+            HttpURLConnection con = (HttpURLConnection)URI.create(TOOL_URI_BASE).toURL().openConnection();
             con.setRequestProperty("Accept", "application/json");
             con.setUseCaches(false);
             con.setDoOutput(true);
