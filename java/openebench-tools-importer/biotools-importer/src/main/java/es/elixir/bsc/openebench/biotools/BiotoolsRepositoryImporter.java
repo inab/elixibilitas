@@ -101,10 +101,11 @@ public class BiotoolsRepositoryImporter {
                     Logger.getLogger(BiotoolsRepositoryImporter.class.getName()).log(Level.WARNING, "dubious id: {0}", id);
                     continue;
                 }
-                if (id.regionMatches(OpenEBenchEndpoint.TOOL_URI_BASE.length(), "biotools:", 0, 10)) {
+                if (id.regionMatches(OpenEBenchEndpoint.TOOL_URI_BASE.length(), "biotools:", 0, 9)) {
                     try {
                         if (ids.contains(tool.id)) {
                             if (Boolean.TRUE.equals(deprecated)) {
+                                System.out.println("> REMOVE DEPRECATE: " + tool.id);
                                 tool.setDepricated(null);
                                 if (repository != null) {
                                     repository.put(tool);
@@ -113,7 +114,7 @@ public class BiotoolsRepositoryImporter {
                         } else if (!Boolean.TRUE.equals(deprecated)) {
                             tool.setDepricated(true);
 
-                            System.out.println("> DEPRICATE: " + tool.id);
+                            System.out.println("> DEPRECATE: " + tool.id);
                             if (repository != null) {
                                 repository.patch(tool);
                             }
