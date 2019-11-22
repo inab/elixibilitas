@@ -466,11 +466,10 @@ public class MonitorRestServices {
         String from = date1 == null ? null : Instant.ofEpochSecond(date1).toString();
         String to = date2 == null ? null : Instant.ofEpochSecond(date2).toString();
         
-        final JsonArray last_check = metricsDAO.findLog(id, "/project/website/last_check", from, to, limit);
-        if (last_check.isEmpty()) {
-            // if no measurments was done in the period, read the last one
-            last_check.addAll(metricsDAO.findLog(id, "/project/website/last_check", null, null, 1));
-        }
+        
+        final JsonArray l_check = metricsDAO.findLog(id, "/project/website/last_check", from, to, limit);
+        final JsonArray last_check = l_check.isEmpty() ? metricsDAO.findLog(id, "/project/website/last_check", null, null, 1) 
+                                                       : l_check;
         
         final JsonArray operational = metricsDAO.findLog(id, "/project/website/operational", null, to, null);
         if (operational == null) {
