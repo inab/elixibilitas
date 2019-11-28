@@ -50,6 +50,8 @@ https://openebench.bsc.es/monitor/tool/
 > Returns all OpenEBench tools.<br/>
 > The pagination is implemented via the HTTP Range Header (i.g. "Range: tools=10-30").<br/>
 > The response always contains the HTTP Content-Range Header ("Content-Range: tools 10-30/20000").
+> Alternatively, there are two query parameters: {from} and {to} that may be used instead of the Range Header:
+> example: [https://openebench.bsc.es/monitor/tool?from=10&to=20](https://openebench.bsc.es/monitor/tool?from=10&to=20) .<br/>
 ```
 https://openebench.bsc.es/monitor/tool/{id}
 https://openebench.bsc.es/monitor/tool/{id}/{type}
