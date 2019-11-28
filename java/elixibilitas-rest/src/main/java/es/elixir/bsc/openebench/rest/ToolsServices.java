@@ -223,8 +223,10 @@ public class ToolsServices {
     /**
      * Get back all tools as a JSON array.
      * 
-     * @param range
-     * @param asyncResponse 
+     * @param range Range header (RFC7233)
+     * @param from query parameter substitution for the range.firstPos
+     * @param to query parameter substitution for the range.lastPos
+     * @param asyncResponse json array that contains all tools objects
      */
     @GET
     @Path("/")
@@ -247,11 +249,21 @@ public class ToolsServices {
                                     example = "Range: tools=10-30",
                                     schema = @Schema(type = "string")) 
                          final Range range,
+                         @QueryParam("from") 
+                         @Parameter(description = "alternative to the RFC2733 Range.firstPos",
+                                    example = "10",
+                                    schema = @Schema(type = "integer"))
+                         final Long from,
+                         @Parameter(description = "alternative to the RFC2733 Range.lastPos",
+                                    example = "30",
+                                    schema = @Schema(type = "integer"))
+                         @QueryParam("to")
+                         final Long to,
                          @Suspended final AsyncResponse asyncResponse) {
         executor.submit(() -> {
             asyncResponse.resume(
-                    getToolsAsync(range == null ? null : range.getFirstPos(), 
-                                  range == null ? null : range.getLastPos())
+                    getToolsAsync(range == null ? from : range.getFirstPos(), 
+                                  range == null ? to : range.getLastPos())
                     .header("Access-Control-Allow-Headers", "Range")
                     .header("Access-Control-Expose-Headers", "Accept-Ranges")
                     .header("Access-Control-Expose-Headers", "Content-Range")
@@ -654,8 +666,8 @@ public class ToolsServices {
                             @PathParam("type") String type,
                             @PathParam("host") String host,
                             @PathParam("path") String path,
-                            @QueryParam("from") final String  from,
-                            @QueryParam("to") final String  to,
+                            @QueryParam("from") final String from,
+                            @QueryParam("to") final String to,
                             @QueryParam("limit") final Integer limit,
                             @Suspended final AsyncResponse asyncResponse) {
         if (path == null || path.isEmpty()) {
