@@ -163,6 +163,8 @@ public class MonitorRestServices {
                        @QueryParam("id")
                        @Parameter(description = "prefixed tool id", required = true)
                        final String id,
+                       @QueryParam("skip") final Long skip,
+                       @QueryParam("limit") final Long limit,
                        @QueryParam("projection")
                        @Parameter(description = "tools properties to return")
                        final List<String> projections,
@@ -180,13 +182,26 @@ public class MonitorRestServices {
                        final List<String> tags,
                        @Suspended final AsyncResponse asyncResponse) {
         executor.submit(() -> {
-            asyncResponse.resume(searchAsync(id, range != null ? range.getFirstPos() :  null, 
-                    range != null ? range.getLastPos() : null,
-                    projections, text, name, description, tags)
-                        .header("Access-Control-Allow-Headers", "Range")
-                        .header("Access-Control-Expose-Headers", "Accept-Ranges")
-                        .header("Access-Control-Expose-Headers", "Content-Range")
-                        .build());
+            if (range != null) {
+                asyncResponse.resume(searchAsync(id, range.getFirstPos(), 
+                        range.getLastPos(), projections, text, name, description, tags)
+                            .header("Access-Control-Allow-Headers", "Range")
+                            .header("Access-Control-Expose-Headers", "Accept-Ranges")
+                            .header("Access-Control-Expose-Headers", "Content-Range")
+                            .build());
+            } else {
+                final Long from = skip;
+                Long to = limit;
+                if (from != null && to != null) {
+                    to += from;
+                }
+                
+                asyncResponse.resume(searchAsync(id, from, to, projections, text, name, description, tags)
+                            .header("Access-Control-Allow-Headers", "Range")
+                            .header("Access-Control-Expose-Headers", "Accept-Ranges")
+                            .header("Access-Control-Expose-Headers", "Content-Range")
+                            .build());
+            }
         });
     }
     
@@ -291,7 +306,7 @@ public class MonitorRestServices {
                 final Long from = skip;
                 Long to = limit;
                 if (from != null && to != null) {
-                    to += limit;
+                    to += from;
                 }
                 
                 asyncResponse.resume(aggregateAsync(id, from, to, projections, text, name, description, tags, types, edam_term)
