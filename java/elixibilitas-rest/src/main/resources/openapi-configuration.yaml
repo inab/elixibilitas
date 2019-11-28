@@ -1,0 +1,14 @@
+resourcePackages:
+- es.elixir.bsc.openebench.rest
+prettyPrint: true
+cacheTTL: 0
+openAPI:
+  info:
+    version: '0.1'
+    title: OpenEBench REST API services
+    description: 'OpenEBench REST API services'
+    contact:
+      email: https://openebench.bsc.es
+    license:
+      name: LGPL 2.1
+      url: https://www.gnu.org/licenses/old-licenses/lgpl-2.1.html
