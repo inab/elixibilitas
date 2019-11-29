@@ -30,18 +30,19 @@ The tools data may be obtained in OWL2 JSON-LD format for any concrete tool reco
 or for the entire tools collection:<br/>
 > [https://openebench.bsc.es/monitor/tool/](https://openebench.bsc.es/monitor/tool/)
 
-The decision to return JSON or JSON-LD is taken on the HTTP "Accept" header.<br/><br/>
-These URLs may be imported into [Protegé](https://protege.stanford.edu/) tool.<br/>
+The decision to return JSON or JSON-LD is taken on the HTTP "Accept" header.  
+<br/>
+These URLs may be imported into [Protegé](https://protege.stanford.edu/) tool.  
 **NB:** Entire ontology is very big and exceeds the default Protegé memory settings.
 
 
 ###### REST API
 The REST API is based on [JAX-RS](jcp.org/en/jsr/detail?id=370) API.
 
-> Open API 3.0 (aka Swagger): [https://openebench.bsc.es/monitor/openapi.json](https://openebench.bsc.es/monitor/openapi.json)<br/>
-> Tool JSON Schema: [https://openebench.bsc.es/monitor/tool/tool.json](https://openebench.bsc.es/monitor/tool/tool.json)<br/>
-> Metrics JSON Schema: [https://openebench.bsc.es/monitor/metrics/metrics.json](https://openebench.bsc.es/monitor/metrics/metrics.json)
-<br/><br/>
+> Open API 3.0 (aka Swagger): [https://openebench.bsc.es/monitor/openapi.json](https://openebench.bsc.es/monitor/openapi.json)  
+> Tool JSON Schema: [https://openebench.bsc.es/monitor/tool/tool.json](https://openebench.bsc.es/monitor/tool/tool.json)  
+> Metrics JSON Schema: [https://openebench.bsc.es/monitor/metrics/metrics.json](https://openebench.bsc.es/monitor/metrics/metrics.json)  
+<br/>
 
 The API provides an access to biological tools descriptions:
 ```
@@ -67,9 +68,10 @@ where:
 
 ---
 
-> Note that {id}/{type}/{host} uniquely identify the tool, while omitting the {type} or {host} returns an array of descriptions.<br/><br/>
-> example 1: [https://openebench.bsc.es/monitor/tool/biotools:pmut:2017/web/mmb.irbbarcelona.org](https://openebench.bsc.es/monitor/tool/biotools:pmut:2017/web/mmb.irbbarcelona.org) .<br/>
-> example 2: [https://openebench.bsc.es/monitor/tool/biotools:pmut:2017/web/mmb.irbbarcelona.org/credits](https://openebench.bsc.es/monitor/tool/biotools:pmut:2017/web/mmb.irbbarcelona.org/credits) .<br/>
+> Note that {id}/{type}/{host} uniquely identify the tool, while omitting the {type} or {host} returns an array of descriptions.  
+<br/>
+> example 1: [https://openebench.bsc.es/monitor/tool/biotools:pmut:2017/web/mmb.irbbarcelona.org](https://openebench.bsc.es/monitor/tool/biotools:pmut:2017/web/mmb.irbbarcelona.org) .  
+> example 2: [https://openebench.bsc.es/monitor/tool/biotools:pmut:2017/web/mmb.irbbarcelona.org/credits](https://openebench.bsc.es/monitor/tool/biotools:pmut:2017/web/mmb.irbbarcelona.org/credits) .  
 
 curl patch tool data example: 
 ```
@@ -88,8 +90,8 @@ Quality Metrics accessed via:
 https://openebench.bsc.es/monitor/metrics/
 https://openebench.bsc.es/monitor/metrics/{id}/{type}/{host}/{path}
 ```
-> example1: [https://openebench.bsc.es/monitor/metrics/biotools:pmut:2017/web/mmb.irbbarcelona.org](https://openebench.bsc.es/monitor/metrics/biotools:pmut:2017/web/mmb.irbbarcelona.org) .<br/>
-> example2: [https://openebench.bsc.es/monitor/metrics/biotools:pmut:2017/web/mmb.irbbarcelona.org/project/website](https://openebench.bsc.es/monitor/metrics/biotools:pmut:2017/web/mmb.irbbarcelona.org/project/website) .<br/>
+> example1: [https://openebench.bsc.es/monitor/metrics/biotools:pmut:2017/web/mmb.irbbarcelona.org](https://openebench.bsc.es/monitor/metrics/biotools:pmut:2017/web/mmb.irbbarcelona.org) .  
+> example2: [https://openebench.bsc.es/monitor/metrics/biotools:pmut:2017/web/mmb.irbbarcelona.org/project/website](https://openebench.bsc.es/monitor/metrics/biotools:pmut:2017/web/mmb.irbbarcelona.org/project/website) .  
 > curl patch metrics data example: 
 ```
 curl -v -X PATCH -u user:password -H 'Content-Type: application/json' /
@@ -111,16 +113,18 @@ where:
 - {id} is the compound tool id (i.e. "pmut", "biotools:pmut", ":pmut:2017")
 - {projection} tools properties to return
 - {text} text to search
-> The method is thought for the client's GUI that may use a pagination mechanism.<br/>
-> The pagination is implemented via the HTTP Range Header (i.g. "Range: tools=10-30").<br/>
-> The response always contains the HTTP Content-Range Header ("Content-Range: tools 10-30/10000").<br/>
-> When pagination is used, the server seponds with 206 Partial Content.<br/>
+> The method is thought for the client's GUI that may use a pagination mechanism.  
+> The pagination is implemented via the HTTP Range Header (i.g. "Range: tools=10-30").  
+> The response always contains the HTTP Content-Range Header ("Content-Range: tools 10-30/10000").  
+> When pagination is used, the server seponds with 206 Partial Content.  
 > There is also possibility to use query parameters {skip} and {limit} (range 10-30 = skip 10, limit 20).  
-> The results are grouped by the id and sorted by names.<br/>
-> example 1: [https://openebench.bsc.es/monitor/rest/search](https://openebench.bsc.es/monitor/rest/search) .<br/>
-> example 2: [https://openebench.bsc.es/monitor/rest/search](https://openebench.bsc.es/monitor/rest/search) .<br/>
-> example 3: [https://openebench.bsc.es/monitor/rest/search?id=pmut](https://openebench.bsc.es/monitor/rest/search?id=pmut) .<br/>
-> example 4: [https://openebench.bsc.es/monitor/rest/search?text=alignment](https://openebench.bsc.es/monitor/rest/search?text=alignment) .<br/>
+<br/>
+> The results are grouped by the id and sorted by names.  
+<br/>
+> example 1: [https://openebench.bsc.es/monitor/rest/search](https://openebench.bsc.es/monitor/rest/search) .  
+> example 2: [https://openebench.bsc.es/monitor/rest/search](https://openebench.bsc.es/monitor/rest/search) .  
+> example 3: [https://openebench.bsc.es/monitor/rest/search?id=pmut](https://openebench.bsc.es/monitor/rest/search?id=pmut) .  
+> example 4: [https://openebench.bsc.es/monitor/rest/search?text=alignment](https://openebench.bsc.es/monitor/rest/search?text=alignment) .  
 
 ---
 
@@ -153,8 +157,8 @@ https://elixir.bsc.es/monitor/rest/edam/search?text={text to search}
 
 There are simple stat info that can be obtained from the server:
 
->[https://openebench.bsc.es/monitor/rest/statistics](https://openebench.bsc.es/monitor/rest/statistics) : basic statistics.<br/>
->[https://openebench.bsc.es/monitor/rest/statistics/total](https://openebench.bsc.es/monitor/rest/statistics/total) : total number of tools.<br/>
+>[https://openebench.bsc.es/monitor/rest/statistics](https://openebench.bsc.es/monitor/rest/statistics) : basic statistics.  
+>[https://openebench.bsc.es/monitor/rest/statistics/total](https://openebench.bsc.es/monitor/rest/statistics/total) : total number of tools.  
 >[https://openebench.bsc.es/monitor/rest/statistics/operational](https://openebench.bsc.es/monitor/rest/statistics/operational) : number of tools those homepage is accessible.
 
 ```
