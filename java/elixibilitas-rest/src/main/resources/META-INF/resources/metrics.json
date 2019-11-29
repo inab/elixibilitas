@@ -81,8 +81,12 @@
             "description": "search engines allowed to track the website",
             "type": "boolean"
           },
+          "https": {
+            "description": "web site access is secured (https)",
+            "type": "boolean"
+          },
           "ssl": {
-            "description": "web site access is properly secured (no property = not ssl, false = ssl troubles)",
+            "description": "ssl works",
             "type": "boolean"
           },
           "access_time": {
