@@ -562,6 +562,9 @@ public class ToolsDAO extends AbstractDAO<Document> implements Serializable {
                 aggregation.add(Aggregates.group(new BasicDBObject("_id", "$_id.id"), Accumulators.push("tools", "$$ROOT")));
 
                 aggregation.add(Aggregates.sort(Sorts.ascending("tools.name")));
+
+                aggregation.add(Aggregates.unwind("$tools"));
+                aggregation.add(Aggregates.replaceRoot("$tools"));
                 
                 if (skip != null) {
                     aggregation.add(Aggregates.skip(skip.intValue()));
@@ -570,8 +573,6 @@ public class ToolsDAO extends AbstractDAO<Document> implements Serializable {
                     aggregation.add(Aggregates.limit(limit.intValue()));
                 }
 
-                aggregation.add(Aggregates.unwind("$tools"));
-                aggregation.add(Aggregates.replaceRoot("$tools"));
                 AggregateIterable<Document> iterator = col.aggregate(aggregation).allowDiskUse(true);
 
                 try (MongoCursor<Document> cursor = iterator.iterator()) {
