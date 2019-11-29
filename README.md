@@ -70,8 +70,8 @@ where:
 
 > Note that {id}/{type}/{host} uniquely identify the tool, while omitting the {type} or {host} returns an array of descriptions.  
 <br/>
-> example 1: [https://openebench.bsc.es/monitor/tool/biotools:pmut:2017/web/mmb.irbbarcelona.org](https://openebench.bsc.es/monitor/tool/biotools:pmut:2017/web/mmb.irbbarcelona.org) .  
-> example 2: [https://openebench.bsc.es/monitor/tool/biotools:pmut:2017/web/mmb.irbbarcelona.org/credits](https://openebench.bsc.es/monitor/tool/biotools:pmut:2017/web/mmb.irbbarcelona.org/credits) .  
+> example 1: [https://openebench.bsc.es/monitor/tool/biotools:pmut:2017/web/mmb.irbbarcelona.org](https://openebench.bsc.es/monitor/tool/biotools:pmut:2017/web/mmb.irbbarcelona.org) .<br/>
+> example 2: [https://openebench.bsc.es/monitor/tool/biotools:pmut:2017/web/mmb.irbbarcelona.org/credits](https://openebench.bsc.es/monitor/tool/biotools:pmut:2017/web/mmb.irbbarcelona.org/credits) .<br/>
 
 curl patch tool data example: 
 ```
@@ -90,8 +90,8 @@ Quality Metrics accessed via:
 https://openebench.bsc.es/monitor/metrics/
 https://openebench.bsc.es/monitor/metrics/{id}/{type}/{host}/{path}
 ```
-> example1: [https://openebench.bsc.es/monitor/metrics/biotools:pmut:2017/web/mmb.irbbarcelona.org](https://openebench.bsc.es/monitor/metrics/biotools:pmut:2017/web/mmb.irbbarcelona.org) .  
-> example2: [https://openebench.bsc.es/monitor/metrics/biotools:pmut:2017/web/mmb.irbbarcelona.org/project/website](https://openebench.bsc.es/monitor/metrics/biotools:pmut:2017/web/mmb.irbbarcelona.org/project/website) .  
+> example1: [https://openebench.bsc.es/monitor/metrics/biotools:pmut:2017/web/mmb.irbbarcelona.org](https://openebench.bsc.es/monitor/metrics/biotools:pmut:2017/web/mmb.irbbarcelona.org) .<br/>
+> example2: [https://openebench.bsc.es/monitor/metrics/biotools:pmut:2017/web/mmb.irbbarcelona.org/project/website](https://openebench.bsc.es/monitor/metrics/biotools:pmut:2017/web/mmb.irbbarcelona.org/project/website) .<br/>
 > curl patch metrics data example: 
 ```
 curl -v -X PATCH -u user:password -H 'Content-Type: application/json' /
@@ -121,10 +121,10 @@ where:
 <br/>
 > The results are grouped by the id and sorted by names.  
 <br/>
-> example 1: [https://openebench.bsc.es/monitor/rest/search](https://openebench.bsc.es/monitor/rest/search) .  
-> example 2: [https://openebench.bsc.es/monitor/rest/search](https://openebench.bsc.es/monitor/rest/search) .  
-> example 3: [https://openebench.bsc.es/monitor/rest/search?id=pmut](https://openebench.bsc.es/monitor/rest/search?id=pmut) .  
-> example 4: [https://openebench.bsc.es/monitor/rest/search?text=alignment](https://openebench.bsc.es/monitor/rest/search?text=alignment) .  
+> example 1: [https://openebench.bsc.es/monitor/rest/search](https://openebench.bsc.es/monitor/rest/search) .<br/>
+> example 2: [https://openebench.bsc.es/monitor/rest/search](https://openebench.bsc.es/monitor/rest/search) .<br/>
+> example 3: [https://openebench.bsc.es/monitor/rest/search?id=pmut](https://openebench.bsc.es/monitor/rest/search?id=pmut) .<br/>
+> example 4: [https://openebench.bsc.es/monitor/rest/search?text=alignment](https://openebench.bsc.es/monitor/rest/search?text=alignment) .<br/>
 
 ---
 
