@@ -36,14 +36,10 @@ import io.swagger.v3.oas.annotations.OpenAPIDefinition;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.headers.Header;
-import io.swagger.v3.oas.annotations.info.Contact;
-import io.swagger.v3.oas.annotations.info.Info;
-import io.swagger.v3.oas.annotations.info.License;
 import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
-import io.swagger.v3.oas.annotations.servers.Server;
 import java.io.BufferedWriter;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
@@ -88,15 +84,6 @@ import javax.ws.rs.core.UriInfo;
  * @author Dmitry Repchevsky
  */
 
-@OpenAPIDefinition(info = @Info(title = "OpenEBench REST API services", 
-                                version = "0.1", 
-                                description = "OpenEBench REST API services",
-                                license = @License(name = "LGPL 2.1", 
-                                            url = "https://www.gnu.org/licenses/old-licenses/lgpl-2.1.html"),
-                                contact = @Contact(url = "https://openebench.bsc.es")
-                                ),
-                    //security = @SecurityRequirement(name = "openid-connect"), 
-                    servers = {@Server(url = "https://openebench.bsc.es/")})
 @Path("/rest/")
 @ApplicationScoped
 public class MonitorRestServices {
