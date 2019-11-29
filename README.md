@@ -47,11 +47,12 @@ The API provides an access to biological tools descriptions:
 ```
 https://openebench.bsc.es/monitor/tool/
 ```
-> Returns all OpenEBench tools.<br/>
-> The pagination is implemented via the HTTP Range Header (i.g. "Range: tools=10-30").<br/>
-> The response always contains the HTTP Content-Range Header ("Content-Range: tools 10-30/20000").
-> Alternatively, there are two query parameters: {from} and {to} that may be used instead of the Range Header:
-> example: [https://openebench.bsc.es/monitor/tool?from=10&to=20](https://openebench.bsc.es/monitor/tool?from=10&to=20) .<br/>
+> Returns all OpenEBench tools.  
+> The pagination is implemented via the HTTP Range Header (i.g. "Range: tools=10-30").  
+> The response always contains the HTTP Content-Range Header ("Content-Range: tools 10-30/20000").  
+> Alternatively, there are two query parameters: {from} and {to} that may be used instead of the Range Header:  
+>
+> example: [https://openebench.bsc.es/monitor/tool?from=10&to=20](https://openebench.bsc.es/monitor/tool?from=10&to=20) .  
 ```
 https://openebench.bsc.es/monitor/tool/{id}
 https://openebench.bsc.es/monitor/tool/{id}/{type}
@@ -114,10 +115,12 @@ where:
 > The pagination is implemented via the HTTP Range Header (i.g. "Range: tools=10-30").<br/>
 > The response always contains the HTTP Content-Range Header ("Content-Range: tools 10-30/10000").<br/>
 > When pagination is used, the server seponds with 206 Partial Content.<br/>
+> There is also possibility to use query parameters {skip} and {limit} (range 10-30 = skip 10, limit 20).  
 > The results are grouped by the id and sorted by names.<br/>
 > example 1: [https://openebench.bsc.es/monitor/rest/search](https://openebench.bsc.es/monitor/rest/search) .<br/>
-> example 2: [https://openebench.bsc.es/monitor/rest/search?id=pmut](https://openebench.bsc.es/monitor/rest/search?id=pmut) .<br/>
-> example 3: [https://openebench.bsc.es/monitor/rest/search?text=alignment](https://openebench.bsc.es/monitor/rest/search?text=alignment) .<br/>
+> example 2: [https://openebench.bsc.es/monitor/rest/search](https://openebench.bsc.es/monitor/rest/search) .<br/>
+> example 3: [https://openebench.bsc.es/monitor/rest/search?id=pmut](https://openebench.bsc.es/monitor/rest/search?id=pmut) .<br/>
+> example 4: [https://openebench.bsc.es/monitor/rest/search?text=alignment](https://openebench.bsc.es/monitor/rest/search?text=alignment) .<br/>
 
 ---
 
