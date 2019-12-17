@@ -125,7 +125,7 @@ public class ToolsDAO extends AbstractDAO<Document> implements Serializable {
     }
 
     @Override
-    protected String getURI(Document pk) {
+    public String getURI(Document pk) {
 
         StringBuilder sb = new StringBuilder(baseURI);
         
@@ -154,17 +154,17 @@ public class ToolsDAO extends AbstractDAO<Document> implements Serializable {
     }
     
     @Override
-    protected String getType(Document pk) {
+    public String getType(Document pk) {
         return pk.getString("type");
     }
 
     @Override
-    protected String getLabel(Document pk) {
+    public String getLabel(Document pk) {
         return pk.getString("id");
     }
     
     @Override
-    protected String getVersion(Document pk) {
+    public String getVersion(Document pk) {
         return pk.getString("version");
     }
     
@@ -822,7 +822,7 @@ public class ToolsDAO extends AbstractDAO<Document> implements Serializable {
         }
     }
 
-    private Bson createIdFilter(String id) {
+    public Bson createIdFilter(String id) {
         if ("::".equals(id)) {
             return Aggregates.match(Filters.and(Filters.eq("_id.nmsp", null),
                         Filters.eq("_id.version", null),

@@ -137,7 +137,7 @@ public class MetricsDAO extends AbstractDAO<String> implements Serializable {
         return doc != null ? doc.toJson() : null;
     }
 
-    private Document getBSON(String id) {
+    public Document getBSON(String id) {
         try {
             final MongoCollection<Document> col = database.getCollection(collection);
 

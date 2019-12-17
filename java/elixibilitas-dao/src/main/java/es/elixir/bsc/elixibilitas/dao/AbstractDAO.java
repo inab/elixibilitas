@@ -45,8 +45,8 @@ public abstract class AbstractDAO<T> {
     public final static String LICENSE = "https://creativecommons.org/licenses/by/4.0/";
             
     public final String baseURI;
-    protected final MongoDatabase database;
-    protected final String collection;
+    public final MongoDatabase database;
+    public final String collection;
     protected final JsonLog log;
     
     public AbstractDAO(final String baseURI,
