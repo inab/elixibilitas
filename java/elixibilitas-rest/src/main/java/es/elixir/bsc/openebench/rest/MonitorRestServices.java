@@ -29,10 +29,10 @@ import com.mongodb.MongoClient;
 import com.mongodb.MongoClientURI;
 import es.elixir.bsc.elixibilitas.dao.MetricsDAO;
 import es.elixir.bsc.elixibilitas.dao.ToolsDAO;
+import es.elixir.bsc.openebench.query.MongoQueries;
 import es.elixir.bsc.openebench.rest.ext.ContentRange;
 import es.elixir.bsc.openebench.rest.ext.Range;
 import io.swagger.v3.oas.annotations.Hidden;
-import io.swagger.v3.oas.annotations.OpenAPIDefinition;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.headers.Header;
@@ -324,10 +324,12 @@ public class MonitorRestServices {
                 limit = to - from;
             }
             try (Writer writer = new BufferedWriter(new OutputStreamWriter(out, "UTF-8"))) {
-                toolsDAO.aggregate(writer, id, from, limit, text, name, description, tags, types, projections, null);
+                MongoQueries.aggregateTools(toolsDAO, metricsDAO, writer, id, limit, 
+                        limit, text, name, description, tags, types, projections, null);
             }
         };
-        final long count = toolsDAO.aggregate_count(id, text, name, description, tags, types, null);
+        final long count = MongoQueries.aggregateToolsCount(
+                toolsDAO, id, text, name, description, tags, types, null);
         
         final ContentRange range = new ContentRange("items", from, to, count);
         

@@ -27,10 +27,12 @@ package es.elixir.bsc.openebench.rest;
 
 import com.mongodb.MongoClient;
 import com.mongodb.MongoClientURI;
+import es.elixir.bsc.elixibilitas.dao.MetricsDAO;
 import es.elixir.bsc.elixibilitas.dao.ToolsDAO;
 import es.elixir.bsc.openebench.model.tools.Datatype;
 import es.elixir.bsc.openebench.model.tools.Semantics;
 import es.elixir.bsc.openebench.model.tools.Tool;
+import es.elixir.bsc.openebench.query.MongoQueries;
 import es.elixir.bsc.openebench.rest.ext.ContentRange;
 import es.elixir.bsc.openebench.rest.ext.Range;
 import io.swagger.v3.oas.annotations.Hidden;
@@ -141,6 +143,7 @@ public class EdamServices {
     private ManagedExecutorService executor;
     
     private ToolsDAO toolsDAO;
+    private MetricsDAO metricsDAO;
  
     @PostConstruct
     public void init() {
@@ -178,9 +181,11 @@ public class EdamServices {
         }
         
         final MongoClientURI mongodbURI = new MongoClientURI(ctx.getInitParameter("mongodb.url"));
-        final String baseURI = UriBuilder.fromUri(uriInfo.getBaseUri()).path(ToolsServices.class).build().toString();
+        final String toolsBaseURI = UriBuilder.fromUri(uriInfo.getBaseUri()).path(ToolsServices.class).build().toString();
+        final String metricsBaseURI = UriBuilder.fromUri(uriInfo.getBaseUri()).path(MetricsServices.class).build().toString();
 
-        toolsDAO = new ToolsDAO(mc.getDatabase(mongodbURI.getDatabase()), baseURI);
+        toolsDAO = new ToolsDAO(mc.getDatabase(mongodbURI.getDatabase()), toolsBaseURI);
+        metricsDAO = new MetricsDAO(mc.getDatabase(mongodbURI.getDatabase()), metricsBaseURI);
     }
 
     @PreDestroy
@@ -297,10 +302,13 @@ public class EdamServices {
                 limit = to - from;
             }
             try (Writer writer = new BufferedWriter(new OutputStreamWriter(out, "UTF-8"))) {
-                toolsDAO.aggregate(writer, id, from, limit, text, name, description, types, projections, terms);
+                MongoQueries.aggregateTools(
+                        toolsDAO, metricsDAO, writer, id, from, limit, text, 
+                        name, description, types, projections, terms);
             }
         };
-        final long count = toolsDAO.aggregate_count(id, text, name, description, types, terms);
+        final long count = MongoQueries.aggregateToolsCount(
+                toolsDAO, id, text, name, description, types, terms);
         
         final ContentRange range = new ContentRange("items", from, to, count);
         
