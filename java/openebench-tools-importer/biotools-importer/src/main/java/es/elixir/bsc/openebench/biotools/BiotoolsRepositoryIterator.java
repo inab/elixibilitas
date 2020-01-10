@@ -83,7 +83,7 @@ public class BiotoolsRepositoryIterator implements Iterator<JsonObject> {
      * @param page
      * @return 
      */
-    public int next(List<JsonObject> tools, int page) {
+    private int next(List<JsonObject> tools, int page) {
 
         URL url;
         try {
