@@ -68,12 +68,10 @@ where:
 
 ---
 
-> Note that {id}/{type}/{host} uniquely identify the tool, while omitting the {type} or {host} returns an array of descriptions.  
-<br/>
+> Note that {id}/{type}/{host} uniquely identify the tool, while omitting the {type} or {host} returns an array of descriptions.  <br/>
 > example 1: [https://openebench.bsc.es/monitor/tool/biotools:pmut:2017/web/mmb.irbbarcelona.org](https://openebench.bsc.es/monitor/tool/biotools:pmut:2017/web/mmb.irbbarcelona.org) .<br/>
 > example 2: [https://openebench.bsc.es/monitor/tool/biotools:pmut:2017/web/mmb.irbbarcelona.org/credits](https://openebench.bsc.es/monitor/tool/biotools:pmut:2017/web/mmb.irbbarcelona.org/credits) .<br/>
-
-curl patch tool data example: 
+> curl patch tool data example: 
 ```
 curl -v -X PATCH -u user:password -H 'Content-Type: application/json' /
 https://openebench.bsc.es/monitor/tool/{id}/description -d '"new description."'
@@ -90,8 +88,8 @@ Quality Metrics accessed via:
 https://openebench.bsc.es/monitor/metrics/
 https://openebench.bsc.es/monitor/metrics/{id}/{type}/{host}/{path}
 ```
-> example1: [https://openebench.bsc.es/monitor/metrics/biotools:pmut:2017/web/mmb.irbbarcelona.org](https://openebench.bsc.es/monitor/metrics/biotools:pmut:2017/web/mmb.irbbarcelona.org) .<br/>
-> example2: [https://openebench.bsc.es/monitor/metrics/biotools:pmut:2017/web/mmb.irbbarcelona.org/project/website](https://openebench.bsc.es/monitor/metrics/biotools:pmut:2017/web/mmb.irbbarcelona.org/project/website) .<br/>
+> example 1: [https://openebench.bsc.es/monitor/metrics/biotools:pmut:2017/web/mmb.irbbarcelona.org](https://openebench.bsc.es/monitor/metrics/biotools:pmut:2017/web/mmb.irbbarcelona.org) .<br/>
+> example 2: [https://openebench.bsc.es/monitor/metrics/biotools:pmut:2017/web/mmb.irbbarcelona.org/project/website](https://openebench.bsc.es/monitor/metrics/biotools:pmut:2017/web/mmb.irbbarcelona.org/project/website) .<br/>
 > curl patch metrics data example: 
 ```
 curl -v -X PATCH -u user:password -H 'Content-Type: application/json' /
@@ -118,13 +116,14 @@ where:
 > The response always contains the HTTP Content-Range Header ("Content-Range: tools 10-30/10000").  
 > When pagination is used, the server seponds with 206 Partial Content.  
 > There is also possibility to use query parameters {skip} and {limit} (range 10-30 = skip 10, limit 20).  
+
 <br/>
-> The results are grouped by the id and sorted by names.  
-<br/>
+
+> The results are grouped by the id and sorted by names.  <br/>
 > example 1: [https://openebench.bsc.es/monitor/rest/search](https://openebench.bsc.es/monitor/rest/search) .<br/>
 > example 2: [https://openebench.bsc.es/monitor/rest/search](https://openebench.bsc.es/monitor/rest/search) .<br/>
 > example 3: [https://openebench.bsc.es/monitor/rest/search?id=pmut](https://openebench.bsc.es/monitor/rest/search?id=pmut) .<br/>
-> example 4: [https://openebench.bsc.es/monitor/rest/search?text=alignment](https://openebench.bsc.es/monitor/rest/search?text=alignment) .<br/>
+> example 4: [https://openebench.bsc.es/monitor/rest/search?text=alignment](https://openebench.bsc.es/monitor/rest/search?text=alignment)  .<br/>
 
 ---
 
