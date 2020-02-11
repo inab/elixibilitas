@@ -1,11 +1,11 @@
 package es.elixir.bsc.openebench.checker.biotools;
 
-import es.elixir.bsc.elixibilitas.model.metrics.Metrics;
-import es.elixir.bsc.elixibilitas.model.metrics.Project;
-import es.elixir.bsc.elixibilitas.model.metrics.Website;
+import es.bsc.inb.elixir.openebench.model.metrics.Metrics;
+import es.bsc.inb.elixir.openebench.model.metrics.Project;
+import es.bsc.inb.elixir.openebench.model.metrics.Website;
+import es.bsc.inb.elixir.openebench.model.tools.Tool;
+import es.bsc.inb.elixir.openebench.model.tools.Web;
 import es.elixir.bsc.openebench.checker.MetricsChecker;
-import es.elixir.bsc.openebench.model.tools.Tool;
-import es.elixir.bsc.openebench.model.tools.Web;
 
 /**
  * @author Dmitry Repchevsky

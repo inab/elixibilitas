@@ -2,11 +2,11 @@ package es.elixir.bsc.openebench.checker;
 
 import com.mongodb.MongoClient;
 import com.mongodb.MongoClientURI;
+import es.bsc.inb.elixir.openebench.model.metrics.Metrics;
+import es.bsc.inb.elixir.openebench.model.tools.Tool;
+import es.bsc.inb.elixir.openebench.repository.OpenEBenchEndpoint;
 import es.elixir.bsc.elixibilitas.dao.MetricsDAO;
 import es.elixir.bsc.elixibilitas.dao.ToolsDAO;
-import es.elixir.bsc.elixibilitas.model.metrics.Metrics;
-import es.elixir.bsc.openebench.model.tools.Tool;
-import es.elixir.bsc.openebench.tools.OpenEBenchEndpoint;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
@@ -71,16 +71,13 @@ public class BatchMetricsChecker {
                         uri = properties.getProperty("mongodb.uri");
                     }
                 } catch (IOException ex) {
-                    Logger.getLogger(BatchMetricsChecker.class.getName()).log(Level.SEVERE, null, ex);
+                    Logger.getLogger(BatchMetricsChecker.class.getName()).log(Level.SEVERE, "no database URI found", ex);
                 }
             } else {
                 uri = uris.get(0);
             }
             
-            final MongoClient mc = (uri == null || uri.isEmpty()) ? 
-                    new MongoClient("localhost") : 
-                    new MongoClient(new MongoClientURI(uri));
-            new BatchMetricsChecker(executor).check(mc); 
+            new BatchMetricsChecker(executor).check(new MongoClientURI(uri)); 
         } finally {
             executor.shutdown();
         }
@@ -88,16 +85,25 @@ public class BatchMetricsChecker {
         System.exit(0);
     }
 
-    public void check(MongoClient mc) {
+    public void check(MongoClientURI uri) {
         
-        final ToolsDAO toolsDAO = new ToolsDAO(mc.getDatabase("elixibilitas"), OpenEBenchEndpoint.TOOL_URI_BASE);
-        final MetricsDAO metricsDAO = new MetricsDAO(mc.getDatabase("elixibilitas"), OpenEBenchEndpoint.METRICS_URI_BASE);
+        final String db = uri.getDatabase();
+        
+        Logger.getLogger(BatchMetricsChecker.class.getName()).log(Level.INFO, "connecting to {0}...", db);
+        
+        final MongoClient mc = new MongoClient(uri);
+        
+        final ToolsDAO toolsDAO = new ToolsDAO(mc.getDatabase(db), OpenEBenchEndpoint.TOOL_URI_BASE);
+        final MetricsDAO metricsDAO = new MetricsDAO(mc.getDatabase(db), OpenEBenchEndpoint.METRICS_URI_BASE);
         
         final List<Tool> tools = toolsDAO.get();
         final CountDownLatch latch = new CountDownLatch(tools.size());
         
-        for (Tool tool: tools) {
+        Logger.getLogger(BatchMetricsChecker.class.getName()).log(Level.INFO, "pushing {0} metrics.", tools.size());
+        
+        for (int i = 0, n = tools.size(); i < n; i++) {    
             try {
+                final Tool tool = tools.get(i);
                 final String id = tool.id.toString().substring(toolsDAO.baseURI.length());
 
                 Metrics metrics = metricsDAO.get(id);
@@ -112,6 +118,15 @@ public class BatchMetricsChecker {
                         try {
                             final Metrics metrics = future.get(30, TimeUnit.MINUTES);
                             metricsDAO.merge("biotools", id, metrics);
+                            
+                            Boolean vetoed = metrics.getVetoed();
+                            if (vetoed != null && vetoed) {
+                                vetoed = tool.getVetoed();
+                                if (vetoed == null || !vetoed) {
+                                    tool.setVetoed(true);
+                                    toolsDAO.put("biotools", tool);
+                                }
+                            }
                         } catch (Throwable th) {
                             Logger.getLogger(BatchMetricsChecker.class.getName()).log(Level.SEVERE, "update failed", th);
                         }
@@ -131,6 +146,8 @@ public class BatchMetricsChecker {
         } finally {
             executor.shutdownNow();
         }
+        
+        Logger.getLogger(BatchMetricsChecker.class.getName()).log(Level.INFO, "end.");
     }
     
     private static Map<String, List<String>> parameters(String[] args) {

@@ -30,16 +30,16 @@
     <dependencies>
 
         <dependency>
-            <groupId>es.elixir.bsc.elixibilitas</groupId>
+            <groupId>es.bsc.inb.elixir</groupId>
             <artifactId>openebench-tools-model</artifactId>
-            <version>0.1-SNAPSHOT</version>
+            <version>1.0.0</version>
             <type>jar</type>
         </dependency>
 
         <dependency>
-            <groupId>es.elixir.bsc.elixibilitas</groupId>
-            <artifactId>elixibilitas-metrics-model</artifactId>
-            <version>0.1-SNAPSHOT</version>
+            <groupId>es.bsc.inb.elixir</groupId>
+            <artifactId>openebench-metrics-model</artifactId>
+            <version>1.0</version>
             <type>jar</type>
         </dependency>
 
@@ -58,7 +58,7 @@
         <dependency>
             <groupId>org.eclipse</groupId>
             <artifactId>yasson</artifactId>
-            <version>1.0.3</version>
+            <version>1.0.5</version>
         </dependency>
 
         <dependency>
@@ -77,6 +77,13 @@
         </dependency>
 
     </dependencies>
+
+    <repositories>
+        <repository>
+            <id>inb-bsc-maven</id>
+            <url>https://gitlab.bsc.es/inb/maven/raw/master</url>
+        </repository>
+    </repositories>
 
 </project>
 

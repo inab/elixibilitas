@@ -25,10 +25,10 @@
 
 package es.elixir.bsc.openebench.checker.biotools;
 
-import es.elixir.bsc.elixibilitas.model.metrics.Distribution;
-import es.elixir.bsc.elixibilitas.model.metrics.Metrics;
-import es.elixir.bsc.elixibilitas.model.metrics.Sourcecode;
-import es.elixir.bsc.openebench.model.tools.Tool;
+import es.bsc.inb.elixir.openebench.model.metrics.Distribution;
+import es.bsc.inb.elixir.openebench.model.metrics.Metrics;
+import es.bsc.inb.elixir.openebench.model.metrics.Sourcecode;
+import es.bsc.inb.elixir.openebench.model.tools.Tool;
 import es.elixir.bsc.openebench.checker.MetricsChecker;
 import java.net.URI;
 import java.util.List;
@@ -66,7 +66,7 @@ public class SourcecodeChecker implements MetricsChecker {
     
     private static Boolean check(Tool tool) {
 
-        final es.elixir.bsc.openebench.model.tools.Distributions distributions = tool.getDistributions();
+        final es.bsc.inb.elixir.openebench.model.tools.Distributions distributions = tool.getDistributions();
         if (distributions != null) {
             final List<URI> sources = distributions.getSourcecodeDistributions();
             return sources != null && !sources.isEmpty();

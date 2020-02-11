@@ -1,16 +1,11 @@
 package es.elixir.bsc.openebench.checker.biotools;
 
-import es.elixir.bsc.elixibilitas.model.metrics.Distribution;
-import es.elixir.bsc.elixibilitas.model.metrics.Metrics;
-import es.elixir.bsc.elixibilitas.model.metrics.Sourcecode;
+import es.bsc.inb.elixir.openebench.model.metrics.Distribution;
+import es.bsc.inb.elixir.openebench.model.metrics.Metrics;
+import es.bsc.inb.elixir.openebench.model.metrics.Sourcecode;
+import es.bsc.inb.elixir.openebench.model.tools.Tool;
 import es.elixir.bsc.openebench.checker.MetricsChecker;
-import es.elixir.bsc.openebench.model.tools.CommandLineTool;
-import es.elixir.bsc.openebench.model.tools.DesktopApplication;
-import es.elixir.bsc.openebench.model.tools.Library;
-import es.elixir.bsc.openebench.model.tools.Plugin;
-import es.elixir.bsc.openebench.model.tools.Script;
-import es.elixir.bsc.openebench.model.tools.Suite;
-import es.elixir.bsc.openebench.model.tools.Tool;
+
 import java.util.List;
 
 /**
@@ -47,28 +42,7 @@ public class LanguageChecker implements MetricsChecker {
     }
     
     private static Boolean check(Tool tool) {
-        final List<String> languages;
-        if (tool instanceof CommandLineTool) {
-            final CommandLineTool cmd = (CommandLineTool)tool;
-            languages = cmd.getLanguages();
-        } else if (tool instanceof DesktopApplication) {
-            final DesktopApplication desktop = (DesktopApplication)tool;
-            languages = desktop.getLanguages();
-        } else if (tool instanceof Library) {
-            final Library library = (Library)tool;
-            languages = library.getLanguages();
-        } else if (tool instanceof Script) {
-            final Script script = (Script)tool;
-            languages = script.getLanguages();
-        } else if (tool instanceof Plugin) {
-            final Plugin plugin = (Plugin)tool;
-            languages = plugin.getLanguages();
-        } else if (tool instanceof Suite) {
-            final Suite suite = (Suite)tool;
-            languages = suite.getLanguages();
-        } else {
-            return null;
-        }
+        final List<String> languages = tool.getLanguages();
         
         if (languages.isEmpty()) {
             return null;

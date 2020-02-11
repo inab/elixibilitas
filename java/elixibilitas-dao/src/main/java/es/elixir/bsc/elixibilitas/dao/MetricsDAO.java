@@ -31,7 +31,7 @@ import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoCursor;
 import com.mongodb.client.MongoDatabase;
 import com.mongodb.client.model.Filters;
-import es.elixir.bsc.elixibilitas.model.metrics.Metrics;
+import es.bsc.inb.elixir.openebench.model.metrics.Metrics;
 import java.io.Serializable;
 import java.io.Writer;
 import java.util.ArrayList;

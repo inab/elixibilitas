@@ -25,8 +25,8 @@
 
 package es.elixir.bsc.openebench.checker;
 
-import es.elixir.bsc.elixibilitas.model.metrics.Metrics;
-import es.elixir.bsc.openebench.model.tools.Tool;
+import es.bsc.inb.elixir.openebench.model.metrics.Metrics;
+import es.bsc.inb.elixir.openebench.model.tools.Tool;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.ServiceLoader;

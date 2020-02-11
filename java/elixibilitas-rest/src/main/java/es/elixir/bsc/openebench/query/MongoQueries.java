@@ -71,6 +71,9 @@ public class MongoQueries {
 
         final MongoCollection<Document> col = toolsDAO.database.getCollection(toolsDAO.collection);
         final ArrayList<Bson> aggregation = new ArrayList();
+        
+        aggregation.add(Aggregates.match(Filters.ne("vetoed", true)));
+        
         if (text != null && !text.isEmpty()) {
             aggregation.add(Aggregates.match(Filters.or(Filters.regex("description", text, "i"),
                                     Filters.regex("name", text, "i"))));
@@ -156,6 +159,9 @@ public class MongoQueries {
                 jwriter.writeStartArray();
 
                 ArrayList<Bson> aggregation = new ArrayList();
+                
+                aggregation.add(Aggregates.match(Filters.ne("vetoed", true)));
+                
                 if (text != null && !text.isEmpty()) {
                     aggregation.add(Aggregates.match(Filters.or(Filters.regex("description", text, "i"),
                                             Filters.regex("name", text, "i"))));

@@ -30,15 +30,17 @@
     <dependencies>
 
         <dependency>
-            <groupId>es.elixir.bsc.elixibilitas</groupId>
-            <artifactId>openebench-repo</artifactId>
-            <version>0.1-SNAPSHOT</version>
+            <groupId>es.bsc.inb.elixir</groupId>
+            <artifactId>biotools-schema-model</artifactId>
+            <version>3.2.0</version>
+            <type>jar</type>
         </dependency>
 
         <dependency>
-            <groupId>es.elixir.bsc.elixibilitas</groupId>
-            <artifactId>biotools-schema3-parser</artifactId>
-            <version>0.1-SNAPSHOT</version>
+            <groupId>es.bsc.inb.elixir</groupId>
+            <artifactId>openebench-repository-client</artifactId>
+            <version>1.0.0</version>
+            <type>jar</type>
         </dependency>
 
         <dependency>
@@ -50,6 +52,13 @@
         </dependency>
 
     </dependencies>
+
+    <repositories>
+        <repository>
+            <id>inb-bsc-maven</id>
+            <url>https://gitlab.bsc.es/inb/maven/raw/master</url>
+        </repository>
+    </repositories>
 
     <build>
         <finalName>biotools-importer</finalName>

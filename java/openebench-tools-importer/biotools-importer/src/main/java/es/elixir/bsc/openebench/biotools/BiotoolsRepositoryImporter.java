@@ -25,10 +25,10 @@
 
 package es.elixir.bsc.openebench.biotools;
 
-import es.elixir.bsc.openebench.model.tools.Tool;
-import es.elixir.bsc.openebench.tools.OpenEBenchAlambiqueEndpoint;
-import es.elixir.bsc.openebench.tools.OpenEBenchEndpoint;
-import es.elixir.bsc.openebench.tools.OpenEBenchRepository;
+import es.bsc.inb.elixir.openebench.model.tools.Tool;
+import es.bsc.inb.elixir.openebench.repository.OpenEBenchAlambiqueEndpoint;
+import es.bsc.inb.elixir.openebench.repository.OpenEBenchEndpoint;
+import es.bsc.inb.elixir.openebench.repository.OpenEBenchRepository;
 import java.io.IOException;
 import java.net.URI;
 import java.time.LocalTime;

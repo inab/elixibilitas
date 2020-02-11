@@ -25,11 +25,11 @@
 
 package es.elixir.bsc.openebench.checker.biotools;
 
-import es.elixir.bsc.elixibilitas.model.metrics.Metrics;
-import es.elixir.bsc.elixibilitas.model.metrics.Project;
+import es.bsc.inb.elixir.openebench.model.metrics.Metrics;
+import es.bsc.inb.elixir.openebench.model.metrics.Project;
+import es.bsc.inb.elixir.openebench.model.tools.Documentation;
+import es.bsc.inb.elixir.openebench.model.tools.Tool;
 import es.elixir.bsc.openebench.checker.MetricsChecker;
-import es.elixir.bsc.openebench.model.tools.Documentation;
-import es.elixir.bsc.openebench.model.tools.Tool;
 
 /**
  * @author Dmitry Repchevsky
@@ -52,14 +52,14 @@ public class DocumentationBuildChecker implements MetricsChecker {
         Boolean bool = check(tool);
         Project project = metrics.getProject();
         if (Boolean.TRUE.equals(bool)) {
-            es.elixir.bsc.elixibilitas.model.metrics.Documentation documentation;
+            es.bsc.inb.elixir.openebench.model.metrics.Documentation documentation;
             if (project == null) {
                 metrics.setProject(project = new Project());
-                project.setDocumentation(documentation = new es.elixir.bsc.elixibilitas.model.metrics.Documentation());
+                project.setDocumentation(documentation = new es.bsc.inb.elixir.openebench.model.metrics.Documentation());
             } else {
                 documentation = project.getDocumentation();
                 if (documentation == null) {
-                    project.setDocumentation(documentation = new es.elixir.bsc.elixibilitas.model.metrics.Documentation());
+                    project.setDocumentation(documentation = new es.bsc.inb.elixir.openebench.model.metrics.Documentation());
                 }
             }
             documentation.setBuild(true);

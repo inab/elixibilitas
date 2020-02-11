@@ -35,30 +35,14 @@ import com.mongodb.client.model.Accumulators;
 import com.mongodb.client.model.Aggregates;
 import com.mongodb.client.model.Filters;
 import com.mongodb.client.model.Sorts;
-import es.elixir.bsc.openebench.model.tools.CommandLineTool;
-import es.elixir.bsc.openebench.model.tools.DatabasePortal;
-import es.elixir.bsc.openebench.model.tools.DesktopApplication;
-import es.elixir.bsc.openebench.model.tools.Library;
-import es.elixir.bsc.openebench.model.tools.Ontology;
-import es.elixir.bsc.openebench.model.tools.Plugin;
-import es.elixir.bsc.openebench.model.tools.SOAPServices;
-import es.elixir.bsc.openebench.model.tools.SPARQLEndpoint;
-import es.elixir.bsc.openebench.model.tools.Script;
-import es.elixir.bsc.openebench.model.tools.Suite;
-import es.elixir.bsc.openebench.model.tools.Tool;
-import es.elixir.bsc.openebench.model.tools.WebAPI;
-import es.elixir.bsc.openebench.model.tools.WebApplication;
-import es.elixir.bsc.openebench.model.tools.Workbench;
-import es.elixir.bsc.openebench.model.tools.Workflow;
+import es.bsc.inb.elixir.openebench.model.tools.Tool;
 import java.io.IOException;
 import java.io.Serializable;
 import java.io.Writer;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.TreeMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
@@ -223,27 +207,8 @@ public class ToolsDAO extends AbstractDAO<Document> implements Serializable {
         
         try (Jsonb jsonb = JsonbBuilder.create(
                 new JsonbConfig().withPropertyNamingStrategy(PropertyNamingStrategy.UPPER_CAMEL_CASE))) {
-        
-            final String json = doc.toJson();
 
-            if (type != null) {
-                switch(type) {
-                    case CommandLineTool.TYPE: return jsonb.fromJson(json, CommandLineTool.class);
-                    case WebApplication.TYPE: return jsonb.fromJson(json, WebApplication.class);
-                    case DatabasePortal.TYPE: return jsonb.fromJson(json, DatabasePortal.class);
-                    case DesktopApplication.TYPE: return jsonb.fromJson(json, DesktopApplication.class);
-                    case Library.TYPE: return jsonb.fromJson(json, Library.class);
-                    case Ontology.TYPE: return jsonb.fromJson(json, Ontology.class);
-                    case Workflow.TYPE: return jsonb.fromJson(json, Workflow.class);
-                    case Plugin.TYPE: return jsonb.fromJson(json, Plugin.class);
-                    case SPARQLEndpoint.TYPE: return jsonb.fromJson(json, SPARQLEndpoint.class);
-                    case SOAPServices.TYPE: return jsonb.fromJson(json, SOAPServices.class);
-                    case Script.TYPE: return jsonb.fromJson(json, Script.class);
-                    case WebAPI.TYPE: return jsonb.fromJson(json, WebAPI.class);
-                    case Workbench.TYPE: return jsonb.fromJson(json, Workbench.class);
-                    case Suite.TYPE: return jsonb.fromJson(json, Suite.class);
-                }
-            }
+            final String json = doc.toJson();
             return jsonb.fromJson(json, Tool.class);
         } catch(Exception ex) {
             Logger.getLogger(ToolsDAO.class.getName()).log(Level.SEVERE, null, ex);

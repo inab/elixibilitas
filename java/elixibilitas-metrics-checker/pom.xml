@@ -30,9 +30,10 @@
     <dependencies>
 
         <dependency>
-            <groupId>es.elixir.bsc.elixibilitas</groupId>
-            <artifactId>openebench-repo</artifactId>
-            <version>0.1-SNAPSHOT</version>
+            <groupId>es.bsc.inb.elixir</groupId>
+            <artifactId>openebench-repository-client</artifactId>
+            <version>1.0.0</version>
+            <type>jar</type>
         </dependency>
 
         <dependency>
@@ -60,7 +61,22 @@
             <artifactId>jsoup</artifactId>
             <version>1.11.3</version>
         </dependency>
+        
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <version>4.10</version>
+            <scope>test</scope>
+        </dependency>
+
     </dependencies>
+
+    <repositories>
+        <repository>
+            <id>inb-bsc-maven</id>
+            <url>https://gitlab.bsc.es/inb/maven/raw/master</url>
+        </repository>
+    </repositories>
 
     <build>
         <finalName>metrics_checker</finalName>

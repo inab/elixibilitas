@@ -25,10 +25,10 @@
 
 package es.elixir.bsc.openebench.checker.biotools;
 
-import es.elixir.bsc.elixibilitas.model.metrics.Metrics;
-import es.elixir.bsc.elixibilitas.model.metrics.Support;
-import es.elixir.bsc.openebench.model.tools.Contact;
-import es.elixir.bsc.openebench.model.tools.Tool;
+import es.bsc.inb.elixir.openebench.model.metrics.Metrics;
+import es.bsc.inb.elixir.openebench.model.metrics.Support;
+import es.bsc.inb.elixir.openebench.model.tools.Contact;
+import es.bsc.inb.elixir.openebench.model.tools.Tool;
 import es.elixir.bsc.openebench.checker.MetricsChecker;
 import java.util.List;
 
