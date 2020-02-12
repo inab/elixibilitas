@@ -407,8 +407,8 @@ public abstract class AbstractDAO<T> {
         final HashMap<String, HashSet<String>> map = new HashMap<>();
         
         try {
-            MongoCollection<Document> col = database.getCollection(collection);
-            FindIterable<Document> itarable = col.find();
+            final MongoCollection<Document> col = database.getCollection(collection);
+            final FindIterable<Document> itarable = col.find().noCursorTimeout(true);
             try (MongoCursor<Document> cursor = itarable.iterator()) {
                 while (cursor.hasNext()) {
                     final Document doc = cursor.next();

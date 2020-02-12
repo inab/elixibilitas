@@ -155,12 +155,13 @@ public class ToolsDAO extends AbstractDAO<Document> implements Serializable {
     public List<Tool> get() {
         List<Tool> tools = new ArrayList<>();
 
-        try {
+        try (Jsonb jsonb = JsonbBuilder.create(
+                new JsonbConfig().withPropertyNamingStrategy(PropertyNamingStrategy.UPPER_CAMEL_CASE))) {
             final MongoCollection<Document> col = database.getCollection(collection);
-            FindIterable<Document> iterator = col.find();
+            final FindIterable<Document> iterator = col.find().noCursorTimeout(true);
             try (MongoCursor<Document> cursor = iterator.iterator()) {
                 while (cursor.hasNext()) {
-                    tools.add(deserialize(cursor.next()));
+                    tools.add(deserialize(cursor.next(), jsonb));
                 }
             }
         } catch(Exception ex) {
@@ -178,14 +179,16 @@ public class ToolsDAO extends AbstractDAO<Document> implements Serializable {
      * @return the Tool object
      */
     public Tool get(String id) {
-        try {
+        try (Jsonb jsonb = JsonbBuilder.create(
+                new JsonbConfig().withPropertyNamingStrategy(PropertyNamingStrategy.UPPER_CAMEL_CASE))) {
             final MongoCollection<Document> col = database.getCollection(collection);
 
             final Bson query = createFindQuery(id);
             if (query != null) {
-                try (MongoCursor<Document> cursor = col.find(query).iterator()) {
+                final FindIterable<Document> iterator = col.find(query).noCursorTimeout(true);
+                try (MongoCursor<Document> cursor = iterator.iterator()) {
                     if(cursor.hasNext()) {
-                        return deserialize(cursor.next());
+                        return deserialize(cursor.next(), jsonb);
                     }
                 }
             }
@@ -196,7 +199,7 @@ public class ToolsDAO extends AbstractDAO<Document> implements Serializable {
         return null;
     }
     
-    private Tool deserialize(Document doc) {
+    private Tool deserialize(final Document doc, final Jsonb jsonb) {
         final Document _id = (Document)doc.remove("_id");
         final String type = getType(_id);
 
@@ -205,9 +208,7 @@ public class ToolsDAO extends AbstractDAO<Document> implements Serializable {
         doc.append("@label", getLabel(_id));
         doc.append("@version", getVersion(_id));
         
-        try (Jsonb jsonb = JsonbBuilder.create(
-                new JsonbConfig().withPropertyNamingStrategy(PropertyNamingStrategy.UPPER_CAMEL_CASE))) {
-
+        try {
             final String json = doc.toJson();
             return jsonb.fromJson(json, Tool.class);
         } catch(Exception ex) {
@@ -216,7 +217,7 @@ public class ToolsDAO extends AbstractDAO<Document> implements Serializable {
 
         return null;
     }
-    
+
     public String getJSON(String id) {
         final List<Document> docs = getBSON(id);
         
@@ -267,7 +268,8 @@ public class ToolsDAO extends AbstractDAO<Document> implements Serializable {
 
             final Bson query = createFindQuery(id);
             if (query != null) {
-                try (MongoCursor<Document> cursor = col.find(query).iterator()) {
+                final FindIterable<Document> iterator = col.find(query).noCursorTimeout(true);
+                try (MongoCursor<Document> cursor = iterator.iterator()) {
                     while(cursor.hasNext()) {
                         Document doc = cursor.next();
                         final Document _id = (Document)doc.remove("_id");
@@ -415,8 +417,7 @@ public class ToolsDAO extends AbstractDAO<Document> implements Serializable {
 
                 jwriter.writeStartArray();
                 
-                FindIterable iterator = col.find();
-
+                final FindIterable iterator = col.find().noCursorTimeout(true);
                 try (MongoCursor<Document> cursor = iterator.iterator()) {
                     while (cursor.hasNext()) {
                         final Document doc = cursor.next();
@@ -538,8 +539,7 @@ public class ToolsDAO extends AbstractDAO<Document> implements Serializable {
                     aggregation.add(Aggregates.limit(limit.intValue()));
                 }
 
-                AggregateIterable<Document> iterator = col.aggregate(aggregation).allowDiskUse(true);
-
+                final AggregateIterable<Document> iterator = col.aggregate(aggregation).allowDiskUse(true);
                 try (MongoCursor<Document> cursor = iterator.iterator()) {
                     while (cursor.hasNext()) {
                         final Document doc = cursor.next();
@@ -609,7 +609,8 @@ public class ToolsDAO extends AbstractDAO<Document> implements Serializable {
 
         final MongoCollection<Document> col = database.getCollection(COLLECTION);
 
-        FindIterable<Document> iterator = col.find().projection(new BasicDBObject("semantics", true));
+        final FindIterable<Document> iterator = col.find().noCursorTimeout(true)
+                .projection(new BasicDBObject("semantics", true));
         try (MongoCursor<Document> cursor = iterator.iterator()) {
 
             boolean first = true;

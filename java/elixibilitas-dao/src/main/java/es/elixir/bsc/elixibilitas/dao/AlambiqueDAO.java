@@ -140,7 +140,7 @@ public class AlambiqueDAO extends AbstractDAO<String> implements Serializable {
                 };
                 jwriter.writeStartArray();
                 
-                FindIterable<Document> iterator = col.find();
+                FindIterable<Document> iterator = col.find().noCursorTimeout(true);
 
                 if (projections != null && projections.size() > 0) {
                     BasicDBObject bson = new BasicDBObject();
