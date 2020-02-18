@@ -18,6 +18,9 @@ public class HomepageCheckerTest {
 //    public final static String TOOL_URI = "https://dev-openebench.bsc.es/monitor/tool/bioconda:trimal:1.4.1/cmd/trimal.cgenomics.org";
 //    public final static String WEB_URL = "http://trimal.cgenomics.org/";
     
+//    public final static String TOOL_URI = "https://dev-openebench.bsc.es/monitor/metrics/biotools:sarek:2.5.1/cmd/nf-co.re";
+//    public final static String WEB_URL = "https://nf-co.re/sarek";
+    
     public final static String TOOL_URI = "https://dev-openebench.bsc.es/monitor/metrics/biotools:sarek:2.5.1/cmd/nf-co.re";
     public final static String WEB_URL = "https://nf-co.re/sarek";
 

@@ -1,6 +1,6 @@
 /**
  * *****************************************************************************
- * Copyright (C) 2017 ELIXIR ES, Spanish National Bioinformatics Institute (INB)
+ * Copyright (C) 2020 ELIXIR ES, Spanish National Bioinformatics Institute (INB)
  * and Barcelona Supercomputing Center (BSC)
  *
  * Modifications to the initial code base are copyright of their respective
@@ -73,16 +73,6 @@ public class HomepageChecker implements MetricsChecker {
     
     private final static X509TrustManager TM;
 
-    @Override
-    public String getToolPath() {
-        return "/homepage";
-    }
-    
-    @Override
-    public String getMetricsPath() {
-        return "/project/website";
-    }
-    
     static {
         X509TrustManager tmp = null;
         try {

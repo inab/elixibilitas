@@ -1,6 +1,6 @@
 /**
  * *****************************************************************************
- * Copyright (C) 2017 ELIXIR ES, Spanish National Bioinformatics Institute (INB)
+ * Copyright (C) 2020 ELIXIR ES, Spanish National Bioinformatics Institute (INB)
  * and Barcelona Supercomputing Center (BSC)
  *
  * Modifications to the initial code base are copyright of their respective
@@ -28,15 +28,14 @@ package es.elixir.bsc.openebench.checker;
 import es.bsc.inb.elixir.openebench.model.metrics.Metrics;
 import es.bsc.inb.elixir.openebench.model.tools.Tool;
 import java.util.Iterator;
-import java.util.Map;
 import java.util.ServiceLoader;
-import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * @author Dmitry Repchevsky
  */
 
 public interface MetricsChecker {
+
     /**
      * Sets the metrics value for the tool.
      * 
@@ -46,22 +45,6 @@ public interface MetricsChecker {
      * @return calculated metrics value
      */
     Boolean check(Tool tool, Metrics metrics);
-    
-    String getToolPath();
-    String getMetricsPath();
-
-    public static Map<String, MetricsChecker> checkers() {
-        Map<String, MetricsChecker> checkers = new ConcurrentHashMap<>();
-        
-        ServiceLoader<MetricsChecker> loader = ServiceLoader.load(MetricsChecker.class);
-        Iterator<MetricsChecker> iterator = loader.iterator();
-        while(iterator.hasNext()) {
-            MetricsChecker checker = iterator.next();
-            checkers.put(checker.getMetricsPath(), checker);
-        }
-        
-        return checkers;
-    }
     
     public static void checkAll(Tool tool, Metrics metrics) {
         ServiceLoader<MetricsChecker> loader = ServiceLoader.load(MetricsChecker.class);

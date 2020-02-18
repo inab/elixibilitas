@@ -39,16 +39,6 @@ import java.util.List;
 public class VREDistributionChecker implements MetricsChecker {
 
     @Override
-    public String getToolPath() {
-        return "/distributions/vre";
-    }
-    
-    @Override
-    public String getMetricsPath() {
-        return "/distribution/vre";
-    }
-
-    @Override
     public Boolean check(Tool tool, Metrics metrics) {
         Boolean bool = check(tool);
         if (Boolean.TRUE.equals(bool)) {

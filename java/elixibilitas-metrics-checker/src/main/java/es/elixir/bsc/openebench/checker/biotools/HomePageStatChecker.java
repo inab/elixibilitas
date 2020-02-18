@@ -25,42 +25,43 @@
 
 package es.elixir.bsc.openebench.checker.biotools;
 
-import es.bsc.inb.elixir.openebench.model.metrics.Distribution;
+import es.bsc.inb.elixir.openebench.model.metrics.HomepageAccess;
 import es.bsc.inb.elixir.openebench.model.metrics.Metrics;
-import es.bsc.inb.elixir.openebench.model.metrics.Sourcecode;
+import es.bsc.inb.elixir.openebench.model.metrics.Project;
+import es.bsc.inb.elixir.openebench.model.metrics.Website;
 import es.bsc.inb.elixir.openebench.model.tools.Tool;
+import es.bsc.inb.elixir.openebench.repository.OpenEBenchRepository;
 import es.elixir.bsc.openebench.checker.MetricsChecker;
-import java.net.URI;
-import java.util.List;
 
 /**
  * @author Dmitry Repchevsky
  */
 
-public class SourcecodeChecker implements MetricsChecker {
+public class HomePageStatChecker implements MetricsChecker {
 
     @Override
     public Boolean check(Tool tool, Metrics metrics) {
-        Boolean bool = check(tool);
-        if (Boolean.TRUE.equals(bool)) {
-            Distribution distribution = metrics.getDistribution();
-            if (distribution == null) {
-                metrics.setDistribution(distribution = new Distribution());
-                distribution.setSourcecode(new Sourcecode());
-            } else if (distribution.getSourcecode() == null) {
-                distribution.setSourcecode(new Sourcecode());
+        final HomepageAccess homepage_access = OpenEBenchRepository.getHomepageAvailability();
+        if (homepage_access == null) {
+            return false;
+        }
+        
+        Website website;
+        Project project = metrics.getProject();
+        if (project == null) {
+            website = new Website();
+            project = new Project();
+            project.setWebsite(website);
+            metrics.setProject(project);
+        } else {            
+            website = project.getWebsite();
+            if (website == null) {
+                project.setWebsite(website = new Website());
             }
         }
-        return bool;
-    }
-    
-    private static Boolean check(Tool tool) {
 
-        final es.bsc.inb.elixir.openebench.model.tools.Distributions distributions = tool.getDistributions();
-        if (distributions != null) {
-            final List<URI> sources = distributions.getSourcecodeDistributions();
-            return sources != null && !sources.isEmpty();
-        }
-        return false;
+        website.setHomepageAccess(homepage_access);
+        
+        return true;
     }
 }

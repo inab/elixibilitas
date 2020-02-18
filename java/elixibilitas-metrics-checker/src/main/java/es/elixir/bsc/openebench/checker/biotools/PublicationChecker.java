@@ -1,6 +1,6 @@
 /**
  * *****************************************************************************
- * Copyright (C) 2017 ELIXIR ES, Spanish National Bioinformatics Institute (INB)
+ * Copyright (C) 2020 ELIXIR ES, Spanish National Bioinformatics Institute (INB)
  * and Barcelona Supercomputing Center (BSC)
  *
  * Modifications to the initial code base are copyright of their respective
@@ -34,7 +34,6 @@ import java.net.HttpURLConnection;
 import java.net.URI;
 import java.util.List;
 
-
 /**
  * @author Dmitry Repchevsky
  */
@@ -45,16 +44,6 @@ public class PublicationChecker implements MetricsChecker {
     private final static URI PMID_RESOLVER_URI = URI.create("https://www.ncbi.nlm.nih.gov/pubmed/");
     private final static URI PMCID_RESOLVER_URI = URI.create("https://www.ncbi.nlm.nih.gov/pmc/articles/");
       
-    @Override
-    public String getToolPath() {
-        return "/publications";
-    }
-    
-    @Override
-    public String getMetricsPath() {
-        return "/project/publications";
-    }
-
     @Override
     public Boolean check(Tool tool, Metrics metrics) {
         

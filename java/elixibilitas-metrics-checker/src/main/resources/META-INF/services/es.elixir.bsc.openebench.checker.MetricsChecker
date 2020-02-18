@@ -28,3 +28,4 @@ es.elixir.bsc.openebench.checker.biotools.HomepageLicenseChecker
 es.elixir.bsc.openebench.checker.biotools.LanguageChecker
 es.elixir.bsc.openebench.checker.biotools.SourcecodePackageChecker
 es.elixir.bsc.openebench.checker.biotools.VetoedChecker
+es.elixir.bsc.openebench.checker.biotools.HomePageStatChecker

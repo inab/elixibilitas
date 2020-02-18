@@ -54,16 +54,6 @@ public class VetoedChecker implements MetricsChecker {
     }
         
     @Override
-    public String getToolPath() {
-        return "/";
-    }
-    
-    @Override
-    public String getMetricsPath() {
-        return "/vetoed";
-    }
-
-    @Override
     public Boolean check(Tool tool, Metrics metrics) {
         if (check(tool)) {
             metrics.setVetoed(true);

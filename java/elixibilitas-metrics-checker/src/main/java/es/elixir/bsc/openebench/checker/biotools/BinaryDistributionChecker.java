@@ -1,6 +1,6 @@
 /**
  * *****************************************************************************
- * Copyright (C) 2017 ELIXIR ES, Spanish National Bioinformatics Institute (INB)
+ * Copyright (C) 2020 ELIXIR ES, Spanish National Bioinformatics Institute (INB)
  * and Barcelona Supercomputing Center (BSC)
  *
  * Modifications to the initial code base are copyright of their respective
@@ -38,16 +38,6 @@ import java.util.List;
  */
 
 public class BinaryDistributionChecker implements MetricsChecker {
-
-    @Override
-    public String getToolPath() {
-        return "/distributions/binaries";
-    }
-    
-    @Override
-    public String getMetricsPath() {
-        return "/distribution/binaries";
-    }
 
     @Override
     public Boolean check(Tool tool, Metrics metrics) {

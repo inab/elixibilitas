@@ -1,6 +1,6 @@
 /**
  * *****************************************************************************
- * Copyright (C) 2018 ELIXIR ES, Spanish National Bioinformatics Institute (INB)
+ * Copyright (C) 2020 ELIXIR ES, Spanish National Bioinformatics Institute (INB)
  * and Barcelona Supercomputing Center (BSC)
  *
  * Modifications to the initial code base are copyright of their respective
@@ -38,16 +38,6 @@ import es.elixir.bsc.openebench.checker.MetricsChecker;
 
 public class BuildSystemChecker implements MetricsChecker {
     
-    @Override
-    public String getToolPath() {
-        return "/dependencies/build_system";
-    }
-    
-    @Override
-    public String getMetricsPath() {
-        return "/project/build/automated";
-    }
-
     @Override
     public Boolean check(Tool tool, Metrics metrics) {
         Boolean bool = check(tool);
