@@ -112,8 +112,10 @@ public class JsonLog {
             if (limit != null) {
                 aggregation.add(Aggregates.sort(new Document("_id.date", -1)));
                 aggregation.add(Aggregates.limit(limit));
-                aggregation.add(Aggregates.sort(new Document("_id.date", 1)));
             }
+            
+            aggregation.add(Aggregates.sort(new Document("_id.date", 1)));
+            
             aggregation.add(Aggregates.project(new Document("_id.date", 1).append("patch.value", 1)));
             
             AggregateIterable<Document> iterator = col.aggregate(aggregation).allowDiskUse(true);
