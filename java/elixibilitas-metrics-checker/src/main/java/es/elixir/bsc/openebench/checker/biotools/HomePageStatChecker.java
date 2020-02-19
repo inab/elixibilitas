@@ -41,7 +41,7 @@ public class HomePageStatChecker implements MetricsChecker {
 
     @Override
     public Boolean check(Tool tool, Metrics metrics) {
-        final HomepageAccess homepage_access = OpenEBenchRepository.getHomepageAvailability();
+        final HomepageAccess homepage_access = OpenEBenchRepository.getHomepageAvailability(tool);
         if (homepage_access == null) {
             return false;
         }
