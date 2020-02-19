@@ -27,6 +27,7 @@ package es.elixir.bsc.openebench.rest;
 
 import com.mongodb.MongoClient;
 import com.mongodb.MongoClientURI;
+import es.bsc.inb.elixir.openebench.model.metrics.HomepageAccess;
 import es.elixir.bsc.elixibilitas.dao.MetricsDAO;
 import es.elixir.bsc.elixibilitas.dao.ToolsDAO;
 import io.swagger.v3.oas.annotations.OpenAPIDefinition;
@@ -43,16 +44,15 @@ import java.io.Writer;
 import java.time.LocalDate;
 import java.time.ZonedDateTime;
 import static java.time.temporal.ChronoUnit.DAYS;
-import static java.time.temporal.ChronoUnit.HOURS;
 import javax.annotation.PostConstruct;
 import javax.annotation.Resource;
 import javax.enterprise.concurrent.ManagedExecutorService;
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
-import javax.json.Json;
 import javax.json.JsonArray;
 import javax.json.JsonObject;
-import javax.json.JsonObjectBuilder;
+import javax.json.bind.Jsonb;
+import javax.json.bind.JsonbBuilder;
 import javax.servlet.ServletContext;
 import javax.ws.rs.GET;
 import javax.ws.rs.HeaderParam;
@@ -190,14 +190,18 @@ public class StatisticsServices {
                         final String id,
             @Suspended final AsyncResponse asyncResponse) {
         executor.submit(() -> {
-            asyncResponse.resume(getAvailabilityAsync(id).build());
+            HomepageAccess homepage_access = getAvailabilityAsync(id);
+            try (Jsonb jsonb = JsonbBuilder.create()) {
+                asyncResponse.resume(jsonb.toJson(homepage_access, HomepageAccess.class));
+            } catch (Exception ex) {
+                asyncResponse.cancel();
+            }
         });
     }
     
-    private Response.ResponseBuilder getAvailabilityAsync(final String id) {
+    private HomepageAccess getAvailabilityAsync(final String id) {
 
-        final JsonObjectBuilder builder = Json.createObjectBuilder();
-        JsonObjectBuilder last_month = null;
+        final HomepageAccess homepage_access = new HomepageAccess();
         
         final String month_ago_time = LocalDate.now().minusMonths(1).plusDays(1).toString();
         
@@ -218,25 +222,18 @@ public class StatisticsServices {
             }
             
             if (access_time_measures > 0) {
-                last_month = Json.createObjectBuilder();
-                last_month.add("average_access_time", total_access_time / access_time_measures);
+                homepage_access.setAverageAccessTime(total_access_time / access_time_measures);
             }
         }
         
         final JsonArray last_check = metricsDAO.findLog(id, "/project/website/last_check", month_ago_time, null, null);
         if (last_check == null || last_check.isEmpty()) {
-            if (last_month != null) {
-                builder.add("last_month", last_month);
-            }
-            return Response.ok(builder.build());
+            return homepage_access;
         }
-
-        builder.add("last_homepage_check", last_check.getJsonObject(last_check.size() - 1).getString("date", null));
         
         final JsonArray operational = metricsDAO.findLog(id, "/project/website/operational", null, null, null);        
         if (operational == null || operational.isEmpty()) {
-            builder.add("last_month", last_month);
-            return Response.ok(builder.build());
+            return homepage_access;
         }
 
         int operational_days = 0;
@@ -294,13 +291,9 @@ public class StatisticsServices {
             } catch(NumberFormatException ex) {}
         }
         
-        if (last_month == null) {
-            last_month = Json.createObjectBuilder();
-        }
-        last_month.add("uptime_days", operational_days);
-        last_month.add("downtime_days", unoperational_days);
+        homepage_access.setUptimeDays(operational_days);
+        homepage_access.setDowntimeDays(unoperational_days);
         
-        builder.add("last_month", last_month);
-        return Response.ok(builder.build());
+        return homepage_access;
     }
 }
