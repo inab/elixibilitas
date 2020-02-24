@@ -29,6 +29,10 @@ import javax.json.JsonObject;
 import javax.json.JsonPatch;
 import javax.json.JsonString;
 import javax.json.JsonValue;
+import javax.json.bind.Jsonb;
+import javax.json.bind.JsonbBuilder;
+import javax.json.bind.JsonbConfig;
+import javax.json.bind.config.PropertyNamingStrategy;
 import org.bson.Document;
 import org.bson.conversions.Bson;
 import org.bson.json.JsonWriter;
@@ -43,7 +47,9 @@ import org.bson.json.JsonWriterSettings;
 public abstract class AbstractDAO<T> {
     
     public final static String LICENSE = "https://creativecommons.org/licenses/by/4.0/";
-            
+
+    protected Jsonb jsonb;
+    
     public final String baseURI;
     public final MongoDatabase database;
     public final String collection;
@@ -57,6 +63,9 @@ public abstract class AbstractDAO<T> {
         this.database = database;
         this.collection = collection;
         log = new JsonLog(database, collection + ".log");
+        
+        jsonb = JsonbBuilder.create(new JsonbConfig()
+                .withPropertyNamingStrategy(PropertyNamingStrategy.UPPER_CAMEL_CASE));
     }
     
     protected abstract T createPK(String uri);

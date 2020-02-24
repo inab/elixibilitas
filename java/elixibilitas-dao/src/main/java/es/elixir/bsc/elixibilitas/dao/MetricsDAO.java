@@ -38,10 +38,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.json.bind.Jsonb;
-import javax.json.bind.JsonbBuilder;
-import javax.json.bind.JsonbConfig;
-import javax.json.bind.config.PropertyNamingStrategy;
 import org.bson.BsonWriter;
 import org.bson.Document;
 import org.bson.codecs.DocumentCodec;
@@ -156,8 +152,7 @@ public class MetricsDAO extends AbstractDAO<String> implements Serializable {
     }
 
     public String upsert(String user, String id, Metrics metrics) {
-        try (Jsonb jsonb = JsonbBuilder.create(
-                new JsonbConfig().withPropertyNamingStrategy(PropertyNamingStrategy.UPPER_CAMEL_CASE))) {            
+        try {            
             final String json = jsonb.toJson(metrics);
             return upsert(user, id, json);
         } catch (Exception ex) {
@@ -167,8 +162,7 @@ public class MetricsDAO extends AbstractDAO<String> implements Serializable {
     }
     
     public String merge(String user, String id, Metrics metrics) {
-        try (Jsonb jsonb = JsonbBuilder.create(
-                new JsonbConfig().withPropertyNamingStrategy(PropertyNamingStrategy.UPPER_CAMEL_CASE))) {            
+        try {            
             final String json = jsonb.toJson(metrics);
             return merge(user, id, json);
         } catch (Exception ex) {
@@ -182,8 +176,7 @@ public class MetricsDAO extends AbstractDAO<String> implements Serializable {
         doc.append("@id", baseURI + doc.remove("_id"));
         doc.append("@type", "metrics");
                         
-        try (Jsonb jsonb = JsonbBuilder.create(
-                new JsonbConfig().withPropertyNamingStrategy(PropertyNamingStrategy.UPPER_CAMEL_CASE))) {
+        try {
             return jsonb.fromJson(doc.toJson(), Metrics.class);
         } catch(Exception ex) {
             Logger.getLogger(MetricsDAO.class.getName()).log(Level.SEVERE, doc.getString("@id"), ex);

@@ -50,9 +50,6 @@ import javax.json.Json;
 import javax.json.JsonArray;
 import javax.json.JsonArrayBuilder;
 import javax.json.JsonObjectBuilder;
-import javax.json.bind.Jsonb;
-import javax.json.bind.JsonbBuilder;
-import javax.json.bind.JsonbConfig;
 import javax.json.bind.config.PropertyNamingStrategy;
 import org.bson.BsonArray;
 import org.bson.BsonNull;
@@ -155,13 +152,12 @@ public class ToolsDAO extends AbstractDAO<Document> implements Serializable {
     public List<Tool> get() {
         List<Tool> tools = new ArrayList<>();
 
-        try (Jsonb jsonb = JsonbBuilder.create(
-                new JsonbConfig().withPropertyNamingStrategy(PropertyNamingStrategy.UPPER_CAMEL_CASE))) {
+        try {
             final MongoCollection<Document> col = database.getCollection(collection);
             final FindIterable<Document> iterator = col.find().noCursorTimeout(true);
             try (MongoCursor<Document> cursor = iterator.iterator()) {
                 while (cursor.hasNext()) {
-                    tools.add(deserialize(cursor.next(), jsonb));
+                    tools.add(deserialize(cursor.next()));
                 }
             }
         } catch(Exception ex) {
@@ -179,8 +175,7 @@ public class ToolsDAO extends AbstractDAO<Document> implements Serializable {
      * @return the Tool object
      */
     public Tool get(String id) {
-        try (Jsonb jsonb = JsonbBuilder.create(
-                new JsonbConfig().withPropertyNamingStrategy(PropertyNamingStrategy.UPPER_CAMEL_CASE))) {
+        try {
             final MongoCollection<Document> col = database.getCollection(collection);
 
             final Bson query = createFindQuery(id);
@@ -188,7 +183,7 @@ public class ToolsDAO extends AbstractDAO<Document> implements Serializable {
                 final FindIterable<Document> iterator = col.find(query).noCursorTimeout(true);
                 try (MongoCursor<Document> cursor = iterator.iterator()) {
                     if(cursor.hasNext()) {
-                        return deserialize(cursor.next(), jsonb);
+                        return deserialize(cursor.next());
                     }
                 }
             }
@@ -199,7 +194,7 @@ public class ToolsDAO extends AbstractDAO<Document> implements Serializable {
         return null;
     }
     
-    private Tool deserialize(final Document doc, final Jsonb jsonb) {
+    private Tool deserialize(final Document doc) {
         final Document _id = (Document)doc.remove("_id");
         final String type = getType(_id);
 
@@ -289,8 +284,7 @@ public class ToolsDAO extends AbstractDAO<Document> implements Serializable {
     }
 
     public String put(String user, Tool tool) {
-        try (Jsonb jsonb = JsonbBuilder.create(
-                new JsonbConfig().withPropertyNamingStrategy(PropertyNamingStrategy.UPPER_CAMEL_CASE))) {
+        try {
             final String json = jsonb.toJson(tool);
             return put(user, tool.id.toString().substring(baseURI.length()), json);
         } catch(Exception ex) {
@@ -301,8 +295,7 @@ public class ToolsDAO extends AbstractDAO<Document> implements Serializable {
 
 
     public String upsert(String user, Tool tool, String id) {
-        try (Jsonb jsonb = JsonbBuilder.create(
-                new JsonbConfig().withPropertyNamingStrategy(PropertyNamingStrategy.UPPER_CAMEL_CASE))) {
+        try {
             final String json = jsonb.toJson(tool);
             return upsert(user, id, json);
         } catch(Exception ex) {
