@@ -27,8 +27,13 @@ package es.elixir.bsc.openebench.checker;
 
 import es.bsc.inb.elixir.openebench.model.metrics.Metrics;
 import es.bsc.inb.elixir.openebench.model.tools.Tool;
+import es.bsc.inb.elixir.openebench.repository.OpenEBenchEndpoint;
+import es.elixir.bsc.elixibilitas.dao.MetricsDAO;
+import es.elixir.bsc.elixibilitas.dao.ToolsDAO;
 import java.util.Iterator;
 import java.util.ServiceLoader;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * @author Dmitry Repchevsky
@@ -39,19 +44,26 @@ public interface MetricsChecker {
     /**
      * Sets the metrics value for the tool.
      * 
+     * @param toolsDAO
+     * @param metricsDAO
      * @param tool the tool for which metrics is calculated.
      * @param metrics metrics object to set the metrics
      * 
      * @return calculated metrics value
      */
-    Boolean check(Tool tool, Metrics metrics);
+    Boolean check(ToolsDAO toolsDAO, MetricsDAO metricsDAO, Tool tool, Metrics metrics);
     
-    public static void checkAll(Tool tool, Metrics metrics) {
+    public static void checkAll(ToolsDAO toolsDAO, MetricsDAO metricsDAO, Tool tool, Metrics metrics) {
+            
         ServiceLoader<MetricsChecker> loader = ServiceLoader.load(MetricsChecker.class);
         Iterator<MetricsChecker> iterator = loader.iterator();
         while(iterator.hasNext()) {
             MetricsChecker checker = iterator.next();
-            checker.check(tool, metrics);
+            try {
+                checker.check(toolsDAO, metricsDAO, tool, metrics);
+            } catch (Exception ex) {
+                Logger.getLogger(MetricsChecker.class.getName()).log(Level.SEVERE, "error in metrics: " + tool.id.toString(), ex);
+            }
         }
     }
 }

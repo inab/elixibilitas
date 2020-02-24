@@ -99,34 +99,20 @@ public class BatchMetricsChecker {
         final List<Tool> tools = toolsDAO.get();
         final CountDownLatch latch = new CountDownLatch(tools.size());
         
-        Logger.getLogger(BatchMetricsChecker.class.getName()).log(Level.INFO, "pushing {0} metrics.", tools.size());
-        
+        Logger.getLogger(BatchMetricsChecker.class.getName()).log(Level.INFO, "pushing {0} metrics.", tools.size());          
+
         for (int i = 0, n = tools.size(); i < n; i++) {    
             try {
                 final Tool tool = tools.get(i);
                 final String id = tool.id.toString().substring(toolsDAO.baseURI.length());
 
-                Metrics metrics = metricsDAO.get(id);
-                if (metrics == null) {
-                    metrics = new Metrics();
-                }
-
-                final Future<Metrics> future = executor.submit(new MetricsCheckTask(tool, metrics));
+                final Future<Metrics> future = executor.submit(new MetricsCheckTask(tool, toolsDAO, metricsDAO));
                 executor.submit(new Runnable() {
                     @Override
                     public void run() {
                         try {
                             final Metrics metrics = future.get(30, TimeUnit.MINUTES);
                             metricsDAO.merge("biotools", id, metrics);
-                            
-                            Boolean vetoed = metrics.getVetoed();
-                            if (vetoed != null && vetoed) {
-                                vetoed = tool.getVetoed();
-                                if (vetoed == null || !vetoed) {
-                                    tool.setVetoed(true);
-                                    toolsDAO.put("biotools", tool);
-                                }
-                            }
                         } catch (Throwable th) {
                             Logger.getLogger(BatchMetricsChecker.class.getName()).log(Level.SEVERE, "update failed", th);
                         }
@@ -141,7 +127,7 @@ public class BatchMetricsChecker {
 
         // ensure that all taksks executed.
         try {
-            latch.await(8, TimeUnit.HOURS);
+            latch.await(12, TimeUnit.HOURS);
         } catch (InterruptedException ex) {
         } finally {
             executor.shutdownNow();

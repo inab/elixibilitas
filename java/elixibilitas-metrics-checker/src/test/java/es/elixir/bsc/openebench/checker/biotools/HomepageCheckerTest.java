@@ -38,7 +38,7 @@ public class HomepageCheckerTest {
         
         final Metrics metrics = new Metrics();
         
-        Boolean result = checker.check(tool, metrics);
+        Boolean result = checker.check(null, null, tool, metrics);
         System.out.println("-> " + result);
         
     }

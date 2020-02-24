@@ -30,6 +30,8 @@ import es.bsc.inb.elixir.openebench.model.metrics.Project;
 import es.bsc.inb.elixir.openebench.model.metrics.Website;
 import es.bsc.inb.elixir.openebench.model.tools.Tool;
 import es.bsc.inb.elixir.openebench.model.tools.Web;
+import es.elixir.bsc.elixibilitas.dao.MetricsDAO;
+import es.elixir.bsc.elixibilitas.dao.ToolsDAO;
 import es.elixir.bsc.openebench.checker.MetricsChecker;
 
 /**
@@ -39,7 +41,7 @@ import es.elixir.bsc.openebench.checker.MetricsChecker;
 public class HomepageCopyrightChecker implements MetricsChecker {
 
     @Override
-    public Boolean check(Tool tool, Metrics metrics) {
+    public Boolean check(ToolsDAO toolsDAO, MetricsDAO metricsDAO, Tool tool, Metrics metrics) {
         Boolean bool = check(tool);
         Project project = metrics.getProject();
         if (Boolean.TRUE.equals(bool)) {

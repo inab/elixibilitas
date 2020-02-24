@@ -27,6 +27,9 @@ package es.elixir.bsc.openebench.checker;
 
 import es.bsc.inb.elixir.openebench.model.metrics.Metrics;
 import es.bsc.inb.elixir.openebench.model.tools.Tool;
+import es.bsc.inb.elixir.openebench.repository.OpenEBenchEndpoint;
+import es.elixir.bsc.elixibilitas.dao.MetricsDAO;
+import es.elixir.bsc.elixibilitas.dao.ToolsDAO;
 import java.util.concurrent.Callable;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -38,20 +41,39 @@ import java.util.logging.Logger;
 public class MetricsCheckTask implements Callable<Metrics> {
 
     private final Tool tool;
-    private final Metrics metrics;
     
-    public MetricsCheckTask(Tool tool, Metrics metrics) {
+    private final ToolsDAO toolsDAO;
+    private final MetricsDAO metricsDAO;
+    
+    public MetricsCheckTask(Tool tool, ToolsDAO toolsDAO, MetricsDAO metricsDAO) {
         this.tool = tool;
-        this.metrics = metrics;
+        this.toolsDAO = toolsDAO;
+        this.metricsDAO = metricsDAO;
     }
 
     @Override
     public Metrics call() throws Exception {
         try {
-            MetricsChecker.checkAll(tool, metrics);
+            final String id = tool.id.toString().substring(OpenEBenchEndpoint.TOOL_URI_BASE.length());
+
+            Metrics metrics = metricsDAO.get(id);
+            if (metrics == null) {
+                metrics = new Metrics();
+            }
+            MetricsChecker.checkAll(toolsDAO, metricsDAO, tool, metrics);
+            
+            Boolean vetoed = metrics.getVetoed();
+            if (vetoed != null && vetoed) {
+                vetoed = tool.getVetoed();
+                if (vetoed == null || !vetoed) {
+                    tool.setVetoed(true);
+                    toolsDAO.put("biotools", tool);
+                }
+            }
+            return metrics;
         } catch(Exception ex) {
             Logger.getLogger(MetricsCheckTask.class.getName()).log(Level.WARNING, "error in metrics: " + tool.id.toString(), ex);
         }
-        return metrics;
+        return null;
     }
 }

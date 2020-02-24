@@ -30,6 +30,8 @@ import es.bsc.inb.elixir.openebench.model.metrics.Metrics;
 import es.bsc.inb.elixir.openebench.model.metrics.Repository;
 import es.bsc.inb.elixir.openebench.model.metrics.Sourcecode;
 import es.bsc.inb.elixir.openebench.model.tools.Tool;
+import es.elixir.bsc.elixibilitas.dao.MetricsDAO;
+import es.elixir.bsc.elixibilitas.dao.ToolsDAO;
 import es.elixir.bsc.openebench.checker.MetricsChecker;
 import java.net.URI;
 import java.util.List;
@@ -41,7 +43,7 @@ import java.util.List;
 public class RepositoryChecker implements MetricsChecker {
 
     @Override
-    public Boolean check(Tool tool, Metrics metrics) {
+    public Boolean check(ToolsDAO toolsDAO, MetricsDAO metricsDAO, Tool tool, Metrics metrics) {
         
         Boolean bool = check(tool);
         Distribution distribution = metrics.getDistribution();

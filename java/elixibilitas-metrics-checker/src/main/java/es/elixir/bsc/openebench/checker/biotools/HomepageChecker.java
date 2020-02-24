@@ -30,6 +30,8 @@ import es.bsc.inb.elixir.openebench.model.metrics.Project;
 import es.bsc.inb.elixir.openebench.model.metrics.Website;
 import es.bsc.inb.elixir.openebench.model.tools.Tool;
 import es.bsc.inb.elixir.openebench.model.tools.Web;
+import es.elixir.bsc.elixibilitas.dao.MetricsDAO;
+import es.elixir.bsc.elixibilitas.dao.ToolsDAO;
 import es.elixir.bsc.openebench.checker.MetricsChecker;
 import java.io.BufferedInputStream;
 import java.io.IOException;
@@ -92,7 +94,7 @@ public class HomepageChecker implements MetricsChecker {
     }
 
     @Override
-    public Boolean check(Tool tool, Metrics metrics) {
+    public Boolean check(ToolsDAO toolsDAO, MetricsDAO metricsDAO, Tool tool, Metrics metrics) {
         
         Web web = tool.getWeb();
         if (web == null) {
@@ -213,7 +215,7 @@ public class HomepageChecker implements MetricsChecker {
             }
         } catch (MalformedURLException ex) {
             Logger.getLogger(HomepageChecker.class.getName()).log(Level.INFO, String.format("\n-----> %1$s %2$s error loading home page: %3$s", tool.id.toString(), homepage, ex.getMessage()));
-        } catch (IOException ex) {}
+        } catch (Exception ex) {}
 
         final boolean operational = isOperational(code);
         
