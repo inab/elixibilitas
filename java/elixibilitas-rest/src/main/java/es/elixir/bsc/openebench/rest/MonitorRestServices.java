@@ -481,22 +481,37 @@ public class MonitorRestServices {
         } else if (operational.isEmpty()) {
             return Response.status(Response.Status.NOT_FOUND);
         }
-        
-        final JsonArray access_time = metricsDAO.findLog(id, "/project/website/access_time", from, to, null);
+                
+        JsonArray access_time = metricsDAO.findLog(id, "/project/website/access_time", from, to, null);
         if (access_time == null) {
             return Response.status(Response.Status.INTERNAL_SERVER_ERROR);
         }
-        
+
         final TreeMap<String, String> atimes = new TreeMap<>();
+        
         for (int i = 0, n = access_time.size(); i < n; i++) {
             final JsonObject obj = access_time.getJsonObject(i);
             
             final String date = obj.getString("date", "null");
             final String time = obj.getString("value", "0");
-            
+
             atimes.put(date, time);
         }
         
+        final String _time;
+        if (from == null) {
+            _time = null;
+        } else {
+            // look for the last access_time just before the 'from' date
+            access_time = metricsDAO.findLog(id, "/project/website/access_time", null, from, 1);
+            if (access_time == null || access_time.isEmpty()) {
+                _time = null;
+            } else {
+                final JsonObject obj = access_time.getJsonObject(0);
+                _time = obj.getString("value", null);
+            }
+        }
+
         StreamingOutput stream = (OutputStream out) -> {
             try (JsonGenerator writer = Json.createGenerator(out)) {
                 writer.writeStartArray();
@@ -505,7 +520,7 @@ public class MonitorRestServices {
                 String code = obj.getString("value", "0");
                 String date = obj.getString("date", null);
                 
-                String time = null;
+                String time = _time;
                 ZonedDateTime last_date = null;
                 for (int i = 0, j = 0, m = last_check.size(), lim = limit == null ? Integer.MAX_VALUE: limit + 1, n = operational.size(); i < m && lim > 0; i++, lim--) {
                     final JsonObject o = last_check.getJsonObject(i);
