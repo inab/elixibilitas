@@ -259,13 +259,12 @@ public class EdamServices {
                         .header("Access-Control-Expose-Headers", "Content-Range")
                         .build());
             } else {
-                final Long from = skip;
                 Long to = limit;
-                if (from != null && to != null) {
-                    to += limit;
+                if (skip != null && to != null) {
+                    to += skip;
                 }
                 
-                asyncResponse.resume(aggregateAsync(id, from, to, projections, text, name, description, types, label)
+                asyncResponse.resume(aggregateAsync(id, skip, to, projections, text, name, description, types, label)
                         .header("Access-Control-Allow-Headers", "Range")
                         .header("Access-Control-Expose-Headers", "Accept-Ranges")
                         .header("Access-Control-Expose-Headers", "Content-Range")
