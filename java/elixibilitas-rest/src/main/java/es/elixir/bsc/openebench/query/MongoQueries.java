@@ -59,6 +59,191 @@ import org.bson.json.JsonWriter;
 
 public class MongoQueries {
     
+    public static int searchToolsCount(ToolsDAO toolsDAO, String id, String text, String name, String homepage, String description, List<String> tags) {
+        
+        try {
+            final MongoCollection<Document> col = toolsDAO.database.getCollection(toolsDAO.collection);
+
+            ArrayList<Bson> aggregation = new ArrayList();
+            if (text != null && !text.isEmpty()) {
+                aggregation.add(Aggregates.match(Filters.or(Filters.regex("description", text, "i"),
+                                        Filters.regex("name", text, "i"))));
+            }
+
+            if (name != null && !name.isEmpty()) {
+                aggregation.add(Aggregates.match(Filters.regex("name", name, "i")));
+            }
+            
+            if (homepage != null && !homepage.isEmpty()) {
+                aggregation.add(Aggregates.match(Filters.regex("web.homepage", homepage, "i")));
+            }
+
+            if (description != null && !description.isEmpty()) {
+                aggregation.add(Aggregates.match(Filters.regex("description", description, "i")));
+            }
+
+            if (tags != null && !tags.isEmpty()) {
+                aggregation.add(Aggregates.match(Filters.in("tags", tags)));
+            }
+                
+            if (id != null && !id.isEmpty()) {
+                aggregation.add(toolsDAO.createIdFilter(id));
+            }
+
+            aggregation.add(Aggregates.group(new BasicDBObject("_id", "$_id.id"), Accumulators.push("tools", "$$ROOT")));
+
+            aggregation.add(Aggregates.sort(Sorts.ascending("tools.name")));
+
+            aggregation.add(Aggregates.unwind("$tools"));
+            aggregation.add(Aggregates.replaceRoot("$tools"));
+            aggregation.add(Aggregates.group(new BasicDBObject("_id", BsonNull.VALUE),
+                    Accumulators.sum("count", 1)));
+
+            final AggregateIterable<Document> iterator = col.aggregate(aggregation).allowDiskUse(true);
+            final Document doc = iterator.first();
+            if (doc != null) {
+                final Integer count = doc.get("count", Integer.class);
+                return count == null ? 0 : count;
+            }
+        } catch(Exception ex) {
+            Logger.getLogger(ToolsDAO.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return 0;
+    }
+
+    
+    /**
+     * Find tools and write them into the reader.
+     * 
+     * @param toolsDAO
+     * @param writer writer to write metrics into.
+     * @param id
+     * @param skip mongodb skip parameter (aka from).
+     * @param limit mongodb limit parameter (limits number of tools to be written).
+     * @param text text to search either in 'name' or 'description' property.
+     * @param name text to search in the 'name' property.
+     * @param homepage text to search in the 'homepage' property.
+     * @param description text to search in the 'description' property.
+     * @param projections - properties to write or null for all.
+     */
+    public static void searchTools(ToolsDAO toolsDAO, Writer writer, String id, Long skip, Long limit, 
+            String text, String name, String homepage, String description, List<String> projections) {
+        searchTools(toolsDAO, writer, id, skip, limit, text, name, homepage, description, null, projections);
+    }
+
+    /**
+     * Find tools and write them into the reader.
+     * 
+     * @param toolsDAO
+     * @param writer writer to write metrics into.
+     * @param id
+     * @param skip mongodb skip parameter (aka from).
+     * @param limit mongodb limit parameter (limits number of tools to be written).
+     * @param text text to search either in 'name' or 'description' property.
+     * @param name text to search in the 'name' property.
+     * @param homepage text to search in the 'homepage' property.
+     * @param description text to search in the 'description' property.
+     * @param tags text to match the 'tags' property.
+     * @param projections - properties to write or null for all.
+     */
+    public static void searchTools(ToolsDAO toolsDAO, Writer writer, String id, Long skip, Long limit, 
+            String text, String name, String homepage, String description, List<String> tags, List<String> projections) {
+        try {
+            final MongoCollection<Document> col = toolsDAO.database.getCollection(toolsDAO.collection);
+            try (JsonWriter jwriter = new AbstractDAO.ReusableJsonWriter(writer)) {
+
+                final DocumentCodec codec = new DocumentCodec() {
+                    @Override
+                    public void encode(BsonWriter writer,
+                       Document document,
+                       EncoderContext encoderContext) {
+                            super.encode(jwriter, document, encoderContext);
+                    }
+                };
+
+                jwriter.writeStartArray();
+                
+                ArrayList<Bson> aggregation = new ArrayList();
+                if (text != null && !text.isEmpty()) {
+                    aggregation.add(Aggregates.match(Filters.or(Filters.regex("description", text, "i"),
+                                            Filters.regex("name", text, "i"))));
+                }
+
+                if (name != null && !name.isEmpty()) {
+                    aggregation.add(Aggregates.match(Filters.regex("name", name, "i")));
+                }
+
+                if (homepage != null && !homepage.isEmpty()) {
+                    aggregation.add(Aggregates.match(Filters.regex("web.homepage", homepage, "i")));
+                }
+
+                if (description != null && !description.isEmpty()) {
+                    aggregation.add(Aggregates.match(Filters.regex("description", description, "i")));
+                }
+                
+                if (tags != null && !tags.isEmpty()) {
+                    aggregation.add(Aggregates.match(Filters.in("tags", tags)));
+                }
+
+                if (id != null && !id.isEmpty()) {
+                    aggregation.add(toolsDAO.createIdFilter(id));
+                }
+
+                boolean injectName = false;
+                if (projections != null && projections.size() > 0) {
+                    injectName = !projections.contains("name");
+                    
+                    BasicDBObject bson = new BasicDBObject();
+                    bson.append("@timestamp", true);
+                    for (String field : projections) {
+                        bson.append(field, true);
+                    }
+                    if (injectName) {
+                        // need "name" to sort!
+                        bson.append("name", true);
+                    }
+                    aggregation.add(Aggregates.project(bson));
+                }
+
+                aggregation.add(Aggregates.group(new BasicDBObject("_id", "$_id.id"), Accumulators.push("tools", "$$ROOT")));
+
+                aggregation.add(Aggregates.sort(Sorts.ascending("tools.name")));
+
+                aggregation.add(Aggregates.unwind("$tools"));
+                aggregation.add(Aggregates.replaceRoot("$tools"));
+                
+                if (skip != null) {
+                    aggregation.add(Aggregates.skip(skip.intValue()));
+                }
+                if (limit != null) {
+                    aggregation.add(Aggregates.limit(limit.intValue()));
+                }
+
+                final AggregateIterable<Document> iterator = col.aggregate(aggregation).allowDiskUse(true);
+                try (MongoCursor<Document> cursor = iterator.iterator()) {
+                    while (cursor.hasNext()) {
+                        final Document doc = cursor.next();
+
+                        Document _id = (Document) doc.remove("_id");
+                        doc.append("@id", toolsDAO.getURI(_id));
+                        doc.append("@type", toolsDAO.getType(_id));
+                        doc.append("@label", toolsDAO.getLabel(_id));
+                        doc.append("@version", toolsDAO.getVersion(_id));
+                        doc.append("@license", LICENSE);
+
+                        if (injectName) {
+                            doc.remove("name");
+                        }
+                        doc.toJson(codec);
+                    }
+                }
+                jwriter.writeEndArray();
+            }
+        } catch(Exception ex) {
+            Logger.getLogger(ToolsDAO.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }
+
     public static int aggregateToolsCount(
             ToolsDAO toolsDAO, String id, String text, String name, 
             String description, List<String> types, String[] edam_terms) {

@@ -50,9 +50,7 @@ import javax.json.Json;
 import javax.json.JsonArray;
 import javax.json.JsonArrayBuilder;
 import javax.json.JsonObjectBuilder;
-import javax.json.bind.config.PropertyNamingStrategy;
 import org.bson.BsonArray;
-import org.bson.BsonNull;
 import org.bson.BsonWriter;
 import org.bson.Document;
 import org.bson.codecs.DocumentCodec;
@@ -346,54 +344,6 @@ public class ToolsDAO extends AbstractDAO<Document> implements Serializable {
         return null;
     }
     
-    public int search_count(String id, String text, String name, String description, List<String> tags) {
-        
-        try {
-            final MongoCollection<Document> col = database.getCollection(collection);
-
-            ArrayList<Bson> aggregation = new ArrayList();
-            if (text != null && !text.isEmpty()) {
-                aggregation.add(Aggregates.match(Filters.or(Filters.regex("description", text, "i"),
-                                        Filters.regex("name", text, "i"))));
-            }
-
-            if (name != null && !name.isEmpty()) {
-                aggregation.add(Aggregates.match(Filters.regex("name", name, "i")));
-            }
-
-            if (description != null && !description.isEmpty()) {
-                aggregation.add(Aggregates.match(Filters.regex("description", description, "i")));
-            }
-
-            if (tags != null && !tags.isEmpty()) {
-                aggregation.add(Aggregates.match(Filters.in("tags", tags)));
-            }
-                
-            if (id != null && !id.isEmpty()) {
-                aggregation.add(createIdFilter(id));
-            }
-
-            aggregation.add(Aggregates.group(new BasicDBObject("_id", "$_id.id"), Accumulators.push("tools", "$$ROOT")));
-
-            aggregation.add(Aggregates.sort(Sorts.ascending("tools.name")));
-
-            aggregation.add(Aggregates.unwind("$tools"));
-            aggregation.add(Aggregates.replaceRoot("$tools"));
-            aggregation.add(Aggregates.group(new BasicDBObject("_id", BsonNull.VALUE),
-                    Accumulators.sum("count", 1)));
-
-            final AggregateIterable<Document> iterator = col.aggregate(aggregation).allowDiskUse(true);
-            final Document doc = iterator.first();
-            if (doc != null) {
-                final Integer count = doc.get("count", Integer.class);
-                return count == null ? 0 : count;
-            }
-        } catch(Exception ex) {
-            Logger.getLogger(ToolsDAO.class.getName()).log(Level.SEVERE, null, ex);
-        }
-        return 0;
-    }
-    
     public void write(Writer writer) {
         try {
             final MongoCollection<Document> col = database.getCollection(collection);
@@ -422,131 +372,6 @@ public class ToolsDAO extends AbstractDAO<Document> implements Serializable {
                         doc.append("@version", getVersion(_id));
                         doc.append("@license", LICENSE);
 
-                        doc.toJson(codec);
-                    }
-                }
-                jwriter.writeEndArray();
-            }
-        } catch(Exception ex) {
-            Logger.getLogger(ToolsDAO.class.getName()).log(Level.SEVERE, null, ex);
-        }
-    }
-
-
-    /**
-     * Find tools and write them into the reader.
-     * 
-     * @param writer writer to write metrics into.
-     * @param id
-     * @param skip mongodb skip parameter (aka from).
-     * @param limit mongodb limit parameter (limits number of tools to be written).
-     * @param text text to search either in 'name' or 'description' property.
-     * @param name text to search in the 'name' property.
-     * @param description text to search in the 'description' property.
-     * @param projections - properties to write or null for all.
-     */
-    public void search(Writer writer, String id, Long skip, Long limit, 
-            String text, String name, String description, List<String> projections) {
-        search(writer, id, skip, limit, text, name, description, null, projections);
-    }
-
-    /**
-     * Find tools and write them into the reader.
-     * 
-     * @param writer writer to write metrics into.
-     * @param id
-     * @param skip mongodb skip parameter (aka from).
-     * @param limit mongodb limit parameter (limits number of tools to be written).
-     * @param text text to search either in 'name' or 'description' property.
-     * @param name text to search in the 'name' property.
-     * @param description text to search in the 'description' property.
-     * @param tags text to match the 'tags' property.
-     * @param projections - properties to write or null for all.
-     */
-    public void search(Writer writer, String id, Long skip, Long limit, 
-            String text, String name, String description, List<String> tags, List<String> projections) {
-        try {
-            final MongoCollection<Document> col = database.getCollection(collection);
-            try (JsonWriter jwriter = new ReusableJsonWriter(writer)) {
-
-                final DocumentCodec codec = new DocumentCodec() {
-                    @Override
-                    public void encode(BsonWriter writer,
-                       Document document,
-                       EncoderContext encoderContext) {
-                            super.encode(jwriter, document, encoderContext);
-                    }
-                };
-
-                jwriter.writeStartArray();
-                
-                ArrayList<Bson> aggregation = new ArrayList();
-                if (text != null && !text.isEmpty()) {
-                    aggregation.add(Aggregates.match(Filters.or(Filters.regex("description", text, "i"),
-                                            Filters.regex("name", text, "i"))));
-                }
-
-                if (name != null && !name.isEmpty()) {
-                    aggregation.add(Aggregates.match(Filters.regex("name", name, "i")));
-                }
-
-                if (description != null && !description.isEmpty()) {
-                    aggregation.add(Aggregates.match(Filters.regex("description", description, "i")));
-                }
-                
-                if (tags != null && !tags.isEmpty()) {
-                    aggregation.add(Aggregates.match(Filters.in("tags", tags)));
-                }
-
-                if (id != null && !id.isEmpty()) {
-                    aggregation.add(createIdFilter(id));
-                }
-
-                boolean injectName = false;
-                if (projections != null && projections.size() > 0) {
-                    injectName = !projections.contains("name");
-                    
-                    BasicDBObject bson = new BasicDBObject();
-                    bson.append("@timestamp", true);
-                    for (String field : projections) {
-                        bson.append(field, true);
-                    }
-                    if (injectName) {
-                        // need "name" to sort!
-                        bson.append("name", true);
-                    }
-                    aggregation.add(Aggregates.project(bson));
-                }
-
-                aggregation.add(Aggregates.group(new BasicDBObject("_id", "$_id.id"), Accumulators.push("tools", "$$ROOT")));
-
-                aggregation.add(Aggregates.sort(Sorts.ascending("tools.name")));
-
-                aggregation.add(Aggregates.unwind("$tools"));
-                aggregation.add(Aggregates.replaceRoot("$tools"));
-                
-                if (skip != null) {
-                    aggregation.add(Aggregates.skip(skip.intValue()));
-                }
-                if (limit != null) {
-                    aggregation.add(Aggregates.limit(limit.intValue()));
-                }
-
-                final AggregateIterable<Document> iterator = col.aggregate(aggregation).allowDiskUse(true);
-                try (MongoCursor<Document> cursor = iterator.iterator()) {
-                    while (cursor.hasNext()) {
-                        final Document doc = cursor.next();
-
-                        Document _id = (Document) doc.remove("_id");
-                        doc.append("@id", getURI(_id));
-                        doc.append("@type", getType(_id));
-                        doc.append("@label", getLabel(_id));
-                        doc.append("@version", getVersion(_id));
-                        doc.append("@license", LICENSE);
-
-                        if (injectName) {
-                            doc.remove("name");
-                        }
                         doc.toJson(codec);
                     }
                 }

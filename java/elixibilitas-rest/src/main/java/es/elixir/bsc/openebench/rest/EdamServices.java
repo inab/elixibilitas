@@ -542,7 +542,7 @@ public class EdamServices {
                  PipedReader reader = new PipedReader(writer)) {
 
                 executor.submit(() -> {
-                    toolsDAO.search(writer, null, null, null, null, null, null, Arrays.asList("semantics"));
+                    MongoQueries.searchTools(toolsDAO, writer, null, null, null, null, null, null, null, Arrays.asList("semantics"));
                 });
 
                 final Jsonb jsonb = JsonbBuilder.create(new JsonbConfig()

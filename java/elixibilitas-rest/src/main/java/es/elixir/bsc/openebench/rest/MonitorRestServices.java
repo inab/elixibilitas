@@ -161,6 +161,9 @@ public class MonitorRestServices {
                        @QueryParam("name")
                        @Parameter(description = "text to search in the 'name' property")
                        final String name,
+                       @QueryParam("homepage")
+                       @Parameter(description = "text to search in the tool 'homepage' property")
+                       final String homepage,
                        @QueryParam("description")
                        @Parameter(description = "text to search in the 'description' property")
                        final String description,
@@ -171,19 +174,18 @@ public class MonitorRestServices {
         executor.submit(() -> {
             if (range != null) {
                 asyncResponse.resume(searchAsync(id, range.getFirstPos(), 
-                        range.getLastPos(), projections, text, name, description, tags)
+                        range.getLastPos(), projections, text, name, homepage, description, tags)
                             .header("Access-Control-Allow-Headers", "Range")
                             .header("Access-Control-Expose-Headers", "Accept-Ranges")
                             .header("Access-Control-Expose-Headers", "Content-Range")
                             .build());
             } else {
-                final Long from = skip;
                 Long to = limit;
-                if (from != null && to != null) {
-                    to += from;
+                if (skip != null && to != null) {
+                    to += skip;
                 }
                 
-                asyncResponse.resume(searchAsync(id, from, to, projections, text, name, description, tags)
+                asyncResponse.resume(searchAsync(id, skip, to, projections, text, name, homepage, description, tags)
                             .header("Access-Control-Allow-Headers", "Range")
                             .header("Access-Control-Expose-Headers", "Accept-Ranges")
                             .header("Access-Control-Expose-Headers", "Content-Range")
@@ -199,6 +201,7 @@ public class MonitorRestServices {
                               final List<String> projections, 
                               final String text,
                               final String name,
+                              final String homepage,
                               final String description,
                               final List<String> tags) {
 
@@ -212,11 +215,11 @@ public class MonitorRestServices {
             }
 
             try (Writer writer = new BufferedWriter(new OutputStreamWriter(out, "UTF-8"))) {
-                toolsDAO.search(writer, id, from, limit, text, name, description, tags, projections);
+                MongoQueries.searchTools(toolsDAO, writer, id, from, limit, text, name, homepage, description, tags, projections);
             }
         };
 
-        final long count = toolsDAO.search_count(id, text, name, description, tags);
+        final long count = MongoQueries.searchToolsCount(toolsDAO, id, text, name, homepage, description, tags);
         
         final ContentRange range = new ContentRange("tools", from, to, count);
         
@@ -290,13 +293,12 @@ public class MonitorRestServices {
                         .header("Access-Control-Expose-Headers", "Content-Range")
                         .build());
             } else {
-                final Long from = skip;
                 Long to = limit;
-                if (from != null && to != null) {
-                    to += from;
+                if (skip != null && to != null) {
+                    to += skip;
                 }
                 
-                asyncResponse.resume(aggregateAsync(id, from, to, projections, text, name, description, tags, types, edam_term)
+                asyncResponse.resume(aggregateAsync(id, skip, to, projections, text, name, description, tags, types, edam_term)
                         .header("Access-Control-Allow-Headers", "Range")
                         .header("Access-Control-Expose-Headers", "Accept-Ranges")
                         .header("Access-Control-Expose-Headers", "Content-Range")

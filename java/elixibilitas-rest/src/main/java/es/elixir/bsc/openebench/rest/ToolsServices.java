@@ -29,6 +29,7 @@ import com.mongodb.MongoClient;
 import com.mongodb.MongoClientURI;
 import es.elixir.bsc.elixibilitas.dao.ToolsDAO;
 import es.elixir.bsc.elixibilitas.meta.ToolsMetaIterator;
+import es.elixir.bsc.openebench.query.MongoQueries;
 import es.elixir.bsc.openebench.rest.ext.ContentRange;
 import es.elixir.bsc.openebench.rest.ext.Range;
 import io.swagger.v3.oas.annotations.Hidden;
@@ -281,7 +282,7 @@ public class ToolsServices {
                 limit = to - from;
             }
             try (Writer writer = new BufferedWriter(new OutputStreamWriter(out, "UTF-8"))) {
-                toolsDAO.search(writer, null, from, limit, null, null, null, null);
+                MongoQueries.searchTools(toolsDAO, writer, null, from, limit, null, null, null, null, null);
             } catch(Exception ex) {
                 Logger.getLogger(ToolsServices.class.getName()).log(Level.SEVERE, null, ex);
             }
@@ -718,7 +719,7 @@ public class ToolsServices {
                 final PipedWriter writer = new PipedWriter(reader);
                 executor.submit(() -> {
                     try {
-                        toolsDAO.search(writer, id, null, null, null, null, null, null);
+                        MongoQueries.searchTools(toolsDAO, writer, id, null, null, null, null, null, null, null);
                     }
                     finally {
                         try {
