@@ -1,4 +1,7 @@
-### Elixibilitas: Quality Metrics tool for Elixir BioTools Registry.
+```diff
+- THE PROJECT WAS MOVED TO THE https://gitlab.bsc.es/inb/elixir/tools-platform/elixibilitas/elixibilitas-rest
+```
+#### Elixibilitas: Quality Metrics tool for Elixir BioTools Registry.
 
 ###### Enterprise Java 8 (JEE8) Platform
 Elixibilitas project is strictly adherent to the [JEE8](https://www.jcp.org/en/jsr/detail?id=366) specification.
